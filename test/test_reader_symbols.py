@@ -1,0 +1,58 @@
+import unittest
+import ply.lex as leex
+
+import rdfscript.reader as reader
+
+class ReaderSymbolTest(unittest.TestCase):
+
+    def setUp(self):
+        self.reader = leex.lex(module=reader)
+
+    def tearDown(self):
+        None
+
+    def test_symbol_alpha(self):
+        self.reader.input('Symbol')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, 'Symbol')
+        self.assertEqual(token.type, 'SYMBOL')
+
+    def test_symbol_alphanumeric(self):
+        self.reader.input('Sym801')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, 'Sym801')
+        self.assertEqual(token.type, 'SYMBOL')
+
+    def test_symbol_start_numeric(self):
+        self.reader.input('5ymb0l')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, 5)
+        self.assertEqual(token.type, 'INTEGER')
+
+    def test_symbol_start_plus(self):
+        self.reader.input('+')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, '+')
+        self.assertEqual(token.type, 'SYMBOL')
+
+    def test_symbol_equals(self):
+        self.reader.input('=')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, '=')
+        self.assertEqual(token.type, 'SYMBOL')
+
+    def test_symbol_mixture(self):
+        self.reader.input('+s=-+14gmkGG7')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, '+s=-+14gmkGG7')
+        self.assertEqual(token.type, 'SYMBOL')
+
+
+if __name__ == '__main__':
+    unittest.main()
