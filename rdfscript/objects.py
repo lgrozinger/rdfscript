@@ -27,6 +27,9 @@ class TripleObject(ScriptObject):
                 self.p == other.p         and
                 self.o == other.o)
 
+    def __repr__(self):
+        return format("TRIPLE: (%s, %s, %s)" % (self.s, self.p, self.o))
+
 class Term(ScriptObject):
 
     def __init__(self, line_num):
@@ -38,7 +41,7 @@ class Literal(Term):
         super().__init__(line_num)
         self.value = rdflib.Literal(lexical_value)
 
-        self.datatype = value.datatype
+        self.datatype = self.value.datatype
 
     def __eq__(self, other):
         return self.value == other.value
@@ -53,6 +56,9 @@ class URI(Term):
     def __eq__(self, other):
         return (type(self) == type(other) and
                 self.uri == other.uri)
+
+    def __repr__(self):
+        return format("URI: %s" % self.uri)
 
     def evaluate(self, env):
         return uri
@@ -72,6 +78,9 @@ class LocalName(Identifier):
         return (type(self) == type(other) and
                 self.name == other.name)
 
+    def __repr__(self):
+        return format("(LOCALNAME: %s)" % self.name)
+
     def evaluate(self, env):
         ## limited check for valid URI
         self.URI = rdflib.term.URIRef(self.name.evaluate(env))
@@ -90,6 +99,9 @@ class NSPrefix(Identifier):
     def __eq__(self, other):
         return (type(self) == type(other)         and
                 self.namespace == other.namespace)
+
+    def __repr__(self):
+        return format("(NSPREFIX: %s)" % self.namespace)
 
     def evaluate(self, env):
         return rdflib.Namespace(self.namespace.evaluate(env))
@@ -111,6 +123,9 @@ class QName(Identifier):
                 self.prefix == other.prefix       and
                 self.localname == other.localname)
 
+    def __repr__(self):
+        return format("QNAME: %s : %s" % (self.prefix, self.localname))
+    
     def evaluate(self, env):
         ## construct the fully-qualified URI from the prefix and local
         ## parts
