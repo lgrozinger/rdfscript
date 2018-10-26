@@ -7,6 +7,10 @@ class Env:
         self.g = rdflib.Graph()
         self.symbol_table  = {}
         self.interactive_mode = repl
+        self.default_namespace = rdflib.Namespace('http://rdfscript/debug#')
+
+    def get_default_namespace(self):
+        return self.default_namespace
 
     ## unnecessary?
     def add_triple(self, s, p, o):

@@ -27,12 +27,12 @@ def t_DOUBLE(t):
     return t;
 
 def t_INTEGER(t):
-    r'\d+'
+    r'[-]?\d+'
     t.value = int(t.value)
     return t;
 
 def t_URI(t):
-    r'(?:\').*?(?:\')'
+    r'<[^<>]*>'
     t.value = t.value[1:-1]
     return t;
 

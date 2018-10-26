@@ -1,13 +1,8 @@
 import ply.yacc as parser
 
-from rdfscript.objects import (Literal,
-                               QName,
-                               NSPrefix,
-                               URI,
-                               LocalName,
-                               Symbol,
-                               TripleObject)
-
+from rdfscript.objects import TripleObject
+from rdfscript.literal import Literal
+from rdfscript.identifier import QName, NSPrefix, LocalName, URI
 from rdfscript.reader import tokens
 
 def p_forms(p):
@@ -19,12 +14,12 @@ def p_empty_forms(p):
     p[0] =[]
 
 def p_form_types(p):
-    '''form : triple
-            | expr'''
+    '''form : expr
+            | triple'''
     p[0] = p[1]
 
 def p_triple(p):
-    '''triple : qname qname  expr ';' '''
+    '''triple : qname qname expr'''
     p[0] = TripleObject(p[1], p[2], p[3], p.lineno)
 
 def p_expr(p):
@@ -33,18 +28,19 @@ def p_expr(p):
     p[0] = p[1]
 
 def p_expr_qname_ns_and_local(p):
-    '''qname : symbol '.' symbol
-             | symbol '.' uri
-             | uri '.' symbol
-             | uri '.' uri '''
+    '''qname : localname '.' localname
+             | localname '.' uri
+             | uri '.' localname'''
     l = p.lineno
-    p[0] = QName(NSPrefix(p[1], l) , LocalName(p[3], l), l)
+    p[0] = QName(NSPrefix(p[1], l) , p[3], l)
+
+def p_expr_qname_bare_uri(p):
+    '''qname : uri'''
+    p[0] = p[1]
 
 def p_expr_qname_local_only(p):
-    '''qname : symbol
-             | uri'''
-    l = p.lineno
-    p[0] = QName('', LocalName(p[1], l), l)
+    '''qname : localname'''
+    p[0] = QName(None, p[1], p.lineno)
 
 def p_literal(p):
     '''literal : INTEGER
@@ -54,13 +50,13 @@ def p_literal(p):
     p[0] = Literal(p[1], p.lineno)
 
 def p_symbol(p):
-    '''symbol : SYMBOL'''
-    p[0] = Symbol(p[1], p.lineno)
+    '''localname : SYMBOL'''
+    p[0] = LocalName(p[1], p.lineno)
 
 def p_uri(p):
     '''uri : URI'''
     p[0] = URI(p[1], p.lineno)
-    
+
 def p_empty(p):
     '''empty :'''
     pass
