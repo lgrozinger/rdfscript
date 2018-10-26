@@ -12,7 +12,8 @@ from rdfscript.objects import (Literal,
                                QName,
                                NSPrefix,
                                LocalName,
-                               Symbol)
+                               Symbol,
+                               TripleObject)
 
 
 class ParserCoreTest(unittest.TestCase):
@@ -92,6 +93,19 @@ class ParserCoreTest(unittest.TestCase):
                                        LocalName(Symbol('LocalName', 4),
                                                  4),
                                        4)])
+
+    def test_parser_triple(self):
+        script = 'S P "object";'
+        forms  = self.parser.parse(script, lexer=self.reader)
+
+        Subject   = QName('', LocalName(Symbol('S', 1), 1), 1)
+        Predicate = QName('', LocalName(Symbol('P', 1), 1), 1)
+        Object    = Literal("object", 1)
+
+        self.assertEqual(forms, [TripleObject(Subject,
+                                              Predicate,
+                                              Object,
+                                              1)])
 
 
 

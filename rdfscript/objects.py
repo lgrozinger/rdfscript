@@ -30,6 +30,19 @@ class TripleObject(ScriptObject):
     def __repr__(self):
         return format("TRIPLE: (%s, %s, %s)" % (self.s, self.p, self.o))
 
+    def evaluate(self, env):
+
+        ## first evaluate subject, object and predicate
+        subject   = self.s.evaluate(env)
+        objekt    = self.o.evaluate(env)
+        predicate = self.p.evaluate(env)
+
+        ## TODO: type checking on sub, obj, pred
+
+        env.add_triple(subject, predicate, objekt)
+
+        return subject
+
 class Term(ScriptObject):
 
     def __init__(self, line_num):
@@ -46,6 +59,9 @@ class Literal(Term):
     def __eq__(self, other):
         return self.value == other.value
 
+    def evaluate(self, env):
+        return self.value
+
 class URI(Term):
 
     def __init__(self, quoted_uri, line_num):
@@ -61,7 +77,7 @@ class URI(Term):
         return format("URI: %s" % self.uri)
 
     def evaluate(self, env):
-        return uri
+        return self.uri
 
 class Identifier(ScriptObject):
     def __init__(self, line_num):
@@ -83,6 +99,8 @@ class LocalName(Identifier):
 
     def evaluate(self, env):
         ## limited check for valid URI
+
+        ## TODO: default prefix
         self.URI = rdflib.term.URIRef(self.name.evaluate(env))
         self.URI.n3()
 
@@ -125,7 +143,7 @@ class QName(Identifier):
 
     def __repr__(self):
         return format("QNAME: %s : %s" % (self.prefix, self.localname))
-    
+
     def evaluate(self, env):
         ## construct the fully-qualified URI from the prefix and local
         ## parts

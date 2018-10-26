@@ -8,6 +8,10 @@ class Env:
         self.symbol_table  = {}
         self.interactive_mode = repl
 
+    ## unnecessary?
+    def add_triple(self, s, p, o):
+        self.g.add( (s, p, o) )
+
     def symbol_bind(self, name, value):
         self.symbol_table[name] = value
         return self.symbol_lookup(name)
