@@ -42,3 +42,29 @@ class TripleObject(ScriptObject):
         env.add_triple(subject, predicate, objekt)
 
         return subject
+
+class Assignment(ScriptObject):
+
+    def __init__(self, identifier, value, line_num):
+        super().__init__(line_num)
+
+        self.identifier = identifier
+        self.value      = value
+
+    def __eq__(self, other):
+        return (type(self) == type(other)           and
+                self.identifier == other.identifier and
+                self.value == other.value)
+
+    def __repr__(self):
+        return format("ASSIGN: (%s to %s)" %
+                      (self.identifier, self.value))
+
+    def evaluate(self, env):
+
+        assignment_predicate = env.get_assignment_qname()
+
+        return TripleObject(self.identifier,
+                            assignment_predicate,
+                            self.value,
+                            self.line).evaluate(env)

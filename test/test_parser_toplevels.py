@@ -6,11 +6,11 @@ import ply.lex as leex
 import rdfscript.parser as parser
 import rdfscript.reader as reader
 
-from rdfscript.toplevel import TripleObject
+from rdfscript.toplevel import TripleObject, Assignment
 from rdfscript.identifier import URI, QName, NSPrefix, LocalName
 from rdfscript.literal import Literal
 
-class ParserIdentifierTest(unittest.TestCase):
+class ParserTopLevelTest(unittest.TestCase):
 
     def setUp(self):
         self.parser = yacc.yacc(module=parser)
@@ -19,11 +19,14 @@ class ParserIdentifierTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    def test_parser_triple(self):
-        script = 'Subject Predicate Object'
+    def test_assignment(self):
+        script = 'Identifier = "hello"'
         forms  = self.parser.parse(script, lexer=self.reader)
 
-        s = QName(None, LocalName('Subject', 1), 1)
-        p = QName(None, LocalName('Predicate', 1), 1)
-        o = QName(None, LocalName('Object', 1), 1)
-        self.assertEqual(forms, [TripleObject(s, p, o, 1)])
+        self.assertEqual(forms,
+                         [Assignment(QName(None, LocalName('Identifier', 1), 1),
+                                     Literal("hello", 1),
+                                     1)])
+
+if __name__ == '__main__':
+    unittest.main()

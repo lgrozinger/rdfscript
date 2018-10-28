@@ -2,7 +2,7 @@ import rdflib
 
 from urllib.parse import quote as urlencode
 
-from rdfscript.objects import ScriptObject
+from rdfscript.toplevel import ScriptObject
 
 class Identifier(ScriptObject):
     def __init__(self, line_num):
@@ -87,9 +87,9 @@ class QName(Identifier):
         ## TODO: default prefix directive (pragma)
         ## by adding check for 'None' prefix
         if not self.prefix:
-            namespace = env.get_default_namespace()
-        else:
-            namespace = self.prefix.evaluate(env)
+            self.prefix = env.get_default_namespace()
+
+        namespace = self.prefix.evaluate(env)
 
         localname = self.localname.evaluate(env)
 

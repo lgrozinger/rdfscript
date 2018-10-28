@@ -6,7 +6,7 @@ import ply.lex as leex
 import rdfscript.parser as parser
 import rdfscript.reader as reader
 
-from rdfscript.objects import TripleObject
+from rdfscript.toplevel import TripleObject
 from rdfscript.identifier import URI, QName, NSPrefix, LocalName
 from rdfscript.literal import Literal
 

@@ -1,16 +1,29 @@
 import rdflib
 
-import rdfscript.objects
+import rdfscript.toplevel
+from rdfscript.identifier import QName, NSPrefix, LocalName
 
 class Env:
     def __init__(self, repl=False):
         self.g = rdflib.Graph()
         self.symbol_table  = {}
         self.interactive_mode = repl
-        self.default_namespace = rdflib.Namespace('http://rdfscript/debug#')
+
+        ## TODO: make these env-specific and 'hard-to-clash'
+        self.default_namespace = 'http://rdfscript/debug#'
+        self.env_namespace     = self.default_namespace
+        self.assign_predicate  = 'evaluatesTo'
 
     def get_default_namespace(self):
-        return self.default_namespace
+        return NSPrefix(LocalName(self.default_namespace, 0), 0)
+
+    def get_env_namespace(self):
+        return NSPrefix(LocalName(self.env_namespace, 0), 0)
+
+    def get_assignment_qname(self):
+        return QName(self.get_env_namespace(),
+                     LocalName(self.assign_predicate, 0),
+                     0)
 
     ## unnecessary?
     def add_triple(self, s, p, o):

@@ -1,6 +1,6 @@
 import rdflib
 
-from rdfscript.objects import ScriptObject
+from rdfscript.toplevel import ScriptObject
 
 class Literal(ScriptObject):
 

@@ -1,22 +1,27 @@
 import ply.yacc as parser
 
-from rdfscript.objects import TripleObject
+from rdfscript.toplevel import TripleObject, Assignment
 from rdfscript.literal import Literal
 from rdfscript.identifier import QName, NSPrefix, LocalName, URI
 from rdfscript.reader import tokens
 
-def p_forms(p):
-    '''forms : form forms'''
+def p_toplevels(p):
+    '''toplevels : toplevel toplevels'''
     p[0] = [p[1]] + p[2]
 
-def p_empty_forms(p):
-    '''forms : empty'''
+def p_empty_toplevels(p):
+    '''toplevels : empty'''
     p[0] =[]
 
-def p_form_types(p):
-    '''form : expr
-            | triple'''
+def p_toplevel_types(p):
+    '''toplevel : expr
+                | assignment
+                | triple'''
     p[0] = p[1]
+
+def p_assignment(p):
+    '''assignment : qname '=' expr'''
+    p[0] = Assignment(p[1], p[3], p.lineno)
 
 def p_triple(p):
     '''triple : qname qname expr'''

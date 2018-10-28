@@ -44,13 +44,13 @@ class ReaderSymbolTest(unittest.TestCase):
         token = self.reader.token()
 
         self.assertEqual(token.value, '=')
-        self.assertEqual(token.type, 'SYMBOL')
+        self.assertEqual(token.type, '=')
 
     def test_symbol_mixture(self):
         self.reader.input('+s=-+14gmkGG7')
         token = self.reader.token()
 
-        self.assertEqual(token.value, '+s=-+14gmkGG7')
+        self.assertEqual(token.value, '+s')
         self.assertEqual(token.type, 'SYMBOL')
 
 

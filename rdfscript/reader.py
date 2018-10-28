@@ -9,7 +9,7 @@ tokens = (
     "URI")
 
 t_ignore = ' \t'
-literals = ['(', ')', '.', '[', ']', ';', ',', ':']
+literals = ['=', '(', ')', '.', '[', ']', ';', ',', ':']
 
 reserved_words = {
     'true'   : 'BOOLEAN',
@@ -37,7 +37,7 @@ def t_URI(t):
     return t;
 
 def t_SYMBOL(t):
-    r'[^():;."\'\s#\[\],]+'
+    r'[^()=:;."\'\s#\[\],]+'
     t.type = reserved_words.get(t.value, 'SYMBOL')
     return t;
 
