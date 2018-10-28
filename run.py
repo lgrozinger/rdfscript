@@ -13,6 +13,8 @@ def parse_from_file(filepath):
     print("Parser build success...")
     print("Building lexer with lex...")
     reader = lex.lex(module=reader)
+    reader.at_line_start = True
+    reader.indent_stack = [0]
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
@@ -31,6 +33,8 @@ def rdf_repl():
     print("Parser build success...")
     print("Building lexer with lex...")
     r = lex.lex(module=reader)
+    r.at_line_start = True
+    r.indent_stack = [0]
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 

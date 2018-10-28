@@ -7,6 +7,8 @@ class ReaderWhitespaceTest(unittest.TestCase):
 
     def setUp(self):
         self.reader = leex.lex(module=reader)
+        self.reader.indent_stack = [0]
+        self.reader.at_line_start = True
 
     def tearDown(self):
         None
@@ -18,7 +20,7 @@ class ReaderWhitespaceTest(unittest.TestCase):
         self.assertEqual(token.lineno, 4)
 
     def test_whitespace_not_tokenised(self):
-        self.reader.input('\n\n  \n\n \t \n')
+        self.reader.input('\n\n\n\n\t\n')
         token = self.reader.token()
 
         self.assertEqual(token, None)

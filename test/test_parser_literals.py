@@ -13,7 +13,9 @@ class ParserLiteralTest(unittest.TestCase):
     def setUp(self):
         self.parser = yacc.yacc(module=parser)
         self.reader = leex.lex(module=reader)
-
+        self.reader.at_line_start = True
+        self.reader.indent_stack = [0]
+        
     def tearDown(self):
         None
 
