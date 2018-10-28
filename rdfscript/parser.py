@@ -16,7 +16,6 @@ def p_empty_toplevels(p):
 def p_toplevel_types(p):
     '''toplevel : expr
                 | assignment
-                | triple
                 | pragma'''
     p[0] = p[1]
 
@@ -30,32 +29,28 @@ def p_pragma_two_arg(p):
     p[0] = Pragma(p[1], [p[2], p[3]], p.lineno)
 
 def p_assignment(p):
-    '''assignment : qname '=' expr'''
+    '''assignment : identifier '=' expr'''
     p[0] = Assignment(p[1], p[3], p.lineno)
 
-def p_triple(p):
-    '''triple : qname qname expr'''
-    p[0] = TripleObject(p[1], p[2], p[3], p.lineno)
+# def p_triple(p):
+#     '''triple : identifier identifier expr'''
+#     p[0] = TripleObject(p[1], p[2], p[3], p.lineno)
 
 def p_expr(p):
-    '''expr : qname
+    '''expr : identifier
             | literal'''
     p[0] = p[1]
 
-def p_expr_qname_ns_and_local(p):
-    '''qname : localname '.' localname
-             | localname '.' uri
-             | uri '.' localname'''
-    l = p.lineno
-    p[0] = QName(NSPrefix(p[1], l) , p[3], l)
-
-def p_expr_qname_bare_uri(p):
-    '''qname : uri'''
+def p_identifier(p):
+    '''identifier : qname
+                  | localname
+                  | uri'''
     p[0] = p[1]
 
-def p_expr_qname_local_only(p):
-    '''qname : localname'''
-    p[0] = QName(None, p[1], p.lineno)
+def p_qname(p):
+    '''qname : localname '.' localname'''
+    l = p.lineno
+    p[0] = QName(NSPrefix(p[1].localname, l) , p[3].localname, l)
 
 def p_literal(p):
     '''literal : INTEGER
@@ -64,9 +59,10 @@ def p_literal(p):
                | BOOLEAN'''
     p[0] = Literal(p[1], p.lineno)
 
-def p_symbol(p):
+def p_localname(p):
     '''localname : SYMBOL'''
-    p[0] = LocalName(p[1], p.lineno)
+    l = p.lineno
+    p[0] = QName(None, LocalName(p[1], l), l)
 
 def p_uri(p):
     '''uri : URI'''

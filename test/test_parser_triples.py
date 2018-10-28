@@ -19,6 +19,7 @@ class ParserIdentifierTest(unittest.TestCase):
     def tearDown(self):
         None
 
+    @unittest.skip("Explicitly coded triples are not yet implemented.")
     def test_parser_triple(self):
         script = 'Subject Predicate Object'
         forms  = self.parser.parse(script, lexer=self.reader)
