@@ -16,8 +16,18 @@ def p_empty_toplevels(p):
 def p_toplevel_types(p):
     '''toplevel : expr
                 | assignment
-                | triple'''
+                | triple
+                | pragma'''
     p[0] = p[1]
+
+def p_pragma_one_arg(p):
+    '''pragma : IMPORT qname
+              | DEFAULTPREFIX qname'''
+    p[0] = Pragma(p[1], [p[2]], p.lineno)
+
+def p_pragma_two_arg(p):
+    '''pragma : PREFIX qname expr'''
+    p[0] = Pragma(p[1], [p[2], p[3]], p.lineno)
 
 def p_assignment(p):
     '''assignment : qname '=' expr'''

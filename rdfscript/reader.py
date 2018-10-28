@@ -6,14 +6,20 @@ tokens = (
     "STRING",
     "INTEGER",
     "DOUBLE",
-    "URI")
+    "URI",
+    "IMPORT",
+    "PREFIX",
+    "DEFAULTPREFIX")
 
 t_ignore = ' \t'
-literals = ['=', '(', ')', '.', '[', ']', ';', ',', ':']
+literals = ['=', '@', '(', ')', '.', '[', ']', ';', ',', ':']
 
 reserved_words = {
-    'true'   : 'BOOLEAN',
-    'false'  : 'BOOLEAN',
+    'true'           : 'BOOLEAN',
+    'false'          : 'BOOLEAN',
+    '@import'        : 'IMPORT',
+    '@prefix'        : 'PREFIX',
+    '@defaultPrefix' : 'DEFAULTPREFIX'
     }
 
 def t_STRING(t):
