@@ -23,7 +23,7 @@ class URI(Identifier):
         return format("URI: %s" % self.uri)
 
     def evaluate(self, env):
-        return self.uri
+        return rdflib.URIRef(self.uri)
 
 ## as in RDF/XML LocalName
 ## evaluates to rdflib.URIRef('name')

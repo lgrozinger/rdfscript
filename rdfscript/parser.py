@@ -19,14 +19,9 @@ def p_toplevel_types(p):
                 | pragma'''
     p[0] = p[1]
 
-def p_pragma_one_arg(p):
-    '''pragma : IMPORT qname
-              | DEFAULTPREFIX qname'''
-    p[0] = Pragma(p[1], [p[2]], p.lineno)
-
-def p_pragma_two_arg(p):
-    '''pragma : PREFIX qname expr'''
-    p[0] = Pragma(p[1], [p[2], p[3]], p.lineno)
+def p_pragma_prefix(p):
+    '''pragma : PREFIX identifier expr'''
+    p[0] = p[2]
 
 def p_assignment(p):
     '''assignment : identifier '=' expr'''
@@ -39,6 +34,14 @@ def p_assignment(p):
 def p_expr(p):
     '''expr : identifier
             | literal'''
+    p[0] = p[1]
+
+def p_exprlist(p):
+    '''exprlist : expr exprlist'''
+    p[0] = [p[1]] + p[2]
+
+def p_emptyexprlist(p):
+    '''exprlist : emptylist'''
     p[0] = p[1]
 
 def p_identifier(p):
@@ -72,6 +75,10 @@ def p_empty(p):
     '''empty :'''
     pass
 
+def p_emptylist(p):
+    '''emptylist :empty'''
+    p[0] = []
+    
 def p_error(p):
     if p == None:
         pass
