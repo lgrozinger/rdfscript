@@ -1,37 +1,44 @@
 import rdflib
 
 import rdfscript.toplevel
-from rdfscript.identifier import QName, NSPrefix, LocalName
+from rdfscript.identifier import URI
 
 class Env:
     def __init__(self, repl=False):
         self.g = rdflib.Graph()
-        self.symbol_table  = {}
         self.interactive_mode = repl
 
         ## TODO: make these env-specific and 'hard-to-clash'
-        self.default_namespace = 'http://rdfscript/debug#'
-        self.env_namespace     = self.default_namespace
-        self.assign_predicate  = 'evaluatesTo'
+        self.default_namespace = rdflib.Namespace('file://rdfscript.env.sbol/')
+        self.env_namespace     = rdflib.Namespace('file://rdfscript.env.sbol/')
+        self.assign_predicate  = self.env_namespace['expandsTo']
+
+        self.g.bind('rdfscript', self.env_namespace)
 
     def get_default_namespace(self):
-        return NSPrefix(LocalName(self.default_namespace, 0), 0)
+        return self.default_namespace
 
     def get_env_namespace(self):
-        return NSPrefix(LocalName(self.env_namespace, 0), 0)
+        return self.env_namespace
 
-    def get_assignment_qname(self):
-        return QName(self.get_env_namespace(),
-                     LocalName(self.assign_predicate, 0),
-                     0)
+    def get_assignment_uri(self):
+        return self.assign_predicate
 
-    ## unnecessary?
+    def bind_prefix(self, prefix, uri):
+        self.g.bind(prefix, uri)
+
+    def get_ns_for_prefix(self, prefix):
+        namespaces = self.g.namespaces()
+
+        matching = [n for (p, n) in namespaces if p == prefix]
+
+        if len(matching) == 1:
+            return rdflib.Namespace(matching[0])
+        else:
+            return None
+
     def add_triple(self, s, p, o):
         self.g.add( (s, p, o) )
-
-    def symbol_bind(self, name, value):
-        self.symbol_table[name] = value
-        return self.symbol_lookup(name)
 
     def symbol_lookup(self, name):
         value = self.symbol_table.get(name, None)
@@ -57,3 +64,8 @@ class Env:
             print("ERROR: unexpected object %s : LINENO: %d"
                   % (form, form.lineno))
         raise SyntaxError
+
+class RuntimeGraph:
+
+    def __init__(self):
+        pass

@@ -2,7 +2,8 @@ import ply.yacc as parser
 
 from rdfscript.toplevel import TripleObject, Assignment
 from rdfscript.literal import Literal
-from rdfscript.identifier import QName, NSPrefix, LocalName, URI
+from rdfscript.identifier import QName, LocalName, URI
+from rdfscript.pragma import PrefixPragma
 from rdfscript.reader import tokens
 
 def p_toplevels(p):
@@ -20,8 +21,8 @@ def p_toplevel_types(p):
     p[0] = p[1]
 
 def p_pragma_prefix(p):
-    '''pragma : PREFIX identifier expr'''
-    p[0] = p[2]
+    '''pragma : PREFIX SYMBOL expr'''
+    p[0] = PrefixPragma(p[2], p[3], p.lineno)
 
 def p_assignment(p):
     '''assignment : identifier '=' expr'''
@@ -51,9 +52,9 @@ def p_identifier(p):
     p[0] = p[1]
 
 def p_qname(p):
-    '''qname : localname '.' localname'''
+    '''qname : SYMBOL ':' SYMBOL'''
     l = p.lineno
-    p[0] = QName(NSPrefix(p[1].localname, l) , p[3].localname, l)
+    p[0] = QName(p[1], p[3], l)
 
 def p_literal(p):
     '''literal : INTEGER
@@ -65,7 +66,7 @@ def p_literal(p):
 def p_localname(p):
     '''localname : SYMBOL'''
     l = p.lineno
-    p[0] = QName(None, LocalName(p[1], l), l)
+    p[0] = LocalName(p[1], l)
 
 def p_uri(p):
     '''uri : URI'''
@@ -76,9 +77,9 @@ def p_empty(p):
     pass
 
 def p_emptylist(p):
-    '''emptylist :empty'''
+    '''emptylist : empty'''
     p[0] = []
-    
+
 def p_error(p):
     if p == None:
         pass

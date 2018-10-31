@@ -1,6 +1,6 @@
 import rdflib
 
-from rdfscript.toplevel import ScriptObject
+from rdfscript.toplevel import ScriptObject, Assignment
 
 class PrefixPragma(ScriptObject):
 
@@ -19,4 +19,8 @@ class PrefixPragma(ScriptObject):
         return format("PREFIX DIRECTIVE: (%s, %s)" % (self.prefix, self.uri))
 
     def evaluate(self, env):
-        pass
+        ## need to create and bind the uri to prefix in namespace manager
+        ## prefix should be 'prefix' and uri should evaluate to a URIRef
+
+        prefixuri = self.uri.evaluate(env)
+        env.bind_prefix(self.prefix, prefixuri)

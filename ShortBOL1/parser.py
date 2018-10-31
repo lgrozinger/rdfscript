@@ -10,6 +10,8 @@ def p_empty_toplevels(p):
     '''toplevels : empty'''
     p[0] =[]
 
+## ShortBOL1 also has comment and blankline here but 2.0 reader
+## ignores these anyway
 def p_toplevel(p):
     '''toplevel : assignment
                 | pragma
@@ -29,7 +31,8 @@ def p_instanceexp(p):
     '''instanceexp : identifier ':' prefixconstructorapp'''
     pass
 
-## TODO: none comma-seperated list here
+## TODO: not comma-seperated list here
+## probably easier to seperate into seperate rules for each pragma
 def p_pragma(p):
     '''pragma : '@' identifier exprlist'''
     pass
@@ -121,7 +124,7 @@ def p_exprlist(p):
 ### I think ShortBOL1.0 grammar is ambigous here, since qname is made
 ### up of NSPrefix and LocalName both of which have the same rule
 def p_qname(p):
-    '''qname : localname '.' localname'''
+    '''qname : localname ':' localname'''
     pass
 
 
