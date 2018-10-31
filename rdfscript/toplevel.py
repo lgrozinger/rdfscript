@@ -69,3 +69,25 @@ class Assignment(ScriptObject):
                        self.value.evaluate(env))
 
         return self.value.evaluate(env)
+
+class ConstructorDef(ScriptObject):
+
+    def __init__(self, identifier, args, linenum):
+        super().__init__(linenum)
+
+        self.identifier = identifier
+        self.args       = args
+
+    def __eq__(self, other):
+        return (type(self) == type(other) and
+                self.identifier == other.identifier and
+                self.args == other.args)
+
+    def __repr__(self):
+        return format("CONSTRUCTORDEF: (%s, with args: %s)" %
+                      (self.identifier, self.args))
+
+    def evaluate(self, env):
+        pass
+
+

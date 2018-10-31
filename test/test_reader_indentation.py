@@ -85,6 +85,25 @@ class ReaderIndentationTest(unittest.TestCase):
                                                     'DEDENT',
                                                     'INTEGER'])
 
+    def test_reader_eof_indentation(self):
+        self.reader.input("0\n  1\n    2\n      3")
+
+        tokens = []
+
+        for token in self.reader:
+            tokens.append(token)
+
+        self.assertEqual([x.type for x in tokens], ['INTEGER',
+                                                    'INDENT',
+                                                    'INTEGER',
+                                                    'INDENT',
+                                                    'INTEGER',
+                                                    'INDENT',
+                                                    'INTEGER',
+                                                    'DEDENT',
+                                                    'DEDENT',
+                                                    'DEDENT'])
+
     def test_reader_in_in_out_in_out_out(self):
         self.reader.input("0\n 1\n  2\n 1 1\n  2\n 1\n0")
 

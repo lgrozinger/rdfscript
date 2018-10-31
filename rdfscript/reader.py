@@ -7,12 +7,12 @@ tokens = (
     "INTEGER",
     "DOUBLE",
     "URI",
+    "RARROW",
     "NEWLINE",
     "INDENT",
     "DEDENT",
-    "IMPORT",
     "PREFIX",
-    "DEFAULTPREFIX")
+    "EOI")
 
 t_ignore = '\t'
 literals = ['=', '@', '(', ')', '.', '[', ']', ';', ',', ':']
@@ -20,10 +20,19 @@ literals = ['=', '@', '(', ')', '.', '[', ']', ';', ',', ':']
 reserved_words = {
     'true'           : 'BOOLEAN',
     'false'          : 'BOOLEAN',
-    '@import'        : 'IMPORT',
-    '@prefix'        : 'PREFIX',
-    '@defaultPrefix' : 'DEFAULTPREFIX'
+    '@prefix'        : 'PREFIX'
     }
+
+def t_eof(t):
+     if len(t.lexer.indent_stack) > 1:
+        t.type = 'DEDENT'
+        t.lexer.indent_stack.pop()
+        t.lexer.input('')
+        return t
+
+def t_RARROW(t):
+    r'=>'
+    return t
 
 def t_STRING(t):
     r'(?:").*?(?:")'
