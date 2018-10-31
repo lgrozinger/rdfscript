@@ -7,7 +7,7 @@ import rdfscript.parser as parser
 import rdfscript.reader as reader
 
 from rdfscript.toplevel import TripleObject
-from rdfscript.identifier import URI, QName, NSPrefix, LocalName
+from rdfscript.identifier import URI, QName, LocalName
 from rdfscript.literal import Literal
 
 class ParserIdentifierTest(unittest.TestCase):

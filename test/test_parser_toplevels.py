@@ -7,7 +7,7 @@ import rdfscript.parser as parser
 import rdfscript.reader as reader
 
 from rdfscript.toplevel import TripleObject, Assignment
-from rdfscript.identifier import URI, QName, NSPrefix, LocalName
+from rdfscript.identifier import URI, QName, LocalName
 from rdfscript.literal import Literal
 
 class ParserTopLevelTest(unittest.TestCase):
@@ -26,7 +26,7 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script, lexer=self.reader)
 
         self.assertEqual(forms,
-                         [Assignment(QName(None, LocalName('Identifier', 1), 1),
+                         [Assignment(LocalName('Identifier', 1),
                                      Literal("hello", 1),
                                      1)])
 

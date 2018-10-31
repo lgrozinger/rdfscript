@@ -23,7 +23,7 @@ class URI(Identifier):
         return format("URI: %s" % self.uri)
 
     def evaluate(self, env):
-        return self.uri
+        return rdflib.URIRef(self.uri)
 
 ## as in RDF/XML LocalName
 ## evaluates to rdflib.URIRef('name')
@@ -40,25 +40,9 @@ class LocalName(Identifier):
         return format("(LOCALNAME: %s)" % self.name)
 
     def evaluate(self, env):
-        return rdflib.URIRef(urlencode(self.name))
+        namespace = env.get_default_namespace()
 
-## as in RDF/XML NSPrefix
-## evaluates to a rdflib.Namespace
-class NSPrefix(Identifier):
-    def __init__(self, namespace, line_num):
-        super().__init__(line_num)
-
-        self.namespace = namespace
-
-    def __eq__(self, other):
-        return (type(self) == type(other)         and
-                self.namespace == other.namespace)
-
-    def __repr__(self):
-        return format("(NSPREFIX: %s)" % self.namespace)
-
-    def evaluate(self, env):
-        return rdflib.Namespace(self.namespace.evaluate(env))
+        return rdflib.URIRef(namespace[urlencode(self.name)])
 
 ## as in RDF/XML QName
 ## evaluates to a rdflib.URIRef
@@ -81,19 +65,13 @@ class QName(Identifier):
         return format("QNAME: %s : %s" % (self.prefix, self.localname))
 
     def evaluate(self, env):
-        ## construct the fully-qualified URI from the prefix and local
-        ## parts
 
-        ## TODO: default prefix directive (pragma)
-        ## by adding check for 'None' prefix
-        if not self.prefix:
-            self.prefix = env.get_default_namespace()
+        namespace = env.get_ns_for_prefix(self.prefix)
 
-        namespace = self.prefix.evaluate(env)
+        if not namespace:
+            return namespace
 
-        localname = self.localname.evaluate(env)
-
-        uri = rdflib.term.URIRef(namespace[localname.toPython()])
+        uri = rdflib.term.URIRef(namespace[self.localname])
         uri.n3()
 
         return uri
