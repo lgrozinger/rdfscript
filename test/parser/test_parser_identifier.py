@@ -28,7 +28,7 @@ class ParserIdentifierTest(unittest.TestCase):
         self.assertEqual(forms, [URI('http://uri.org/', 1)])
 
     def test_parser_qname(self):
-        script = 'Prefix:LocalName'
+        script = 'Prefix.LocalName'
         forms = self.parser.parse(script, lexer=self.reader)
 
         prefix = 'Prefix'

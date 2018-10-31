@@ -33,7 +33,7 @@ class ParserTopLevelTest(unittest.TestCase):
                                      1)])
 
     def test_constructordef_onearg(self):
-        script = 'DNASequence(x) => Sequence\n  encoding = <SBOL:IUPACDNA>\n  elements = x\n'
+        script = 'DNASequence(x) => Sequence\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script, lexer=self.reader, debug=self.log)
 
         self.assertEqual(forms,

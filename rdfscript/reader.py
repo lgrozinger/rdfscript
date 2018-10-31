@@ -8,14 +8,12 @@ tokens = (
     "DOUBLE",
     "URI",
     "RARROW",
-    "NEWLINE",
     "INDENT",
     "DEDENT",
-    "PREFIX",
-    "EOI")
+    "PREFIX")
 
 t_ignore = '\t'
-literals = ['=', '@', '(', ')', '.', '[', ']', ';', ',', ':']
+literals = ['=', '@', '(', ')', '.', '[', ']', ';', '*', ',', ':']
 
 reserved_words = {
     'true'           : 'BOOLEAN',

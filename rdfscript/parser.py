@@ -1,6 +1,6 @@
 import ply.yacc as parser
 
-from rdfscript.toplevel import TripleObject, Assignment
+from rdfscript.toplevel import TripleObject, Assignment, ConstructorDef
 from rdfscript.literal import Literal
 from rdfscript.identifier import QName, LocalName, URI
 from rdfscript.pragma import PrefixPragma
@@ -52,12 +52,17 @@ def p_expr(p):
     p[0] = p[1]
 
 def p_exprlist(p):
-    '''exprlist : expr exprlist'''
-    p[0] = [p[1]] + p[2]
-
-def p_emptyexprlist(p):
-    '''exprlist : emptylist'''
+    '''exprlist : emptylist
+                | notemptyexprlist'''
     p[0] = p[1]
+
+def p_not_empty_exprlist_1(p):
+    '''notemptyexprlist : expr'''
+    p[0] = [p[1]]
+
+def p_not_empty_exprlist_n(p):
+    '''notemptyexprlist : expr ',' notemptyexprlist'''
+    p[0] = [p[1]] + p[3]
 
 def p_identifier(p):
     '''identifier : qname
@@ -66,15 +71,20 @@ def p_identifier(p):
     p[0] = p[1]
 
 def p_identifierlist(p):
-    '''identifierlist : identifier identifierlist'''
-    p[0] = [p[1]] + p[2]
-
-def p_empty_identifierlist(p):
-    '''identifierlist : emptylist'''
+    '''identifierlist : emptylist
+                      | notemptyidentifierlist'''
     p[0] = p[1]
 
+def p_not_empty_identifierlist_1(p):
+    '''notemptyidentifierlist : identifier'''
+    p[0] = [p[1]]
+
+def p_not_empty_identifierlist_n(p):
+    '''notemptyidentifierlist : identifier ',' notemptyidentifierlist'''
+    p[0] = [p[1]] + p[3]
+
 def p_qname(p):
-    '''qname : SYMBOL ':' SYMBOL'''
+    '''qname : SYMBOL '.' SYMBOL'''
     l = p.lineno
     p[0] = QName(p[1], p[3], l)
 
@@ -123,18 +133,22 @@ def p_bodystatements(p):
                       | empty'''
     pass
 
+## 1.0 also has infixassigment here
 def p_bodystatement(p):
-    '''bodystatement : infixassigment
-                     | assignment
+    '''bodystatement : assignment
                      | instanceexp'''
     pass
 
-def p_infixassignment(p):
-    '''infixassigment : identifier '=' infixconstructorapp'''
-    pass
+# infixassigment breaks the parser, since it causes SR conflict with
+# assignment (resolved by default with shift, which is almost always
+# the wrong thing to do)
 
-def p_infixconstructorapp(p):
-    '''infixconstructorapp : expr identifier expr'''
+# def p_infixassignment(p):
+#     '''infixassigment : identifier '=' infixconstructorapp'''
+#     pass
+
+# def p_infixconstructorapp(p):
+#     '''infixconstructorapp : expr identifier expr'''
 
 def p_empty(p):
     '''empty :'''
