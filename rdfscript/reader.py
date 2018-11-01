@@ -1,36 +1,50 @@
 import ply.lex as leex
 
 tokens = (
-    "SYMBOL",
-    "BOOLEAN",
-    "STRING",
-    "INTEGER",
-    "DOUBLE",
-    "URI",
-    "RARROW",
-    "INDENT",
-    "DEDENT",
-    "PREFIX")
+     "SYMBOL",
+     "BOOLEAN",
+     "STRING",
+     "INTEGER",
+     "DOUBLE",
+     "URI",
+     "RARROW",
+     "INDENT",
+     "DEDENT",
+     "PREFIX",
+     "DEFAULTPREFIX",
+     "IMPORT")
 
 t_ignore = '\t'
-literals = ['=', '@', '(', ')', '.', '[', ']', ';', '*', ',', ':']
+literals = ['=',
+            '{', '}',
+            '@',
+            '(', ')',
+            '.',
+            '[', ']',
+            ';',
+            '*',
+            ',',
+            ':']
 
 reserved_words = {
-    'true'           : 'BOOLEAN',
-    'false'          : 'BOOLEAN',
-    '@prefix'        : 'PREFIX'
+     'true'           : 'BOOLEAN',
+     'false'          : 'BOOLEAN',
+     '@prefix'        : 'PREFIX',
+     '@import'        : 'IMPORT',
+     'import'        : 'IMPORT',
+     '@defaultPrefix' : 'DEFAULTPREFIX'
     }
 
 def t_eof(t):
      if len(t.lexer.indent_stack) > 1:
-        t.type = 'DEDENT'
-        t.lexer.indent_stack.pop()
-        t.lexer.input('')
-        return t
+          t.type = 'DEDENT'
+          t.lexer.indent_stack.pop()
+          t.lexer.input('')
+          return t
 
 def t_RARROW(t):
-    r'=>'
-    return t
+     r'=>'
+     return t
 
 def t_STRING(t):
     r'(?:").*?(?:")'
@@ -65,7 +79,7 @@ def t_URI(t):
     return t;
 
 def t_SYMBOL(t):
-    r'[^()=:;."\'\s#\[\],]+'
+    r'[^()}{=:;."\'\s#\[\],]+'
     t.type = reserved_words.get(t.value, 'SYMBOL')
     if t.lexer.at_line_start:
         check_for_complete_dedent(t)

@@ -1,9 +1,18 @@
 import ply.yacc as parser
 
-from rdfscript.toplevel import TripleObject, Assignment, ConstructorDef
+from rdfscript.toplevel import (TripleObject,
+                                Assignment,
+                                ConstructorDef,
+                                InstanceExp)
+
 from rdfscript.literal import Literal
+
 from rdfscript.identifier import QName, LocalName, URI
-from rdfscript.pragma import PrefixPragma
+
+from rdfscript.pragma import (PrefixPragma,
+                              ImportPragma,
+                              DefaultPrefixPragma)
+
 from rdfscript.reader import tokens
 
 def p_toplevels(p):
@@ -18,7 +27,8 @@ def p_toplevel_types(p):
     '''toplevel : expr
                 | assignment
                 | pragma
-                | constructordef'''
+                | constructordef
+                | instanceexp'''
     p[0] = p[1]
 
 def p_constructordef(p):
@@ -31,11 +41,19 @@ def p_constructordef_noargs(p):
 
 def p_instanceexp(p):
     '''instanceexp : identifier ':' prefixconstructorapp'''
-    pass
+    p[0] = InstanceExp(p[1], p[3], p.lineno)
 
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL expr'''
     p[0] = PrefixPragma(p[2], p[3], p.lineno)
+
+def p_defaultprefix_pragma(p):
+    '''pragma : DEFAULTPREFIX identifier'''
+    p[0] = DefaultPrefixPragma(p[2], p.lineno)
+
+def p_pragma_import(p):
+    '''pragma : IMPORT expr'''
+    p[0] = ImportPragma(p[2], p.lineno)
 
 def p_assignment(p):
     '''assignment : identifier '=' expr'''

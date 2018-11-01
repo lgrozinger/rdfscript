@@ -2,7 +2,7 @@
 
 import genomic
 
-base = <http://dashands.org/genomic/generic/>
+
 
 dna : DnaComponent
 

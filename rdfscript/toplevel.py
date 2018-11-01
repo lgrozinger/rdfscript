@@ -90,4 +90,24 @@ class ConstructorDef(ScriptObject):
     def evaluate(self, env):
         pass
 
+class InstanceExp(ScriptObject):
+
+    def __init__(self, identifier, constructorapp, linenum):
+        super().__init__(linenum)
+
+        self.identifier = identifier
+        self.constructorapp = constructorapp
+
+    def __eq__(self, other):
+        return (type(self) == type(other) and
+                self.identifier == other.identifier and
+                self.constructorapp == other.constructorapp)
+
+    def __repr__(self):
+        return format("INSTANCE: (%s : %s)" %
+                      (self.identifier, self.constructorapp))
+
+    def evaluate(self, env):
+        pass
+
 

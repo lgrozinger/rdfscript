@@ -1,0 +1,22 @@
+# SBOL 2 Data Model
+
+@import <xsd>
+@import <rdf>
+@import <owl>
+@import <dc>
+@import <prov>
+
+@import <chebi>
+@import <so>
+@import <biopax>
+@import <edam>
+@import <sbo>
+
+@prefix sbol <http://sbols.org/v2#>
+@defaultPrefix sbol
+
+@import <sbol/core>
+@import <sbol/component>
+@import <sbol/genomic>
+@import <sbol/module>
+@import <sbol/modules>
