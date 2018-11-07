@@ -40,9 +40,11 @@ class LocalName(Identifier):
         return format("(LOCALNAME: %s)" % self.name)
 
     def evaluate(self, env):
-        namespace = env.get_default_namespace()
 
-        return rdflib.URIRef(namespace[urlencode(self.name)])
+        uri = env.resolve_name(self.name)
+        uri.n3()
+
+        return uri
 
 ## as in RDF/XML QName
 ## evaluates to a rdflib.URIRef
@@ -66,12 +68,7 @@ class QName(Identifier):
 
     def evaluate(self, env):
 
-        namespace = env.get_ns_for_prefix(self.prefix)
-
-        if not namespace:
-            return namespace
-
-        uri = rdflib.term.URIRef(namespace[self.localname])
+        uri = env.resolve_name(self.localname, prefix=self.prefix)
         uri.n3()
 
         return uri

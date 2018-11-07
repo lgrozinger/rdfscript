@@ -1,51 +1,33 @@
 import rdflib
+import sys
 
 import rdfscript.toplevel
 from rdfscript.identifier import URI
 
+from urllib.parse import quote as urlencode
+
 class Env:
-    def __init__(self, repl=False):
-        self.g = rdflib.Graph()
+    def __init__(self, repl=False, filename=None):
+
         self.interactive_mode = repl
 
-        ## TODO: make these env-specific and 'hard-to-clash'
-        self.default_namespace = rdflib.Namespace('file://rdfscript.env.sbol/')
-        self.env_namespace     = rdflib.Namespace('file://rdfscript.env.sbol/')
-        self.assign_predicate  = self.env_namespace['expandsTo']
+        self.rdf = RuntimeGraph('file://rdfscript.env/')
 
-        self.g.bind('rdfscript', self.env_namespace)
-
-    def get_default_namespace(self):
-        return self.default_namespace
-
-    def get_env_namespace(self):
-        return self.env_namespace
-
-    def get_assignment_uri(self):
-        return self.assign_predicate
 
     def bind_prefix(self, prefix, uri):
-        self.g.bind(prefix, uri)
+        return self.rdf.bind_prefix(prefix, uri)
 
-    def get_ns_for_prefix(self, prefix):
-        namespaces = self.g.namespaces()
+    def assign(self, identifier, value):
 
-        matching = [n for (p, n) in namespaces if p == prefix]
+        ## TODO: type checking
+        self.rdf.add(identifier, self.rdf.expansion_predicate, value)
 
-        if len(matching) == 1:
-            return rdflib.Namespace(matching[0])
-        else:
-            return None
+    def resolve_name(self, name, prefix=None):
 
-    def add_triple(self, s, p, o):
-        self.g.add( (s, p, o) )
+        ns = self.rdf.ns_for_prefix(prefix)
+        ## TODO: type checking?
 
-    def symbol_lookup(self, name):
-        value = self.symbol_table.get(name, None)
-        if not value:
-            return name
-        else:
-            return value
+        return rdflib.URIRef(ns[urlencode(name)])
 
     def interpret(self, forms):
         result = None
@@ -67,5 +49,39 @@ class Env:
 
 class RuntimeGraph:
 
-    def __init__(self):
-        pass
+    def __init__(self, env_ns):
+
+        self.g = rdflib.Graph()
+
+        self.default_ns = rdflib.Namespace(env_ns)
+        self.env_ns     = rdflib.Namespace(env_ns)
+        self.g.bind('rdfscript', self.env_ns)
+
+        self.expansion_predicate = self.env_ns['expandsTo']
+
+    def add(self, s, p, o):
+
+        self.g.add((s, p, o))
+
+    def bind_prefix(self, prefix, uri):
+
+        ## what if already bound?
+        self.g.bind(prefix, uri)
+        return prefix
+
+    def ns_for_prefix(self, prefix):
+
+        if not prefix:
+            return self.default_ns
+        else:
+            namespaces = self.g.namespaces()
+            matching = [n for (p, n) in namespaces if p == prefix]
+
+            if len(matching) == 1:
+                return rdflib.Namespace(matching[0])
+            else:
+                ## TODO: actually indicate an error
+                return None
+
+    def serialise(self):
+        return self.g.serialize(format='turtle')

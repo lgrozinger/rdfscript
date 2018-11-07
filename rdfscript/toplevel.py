@@ -62,11 +62,14 @@ class Assignment(ScriptObject):
 
     def evaluate(self, env):
 
-        assignment_predicate = env.get_assignment_uri()
+        env.assign(self.identifier.evaluate(env),
+                   self.value.evaluate(env))
 
-        env.add_triple(self.identifier.evaluate(env),
-                       assignment_predicate,
-                       self.value.evaluate(env))
+        # assignment_predicate = env.get_assignment_uri()
+
+        # env.add_triple(self.identifier.evaluate(env),
+        #                assignment_predicate,
+        #                self.value.evaluate(env))
 
         return self.value.evaluate(env)
 

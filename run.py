@@ -49,7 +49,7 @@ def rdf_repl():
         forms = p.parse(s, lexer=r)
         print(e.interpret(forms))
 
-    print(e.g.serialize(format='xml'))
+    print("%s\n" % e.rdf.serialise().decode('utf-8'))
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
