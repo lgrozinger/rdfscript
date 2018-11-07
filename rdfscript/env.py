@@ -19,13 +19,11 @@ class Env:
 
     def assign(self, identifier, value):
 
-        ## TODO: type checking
         self.rdf.add(identifier, self.rdf.expansion_predicate, value)
 
     def resolve_name(self, name, prefix=None):
 
         ns = self.rdf.ns_for_prefix(prefix)
-        ## TODO: type checking?
 
         return rdflib.URIRef(ns[urlencode(name)])
 
@@ -38,7 +36,6 @@ class Env:
         return result
 
     def rt_error(self, form):
-        # TODO: better, cleaner error handling and reporting
         if self.interactive_mode or not form.lineno:
             print("ERROR: unexpected object %s"
                   % form)
@@ -65,7 +62,6 @@ class RuntimeGraph:
 
     def bind_prefix(self, prefix, uri):
 
-        ## what if already bound?
         self.g.bind(prefix, uri)
         return prefix
 
