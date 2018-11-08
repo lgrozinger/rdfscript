@@ -62,7 +62,7 @@ class Assignment(ScriptObject):
 
     def evaluate(self, env):
 
-        env.assign(self.identifier.evaluate(env),
+        env.assign(self.identifier.resolve(env),
                    self.value.evaluate(env))
 
         # assignment_predicate = env.get_assignment_uri()

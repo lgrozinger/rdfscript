@@ -21,11 +21,23 @@ class Env:
 
         self.rdf.add(identifier, self.rdf.expansion_predicate, value)
 
+    def lookup(self, identifier):
+
+        expansions = self.rdf.get_expansions(identifier)
+
+        if len(expansions) > 1:
+            ## this is an error condition
+            raise SyntaxError("Multiple expansions found for identifier.")
+        elif len(expansions) == 0:
+            return None
+        else:
+            return expansions[0]
+
     def resolve_name(self, name, prefix=None):
 
         ns = self.rdf.ns_for_prefix(prefix)
 
-        return rdflib.URIRef(ns[urlencode(name)])
+        return rdflib.URIRef(ns[name])
 
     def interpret(self, forms):
         result = None
@@ -78,6 +90,12 @@ class RuntimeGraph:
             else:
                 ## TODO: actually indicate an error
                 return None
+
+    def get_expansions(self, identifier):
+
+        return [o for (s, p, o) in (self.g.triples((identifier,
+                                    self.expansion_predicate,
+                                    None)))]
 
     def serialise(self):
         return self.g.serialize(format='turtle')
