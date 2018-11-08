@@ -134,7 +134,7 @@ def p_tpeconstructor_noargs(p):
     '''tpeconstructor : identifier'''
 
 def p_tpeconstructorstar(p):
-    '''tpeconstructor : '*' '''
+    '''tpeconstructor : empty'''
     pass
 
 def p_indentedinstancebody(p):
@@ -159,7 +159,7 @@ def p_bodystatement(p):
 
 # infixassigment breaks the parser, since it causes SR conflict with
 # assignment (resolved by default with shift, which is almost always
-# the wrong thing to do)
+# the wrong thing to do in ShortBOL's case)
 
 # def p_infixassignment(p):
 #     '''infixassigment : identifier '=' infixconstructorapp'''

@@ -22,7 +22,7 @@ from rdfscript.pragma import (ImportPragma,
 class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = yacc.yacc(module=parser)
+        self.parser = yacc.yacc(module=parser, debug=False)
         self.reader = leex.lex(module=reader)
         self.reader.at_line_start = True
         self.reader.indent_stack = [0]
@@ -170,7 +170,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         self.assertEqual(form_type, [self.prefix_type])
 
-    @unittest.skip("Do not understand this file (xml.sbol)")
+    @unittest.skip("Even the ShortBOL1.0 sandbox cannot parse this file.")
     def test_parse_xml_sbol_file(self):
         with open("test/parser/example-files/xml.sbol", 'r') as in_file:
             data = in_file.read()

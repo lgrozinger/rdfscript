@@ -13,7 +13,7 @@ class URI(Identifier):
     def __init__(self, quoted_uri, line_num):
         super().__init__(line_num)
 
-        self.uri = urlencode(quoted_uri)
+        self.uri = quoted_uri
 
     def __eq__(self, other):
         return (type(self) == type(other) and
@@ -39,10 +39,20 @@ class LocalName(Identifier):
     def __repr__(self):
         return format("(LOCALNAME: %s)" % self.name)
 
-    def evaluate(self, env):
-        namespace = env.get_default_namespace()
+    def resolve(self, env):
 
-        return rdflib.URIRef(namespace[urlencode(self.name)])
+        uri = env.resolve_name(self.name)
+        uri.n3()
+
+        return uri
+
+    def evaluate(self, env):
+
+        ## here is lookup
+        uri = self.resolve(env)
+
+        return env.lookup(uri)
+
 
 ## as in RDF/XML QName
 ## evaluates to a rdflib.URIRef
@@ -64,14 +74,15 @@ class QName(Identifier):
     def __repr__(self):
         return format("QNAME: %s : %s" % (self.prefix, self.localname))
 
-    def evaluate(self, env):
+    def resolve(self, env):
 
-        namespace = env.get_ns_for_prefix(self.prefix)
-
-        if not namespace:
-            return namespace
-
-        uri = rdflib.term.URIRef(namespace[self.localname])
+        uri = env.resolve_name(self.localname, prefix=self.prefix)
         uri.n3()
 
         return uri
+
+    def evaluate(self, env):
+
+        uri = self.resolve(env)
+
+        return env.lookup(uri)

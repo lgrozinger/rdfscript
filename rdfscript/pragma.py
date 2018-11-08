@@ -21,9 +21,7 @@ class PrefixPragma(ScriptObject):
     def evaluate(self, env):
 
         prefixuri = self.uri.evaluate(env)
-        env.bind_prefix(self.prefix, prefixuri)
-
-        return env.get_ns_for_prefix(self.prefix)
+        return env.bind_prefix(self.prefix, prefixuri)
 
 class DefaultPrefixPragma(ScriptObject):
 
