@@ -77,6 +77,7 @@ class ConstructorDef(ScriptObject):
 
         self.identifier = identifier
         self.body = body
+        self.root_node = rdflib.BNode()
 
     def __eq__(self, other):
         return (type(self) == type(other) and
@@ -95,7 +96,7 @@ class ConstructorDef(ScriptObject):
         return rdflib.URIRef(self.template_uri(env)['parameter/' + name])
 
     def param_triple(self, param, env):
-        return (rdflib.URIRef(self.template_ns(env)),
+        return (self.root_node,
                 self.param_uri(self.template_ns(env), param),
                 self.params[param])
 
@@ -110,7 +111,7 @@ class ConstructorDef(ScriptObject):
 
     def property_triple(self, assignment, env):
 
-        s = rdflib.URIRef(self.template_ns(env))
+        s = self.root_node
         p = None
         o = None
 

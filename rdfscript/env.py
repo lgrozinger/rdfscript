@@ -2,6 +2,8 @@ import rdflib
 import sys
 
 import rdfscript.toplevel
+import rdfscript.core
+
 from rdfscript.identifier import URI
 
 from urllib.parse import quote as urlencode
@@ -16,6 +18,17 @@ class Env:
 
     def bind_prefix(self, prefix, uri):
         return self.rdf.bind_prefix(prefix, uri)
+
+    def set_default_prefix(self, prefix):
+
+        ns = self.rdf.ns_for_prefix(prefix)
+
+        if not ns:
+            # error condition
+            return None
+        else:
+            self.rdf.default_ns = ns
+            return prefix
 
     def assign(self, identifier, value):
 
@@ -43,6 +56,12 @@ class Env:
 
         for triple in template_as_triples:
             self.rdf.add(triple)
+
+    def get_template_instance(self, instance_id, template_id):
+
+        template_graph = self.rdf.get_subgraph(template_id)
+
+
 
     def interpret(self, forms):
         result = None
@@ -101,6 +120,7 @@ class RuntimeGraph:
         return [o for (s, p, o) in (self.g.triples((identifier,
                                     self.expansion_predicate,
                                     None)))]
+
 
     def serialise(self):
         return self.g.serialize(format='turtle')
