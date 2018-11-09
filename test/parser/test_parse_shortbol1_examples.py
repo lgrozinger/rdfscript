@@ -34,7 +34,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         self.import_type = type(ImportPragma('', 0))
         self.defaultprefix_type = type(DefaultPrefixPragma('', 0))
         self.assignment_type = type(Assignment('', '', 0))
-        self.constructordef_type = type(ConstructorDef('', '', 0))
+        self.constructordef_type = type(ConstructorDef('', '', '', '', 0))
 
     def tearDown(self):
         None

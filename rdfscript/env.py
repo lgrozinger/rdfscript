@@ -39,6 +39,11 @@ class Env:
 
         return rdflib.URIRef(ns[name])
 
+    def put_template(self, template_as_triples):
+
+        for triple in template_as_triples:
+            self.rdf.add(triple)
+
     def interpret(self, forms):
         result = None
 

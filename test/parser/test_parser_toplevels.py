@@ -37,9 +37,13 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script, lexer=self.reader, debug=self.log)
 
         self.assertEqual(forms,
-                         [ConstructorDef(LocalName('DNASequence', 1),
-                                         [LocalName('x', 1)], 1)])
-
+                         [ConstructorDef(LocalName('Sequence', 1),
+                                         LocalName('DNASequence', 1),
+                                         [LocalName('x', 1)],
+                                         [Assignment(LocalName('encoding', 1),
+                                                     URI('SBOL:IUPACDNA', 1),
+                                                     1)],
+                                         1)])
 
 if __name__ == '__main__':
     unittest.main()

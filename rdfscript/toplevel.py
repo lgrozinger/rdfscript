@@ -65,33 +65,87 @@ class Assignment(ScriptObject):
         env.assign(self.identifier.resolve(env),
                    self.value.evaluate(env))
 
-        # assignment_predicate = env.get_assignment_uri()
-
-        # env.add_triple(self.identifier.evaluate(env),
-        #                assignment_predicate,
-        #                self.value.evaluate(env))
-
         return self.value.evaluate(env)
 
 class ConstructorDef(ScriptObject):
 
-    def __init__(self, identifier, args, linenum):
+    def __init__(self, base, identifier, param_names, body, linenum):
         super().__init__(linenum)
+        self.params = dict([(localname.name, rdflib.BNode())
+                            for localname
+                            in param_names])
 
         self.identifier = identifier
-        self.args       = args
+        self.body = body
 
     def __eq__(self, other):
         return (type(self) == type(other) and
                 self.identifier == other.identifier and
-                self.args == other.args)
+                self.params == other.params and
+                self.body == other.body)
 
     def __repr__(self):
         return format("CONSTRUCTORDEF: (%s, with args: %s)" %
-                      (self.identifier, self.args))
+                      (self.identifier, self.params))
+
+    def template_ns(self, env):
+        return rdflib.Namespace(self.identifier.resolve(env))
+
+    def param_uri(self, name, env):
+        return rdflib.URIRef(self.template_uri(env)['parameter/' + name])
+
+    def param_triple(self, param, env):
+        return (rdflib.URIRef(self.template_ns(env)),
+                self.param_uri(self.template_ns(env), param),
+                self.params[param])
+
+    def body_triple(self, form):
+
+        if type(form) == type(Assignment(None, None, 0)):
+            return self.property_triple(form, env)
+        elif type(form) == type(InstanceExp(None, None, 0)):
+            return None
+        else:
+            return None
+
+    def property_triple(self, assignment, env):
+
+        s = rdflib.URIRef(self.template_ns(env))
+        p = None
+        o = None
+
+        # check for parameters in the assignment identifier
+        if (type(assignment.identifier)==type(LocalName(None,None,0))
+            and assignment.identifier.name in self.params):
+
+            ## then the predicate points to a parameter
+            p = self.params[assignment.identifier.name]
+        else:
+            p = assignment.identifier.evaluate(env)
+            if not p:
+                p = assignment.identifier.resolve(env)
+
+        # check for parameters in the assignment value
+        if (type(assignment.value)==type(LocalName(None,None,0))
+            and assignment.value.name in self.params):
+
+            ## then the object points to a parameter
+            o = self.params[assignment.value.name]
+        else:
+            o = assignment.identifier.resolve(env)
+
+        return (s, p, o)
 
     def evaluate(self, env):
-        pass
+
+        param_triples = [self.param_triple(param, env) for param in self.params]
+
+        body_triples = [self.body_triple(form) for form in self.body]
+
+        env.put_template(param_triples + body_triples)
+
+        return self.template_ns(env)
+
 
 class InstanceExp(ScriptObject):
 

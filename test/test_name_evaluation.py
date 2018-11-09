@@ -71,7 +71,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         uri = rdflib.URIRef('http://eg.org/UnboundSymbol')
 
         env.interpret(forms)
-        
+
         self.assertEqual(forms[1].resolve(env), uri)
 
     def test_evaluate_qname_not_bound(self):
