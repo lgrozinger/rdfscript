@@ -3,21 +3,7 @@ import logging
 import ply.yacc as yacc
 import ply.lex as leex
 
-import rdfscript.parser as parser
-import rdfscript.reader as reader
-
-from rdfscript.toplevel import (TripleObject,
-                                ConstructorDef,
-                                Assignment,
-                                InstanceExp)
-
-from rdfscript.identifier import URI, QName, LocalName
-
-from rdfscript.literal import Literal
-
-from rdfscript.pragma import (ImportPragma,
-                              PrefixPragma,
-                              DefaultPrefixPragma)
+import parser
 
 class ParseShortBOL1ExamplesTest(unittest.TestCase):
 

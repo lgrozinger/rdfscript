@@ -1,46 +1,34 @@
 import unittest
 import logging
-import ply.yacc as yacc
-import ply.lex as leex
 
-import rdfscript.parser as parser
-import rdfscript.reader as reader
-
-from rdfscript.toplevel import TripleObject
-from rdfscript.identifier import URI, QName, LocalName
-from rdfscript.literal import Literal
+import rdfscript
+from parser import RDFScriptParser
 
 class ParserIdentifierTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = yacc.yacc(module=parser, debug=False)
-        self.reader = leex.lex(module=reader)
-        self.reader.at_line_start = True
-        self.reader.indent_stack = [0]
+        self.parser = RDFScriptParser()
 
     def tearDown(self):
         None
 
     def test_parser_uri(self):
         script = "<http://uri.org/>"
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse(script)
 
-        self.assertEqual(forms, [URI('http://uri.org/', 1)])
+        self.assertEqual(forms, [Uri('http://uri.org/', None)])
 
     def test_parser_qname(self):
         script = 'Prefix.LocalName'
-        forms = self.parser.parse(script, lexer=self.reader)
+        forms = self.parser.parse(script)
 
-        prefix = 'Prefix'
-        localname = 'LocalName'
-
-        self.assertEqual(forms, [QName(prefix, localname, 1)])
+        self.assertEqual(forms, [Name('Prefix', 'LocalName', None)])
 
     def test_parser_localname(self):
         script = 'localName'
-        forms = self.parser.parse(script, lexer=self.reader)
+        forms = self.parser.parse(script)
 
-        self.assertEqual(forms, [LocalName('localName', 1)])
+        self.assertEqual(forms, [Name(None, 'localName', None)])
 
 
 if __name__ == '__main__':

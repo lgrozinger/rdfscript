@@ -1,15 +1,42 @@
 import rdflib
 
-class Name:
+class Node:
+
+    def __init__(self, location):
+
+        self._location = location
+
+    @property
+    def location(self):
+        return self._location
+
+    @property
+    def line(self):
+        return self._location.position.line
+
+    @property
+    def col(self):
+        return self._location.position.col
+
+    @property
+    def position(self):
+        return self._location.position
+
+    @property
+    def file(self):
+        return self._location.filename
+
+class Name(Node):
     """Env's abstraction of a identifier node in the RDF graph."""
 
-    def __init__(self, prefix, localname):
+    def __init__(self, prefix, localname, location):
 
+        super().__init__(location)
         self._prefix = prefix
-        self._localname = LocalName
+        self._localname = localname
 
     def __eq__(self, other):
-        return (type(self) == type(other) and
+        return (isinstance(other, Name) and
                 self.prefix == other.prefix and
                 self.localname == other.localname)
 
@@ -36,6 +63,24 @@ class Name:
         else:
             return rdflib.URIRef(matching_namespaces[0])
 
+class Uri(Node):
+    """Env's abstraction of a URI"""
+
+    def __init__(self, uri, location):
+
+        super().__init__(location)
+        self._uri = uri
+
+    def __eq__(self, other):
+        return (isinstance(other, Uri) and
+                self.uri == other.uri)
+
+    def __repr__(self):
+        return format("<RDFscript URI: %s>" % self._python_val)
+
+    def as_uriref(self):
+        return rdflib.URIRef(self._uri)
+
 class Value:
     """Env's abstraction of a literal node in the RDF graph."""
 
@@ -44,10 +89,11 @@ class Value:
         self._python_val = python_literal
 
     def __eq__(self, other):
-        return self._python_val == other._python_val
+        return (isinstance(other, Value) and
+                self.as_pythonval == other.as_pythonval)
 
     def __repr__(self):
-        return format("<RDFscript VALUE: %s>" % self._python_val)
+        return format("<RDFscript VALUE: %s>" % self.as_pythonval())
 
     def as_pythonval(self):
 
@@ -74,11 +120,11 @@ class Parameter:
         return self._binding
 
     def __eq__(self, other):
-        return (isParameter(other) and
-                self._param_name == other._param_name)
+        return (isinstance(other, Parameter) and
+                self.name == other.name)
 
     def __repr__(self):
-        return format("<RDFscript VALUE: %s>" % self._python_val)
+        return format("<RDFscript PARAMETER: %s>" % self.name)
 
     def as_rdfbnode(self):
         return self._binding
@@ -126,7 +172,7 @@ class Template:
         return self._body
 
     def __eq__(self, other):
-        return (isTemplate(other) and
+        return (isinstance(other, Template) and
                 self._name == other.name and
                 self._parameters == other.parameters and
                 self._base_template == other.base_template and
@@ -164,21 +210,3 @@ class Template:
 
         triples = self.base_template.as_instance(instance_name,
                                                  self._base_parameters)
-
-
-## Help with core objects
-def isName(possibleName):
-
-    return isinstance(possibleName, Name)
-
-def isValue(possibleValue):
-
-    return isinstance(possibleValue, Value)
-
-def isParameter(possibleParameter):
-
-    return isinstance(possibleParameter, Parameter)
-
-def isTemplate(possibleTemplate):
-
-    return isinstance(possibleTemplate, Template)

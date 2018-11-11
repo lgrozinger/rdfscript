@@ -1,19 +1,15 @@
-import ply.yacc as parser
+import ply.yacc as yacc
+import ply.lex as lex
 
-from rdfscript.toplevel import (TripleObject,
-                                Assignment,
-                                ConstructorDef,
-                                InstanceExp)
+from . import reader
+from .reader import tokens
 
-from rdfscript.literal import Literal
-
-from rdfscript.identifier import QName, LocalName, URI
-
-from rdfscript.pragma import (PrefixPragma,
-                              ImportPragma,
-                              DefaultPrefixPragma)
-
-from rdfscript.reader import tokens
+from .core import (Uri,
+                   Name,
+                   Value)
+from .pragma import (PrefixPragma,
+                     DefaultPrefixPragma,
+                     ImportPragma)
 
 def p_toplevels(p):
     '''toplevels : toplevel toplevels'''
@@ -27,16 +23,16 @@ def p_toplevel_types(p):
     '''toplevel : expr
                 | assignment
                 | pragma
-                | constructordef
+                | expansion
                 | instanceexp'''
     p[0] = p[1]
 
-def p_constructordef(p):
-    '''constructordef : identifier '(' identifierlist ')' RARROW prefixconstructorapp'''
+def p_expansion(p):
+    '''expansion : identifier '(' identifierlist ')' RARROW prefixconstructorapp'''
     p[0] = ConstructorDef(None, p[1], p[3], [], p.lineno)
 
-def p_constructordef_noargs(p):
-    '''constructordef : identifier RARROW prefixconstructorapp'''
+def p_expansion_noargs(p):
+    '''expansion : identifier RARROW prefixconstructorapp'''
     p[0] = ConstructorDef(None, p[1], [], [], p.lineno)
 
 def p_instanceexp(p):
@@ -103,8 +99,7 @@ def p_not_empty_identifierlist_n(p):
 
 def p_qname(p):
     '''qname : SYMBOL '.' SYMBOL'''
-    l = p.lineno
-    p[0] = QName(p[1], p[3], l)
+    p[0] = Name(p[1], p[3], location(p))
 
 def p_literal(p):
     '''literal : INTEGER
@@ -115,12 +110,11 @@ def p_literal(p):
 
 def p_localname(p):
     '''localname : SYMBOL'''
-    l = p.lineno
-    p[0] = LocalName(p[1], l)
+    p[0] = Name(None, p[1], location(p))
 
 def p_uri(p):
     '''uri : URI'''
-    p[0] = URI(p[1], p.lineno)
+    p[0] = Uri(p[1], location(p))
 
 def p_prefixconstructorapp(p):
     '''prefixconstructorapp : tpeconstructor indentedinstancebody'''
@@ -189,3 +183,60 @@ def p_error(p):
         print("Syntax error!: the offending token is '%s' on line %d"
               % (p.value, p.lineno))
 
+def location(p):
+    pos = Position(p.lineno, p.lexpos)
+    return Location(pos, p.parser.filename)
+
+class RDFScriptParser:
+
+    def __init__(self, debug=False, scanner=reader, filename=None):
+
+        self.scanner = lex.lex(module=scanner)
+        self.scanner.at_line_start = True
+        self.scanner.indent_stack  = [0]
+
+        self.parser = yacc.yacc(debug=debug)
+        self.parser.filename = filename
+
+    def parse(self, script):
+
+        return self.parser.parse(script, lexer=self.scanner)
+
+    def reset(self):
+
+        self.scanner.at_line_start = True
+        self.scanner.indent_stack  = [0]
+
+class Position:
+
+    def __init__(self, line, col):
+
+        self._line = line
+        self._col  = col
+
+    @property
+    def line(self):
+        return self._line
+
+    @property
+    def col(self):
+        return self._col
+
+class Location:
+
+    def __init__(self, position, filename=None):
+
+        self._position = position
+
+        if not filename:
+            self._filename = "REPL"
+        else:
+            self._filename = filename
+
+    @property
+    def position(self):
+        return self._position
+
+    @property
+    def filename(self):
+        return self._filename

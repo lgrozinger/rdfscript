@@ -4,30 +4,19 @@ import ply.yacc as yacc
 import ply.lex as leex
 import rdflib
 
-import rdfscript.parser as parser
-import rdfscript.reader as reader
-
+from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
-
-from rdfscript.toplevel import TripleObject
-from rdfscript.identifier import URI, QName, LocalName
-from rdfscript.literal import Literal
 
 class RuntimeIdentifierTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = yacc.yacc(module=parser, debug=False)
-        self.reader = leex.lex(module=reader)
-        self.reader.at_line_start = True
-        self.reader.indent_stack = [0]
+        self.parser = RDFScriptParser()
 
     def tearDown(self):
         None
 
     def test_resolve_localname(self):
-
-        script = "UnboundSymbol"
-        forms = self.parser.parse(script, lexer=self.reader)
+        forms = self.parser.parse("UnboundSymbol")
 
         env = Env()
 
@@ -37,9 +26,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         self.assertEqual(forms[0].resolve(env), uri)
 
     def test_evaluate_localname_not_bound(self):
-
-        script = "UnboundSymbol"
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse("UnboundSymbol")
 
         env = Env()
 
@@ -51,7 +38,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         script = (f"X=\"value\"\n"
                   f"X")
 
-        forms = self.parser.parse(script, lexer=self.reader)
+        forms = self.parser.parse(script)
 
         env = Env()
 
@@ -64,7 +51,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         script = (f"@prefix p <http://eg.org/>\n"
                   f"p.UnboundSymbol")
 
-        forms = self.parser.parse(script, lexer=self.reader)
+        forms = self.parser.parse(script)
 
         env = Env()
 
@@ -79,7 +66,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         script = (f"@prefix p <http://eg.org/>\n"
                   f"p.UnboundSymbol")
 
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse(script)
 
         env = Env()
 
@@ -92,7 +79,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
                   f"p.X=\"value\"\n"
                   f"p.X")
 
-        forms = self.parser.parse(script, lexer=self.reader)
+        forms = self.parser.parse(script)
 
         env = Env()
 
