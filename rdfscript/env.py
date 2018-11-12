@@ -4,6 +4,8 @@ import sys
 import rdfscript.toplevel
 import rdfscript.core
 
+from .evaluate import evaluate
+
 from rdfscript.identifier import URI
 
 from urllib.parse import quote as urlencode
@@ -61,13 +63,11 @@ class Env:
 
         template_graph = self.rdf.get_subgraph(template_id)
 
-
-
     def interpret(self, forms):
         result = None
 
         for form in forms:
-            result = form.evaluate(self)
+            result = evaluate(form, self)
 
         return result
 

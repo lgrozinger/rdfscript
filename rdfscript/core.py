@@ -81,11 +81,12 @@ class Uri(Node):
     def as_uriref(self):
         return rdflib.URIRef(self._uri)
 
-class Value:
+class Value(Node):
     """Env's abstraction of a literal node in the RDF graph."""
 
-    def __init__(self, python_literal):
+    def __init__(self, python_literal, location):
 
+        super().__init__(location)
         self._python_val = python_literal
 
     def __eq__(self, other):

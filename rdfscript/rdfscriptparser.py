@@ -7,9 +7,12 @@ from .reader import tokens
 from .core import (Uri,
                    Name,
                    Value)
+
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
                      ImportPragma)
+
+from .templating import Assignment
 
 def p_toplevels(p):
     '''toplevels : toplevel toplevels'''
@@ -41,23 +44,23 @@ def p_instanceexp(p):
 
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL expr'''
-    p[0] = PrefixPragma(p[2], p[3], p.lineno)
+    p[0] = PrefixPragma(p[2], p[3], location)
 
 def p_defaultprefix_pragma(p):
     '''pragma : DEFAULTPREFIX identifier'''
-    p[0] = DefaultPrefixPragma(p[2], p.lineno)
+    p[0] = DefaultPrefixPragma(p[2], location(p))
 
 def p_pragma_import(p):
     '''pragma : IMPORT expr'''
-    p[0] = ImportPragma(p[2], p.lineno)
+    p[0] = ImportPragma(p[2], location(p))
 
 def p_assignment(p):
     '''assignment : identifier '=' expr'''
-    p[0] = Assignment(p[1], p[3], p.lineno)
+    p[0] = Assignment(p[1], p[3], location(p))
 
 # def p_triple(p):
 #     '''triple : identifier identifier expr'''
-#     p[0] = TripleObject(p[1], p[2], p[3], p.lineno)
+#     p[0] = TripleObject(p[1], p[2], p[3], location(p))
 
 
 def p_expr(p):
@@ -106,7 +109,7 @@ def p_literal(p):
                | STRING
                | DOUBLE
                | BOOLEAN'''
-    p[0] = Literal(p[1], p.lineno)
+    p[0] = Value(p[1], location(p))
 
 def p_localname(p):
     '''localname : SYMBOL'''
@@ -181,7 +184,7 @@ def p_error(p):
         pass
     else:
         print("Syntax error!: the offending token is '%s' on line %d"
-              % (p.value, p.lineno))
+              % (p.value, location(p)))
 
 def location(p):
     pos = Position(p.lineno, p.lexpos)

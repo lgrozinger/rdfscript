@@ -4,8 +4,7 @@ import ply.yacc as yacc
 import ply.lex as leex
 import logging
 
-import rdfscript.parser as parser
-import rdfscript.reader as reader
+from rdfscript.rdfscriptparser import RDFScriptParser
 
 from rdfscript.toplevel import TripleObject, Assignment, ConstructorDef
 from rdfscript.identifier import URI, QName, LocalName
@@ -14,18 +13,14 @@ from rdfscript.literal import Literal
 class ParserTopLevelTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = yacc.yacc(module=parser, debug=False)
-        self.reader = leex.lex(module=reader)
-        self.reader.at_line_start = True
-        self.reader.indent_stack = [0]
-        self.log = logging.getLogger()
+        self.parser = RDFScriptParser()
 
     def tearDown(self):
         None
 
     def test_assignment(self):
         script = 'Identifier = "hello"'
-        forms  = self.parser.parse(script, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
                          [Assignment(LocalName('Identifier', 1),
@@ -34,7 +29,7 @@ class ParserTopLevelTest(unittest.TestCase):
 
     def test_constructordef_onearg(self):
         script = 'DNASequence(x) => Sequence\n  encoding = <SBOL:IUPACDNA>'
-        forms  = self.parser.parse(script, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
                          [ConstructorDef(LocalName('Sequence', 1),

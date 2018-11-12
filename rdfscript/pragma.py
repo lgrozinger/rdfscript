@@ -26,11 +26,6 @@ class PrefixPragma(Node):
     def uri(self):
         return self._uri
 
-    def evaluate(self, env):
-
-        prefixuri = self.uri.evaluate(env)
-        return env.bind_prefix(self.prefix, prefixuri)
-
 class DefaultPrefixPragma(Node):
 
     def __init__(self, prefix, location):
@@ -49,10 +44,6 @@ class DefaultPrefixPragma(Node):
     def prefix(self):
         return self._prefix
 
-    def evaluate(self, env):
-
-        return None
-
 class ImportPragma(Node):
 
     def __init__(self, target, location):
@@ -70,7 +61,3 @@ class ImportPragma(Node):
     @property
     def target(self):
         return self._target
-
-    def evaluate(self, env):
-
-        return None

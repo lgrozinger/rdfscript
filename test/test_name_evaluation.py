@@ -6,6 +6,10 @@ import rdflib
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
+from rdfscript.core import (Name,
+                            Uri,
+                            Value)
+from rdfscript.evaluate import evaluate
 
 class RuntimeIdentifierTest(unittest.TestCase):
 
@@ -15,15 +19,17 @@ class RuntimeIdentifierTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    def test_resolve_localname(self):
+    def test_env_resolve_localname(self):
         forms = self.parser.parse("UnboundSymbol")
 
         env = Env()
 
         uri = rdflib.URIRef('file://rdfscript.env/UnboundSymbol')
 
-        self.assertEqual(forms, [LocalName('UnboundSymbol', 1)])
-        self.assertEqual(forms[0].resolve(env), uri)
+        self.assertEqual(forms, [Name(None, 'UnboundSymbol', None)])
+        self.assertEqual(env.resolve_name(forms[0].localname,
+                                          prefix=forms[0].prefix),
+                         uri)
 
     def test_evaluate_localname_not_bound(self):
         forms  = self.parser.parse("UnboundSymbol")
@@ -59,7 +65,9 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
         env.interpret(forms)
 
-        self.assertEqual(forms[1].resolve(env), uri)
+        self.assertEqual(env.resolve_name(forms[1].localname,
+                                          prefix=forms[1].prefix),
+                         uri)
 
     def test_evaluate_qname_not_bound(self):
 
