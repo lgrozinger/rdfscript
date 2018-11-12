@@ -78,6 +78,10 @@ class Uri(Node):
     def __repr__(self):
         return format("<RDFscript URI: %s>" % self._python_val)
 
+    @property
+    def uri(self):
+        return self._uri
+    
     def as_uriref(self):
         return rdflib.URIRef(self._uri)
 
@@ -91,7 +95,7 @@ class Value(Node):
 
     def __eq__(self, other):
         return (isinstance(other, Value) and
-                self.as_pythonval == other.as_pythonval)
+                self.as_pythonval() == other.as_pythonval())
 
     def __repr__(self):
         return format("<RDFscript VALUE: %s>" % self.as_pythonval())

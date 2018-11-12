@@ -6,9 +6,8 @@ import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
-from rdfscript.toplevel import TripleObject, Assignment, ConstructorDef
-from rdfscript.identifier import URI, QName, LocalName
-from rdfscript.literal import Literal
+from rdfscript.core import Name, Value
+from rdfscript.templating import Assignment
 
 class ParserTopLevelTest(unittest.TestCase):
 
@@ -23,10 +22,11 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
-                         [Assignment(LocalName('Identifier', 1),
-                                     Literal("hello", 1),
-                                     1)])
+                         [Assignment(Name(None, 'Identifier', None),
+                                     Value("hello", None),
+                                     None)])
 
+    @unittest.skip("Templates not implemented yet.")
     def test_constructordef_onearg(self):
         script = 'DNASequence(x) => Sequence\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)

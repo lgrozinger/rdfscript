@@ -3,48 +3,42 @@ import logging
 import ply.yacc as yacc
 import ply.lex as leex
 
-import rdfscript.parser as parser
-import rdfscript.reader as reader
+from rdfscript.rdfscriptparser import RDFScriptParser
 
-from rdfscript.literal import Literal
+from rdfscript.core import Value
 
 class ParserLiteralTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = yacc.yacc(module=parser, debug=False)
-        self.reader = leex.lex(module=reader)
-        self.reader.at_line_start = True
-        self.reader.indent_stack = [0]
+        self.parser = RDFScriptParser()
 
     def tearDown(self):
         None
 
     def test_parser_literal_boolean(self):
-        script = 'true false'
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse('true false')
 
-        self.assertEqual(forms, [Literal('true', 1), Literal('false', 1)])
+        self.assertEqual(forms, [Value('true', None),
+                                 Value('false', None)])
 
     def test_parser_literal_double(self):
-        script = '0.12345'
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse('0.12345')
 
-        self.assertEqual(forms, [Literal(0.12345, 1)])
+        self.assertEqual(forms, [Value(0.12345, None)])
 
     def test_parser_literal_integer(self):
-        script = '12345'
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse('12345')
 
-        self.assertEqual(forms, [Literal(12345, 1)])
+        self.assertEqual(forms, [Value(12345, None)])
 
     def test_parser_literal_integer(self):
         script = '-12345'
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse('-12345')
 
-        self.assertEqual(forms, [Literal(-12345, 1)])
+        self.assertEqual(forms, [Value(-12345, None)])
 
     def test_parser_literal_string(self):
         script = '"string with whitespace"'
-        forms  = self.parser.parse(script, lexer=self.reader)
+        forms  = self.parser.parse(script)
 
-        self.assertEqual(forms, [Literal("string with whitespace", 1)])
+        self.assertEqual(forms, [Value("string with whitespace", None)])

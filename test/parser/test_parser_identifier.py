@@ -1,8 +1,9 @@
 import unittest
 import logging
 
-import rdfscript
-from parser import RDFScriptParser
+from rdfscript.rdfscriptparser import RDFScriptParser
+
+from rdfscript.core import Uri, Name
 
 class ParserIdentifierTest(unittest.TestCase):
 

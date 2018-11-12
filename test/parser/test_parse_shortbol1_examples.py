@@ -3,24 +3,29 @@ import logging
 import ply.yacc as yacc
 import ply.lex as leex
 
-import parser
+from rdfscript.rdfscriptparser import RDFScriptParser
+
+from rdfscript.pragma import (PrefixPragma,
+                              DefaultPrefixPragma,
+                              ImportPragma)
+
+from rdfscript.templating import Template, Assignment
+
+## old tree
+from rdfscript.toplevel import InstanceExp
 
 class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = yacc.yacc(module=parser, debug=False)
-        self.reader = leex.lex(module=reader)
-        self.reader.at_line_start = True
-        self.reader.indent_stack = [0]
-        self.log = logging.getLogger()
+        self.parser = RDFScriptParser()
 
         ## types of toplevel AST node
-        self.instanceexp_type = type(InstanceExp('', '', 0))
-        self.prefix_type = type(PrefixPragma('', '', 0))
-        self.import_type = type(ImportPragma('', 0))
-        self.defaultprefix_type = type(DefaultPrefixPragma('', 0))
-        self.assignment_type = type(Assignment('', '', 0))
-        self.constructordef_type = type(ConstructorDef('', '', '', '', 0))
+        self.instanceexp_type = type(InstanceExp(None, None, None))
+        self.prefix_type = type(PrefixPragma(None, None, None))
+        self.import_type = type(ImportPragma(None, None))
+        self.defaultprefix_type = type(DefaultPrefixPragma(None, None))
+        self.assignment_type = type(Assignment(None, None, None))
+        self.template_type = type(Template(None, [], None, None))
 
     def tearDown(self):
         None
@@ -31,7 +36,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/rdf.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -43,7 +48,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/owl.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -59,7 +64,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/biopax.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -71,7 +76,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/chebi.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -84,7 +89,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/dc.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -96,7 +101,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/edam.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -108,7 +113,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/prov.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -121,7 +126,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbo.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -133,7 +138,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -148,7 +153,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/so.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -161,7 +166,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/xml.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -174,7 +179,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/xmlns.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -186,7 +191,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/xsd.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -199,7 +204,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol/component.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -211,7 +216,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol/core.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -224,7 +229,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol/genomic.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -238,13 +243,13 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
                          ([self.instanceexp_type] * 6) +
                          ([self.assignment_type] * 9) +
                          ([self.instanceexp_type] * 11) +
-                         ([self.constructordef_type] * 29))
+                         ([self.template_type] * 29))
 
     def test_parse_genomic_generics_sbol_file(self):
         with open("test/parser/example-files/sbol/genomic_generics.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -258,7 +263,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol/model.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -272,7 +277,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol/module.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -284,7 +289,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         with open("test/parser/example-files/sbol/modules.sbol", 'r') as in_file:
             data = in_file.read()
 
-        forms  = self.parser.parse(data, lexer=self.reader, debug=self.log)
+        forms  = self.parser.parse(data)
 
         form_type = [type(form) for form in forms]
 
@@ -293,7 +298,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         self.assertEqual(form_type,
                          ([self.prefix_type] * 2) +
                          ([self.assignment_type] * 16) +
-                         ([self.constructordef_type] * 4))
+                         ([self.template_type] * 4))
 
 if __name__ == '__main__':
     unittest.main()

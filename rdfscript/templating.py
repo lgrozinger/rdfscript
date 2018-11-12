@@ -71,7 +71,7 @@ class Template(Node):
         return self._body
 
     def __eq__(self, other):
-        return (isTemplate(other) and
+        return (isinstance(other, Template) and
                 self._name == other.name and
                 self._parameters == other.parameters and
                 self._base_template == other.base_template and
@@ -115,8 +115,8 @@ class Assignment(Node):
     def __init__(self, name, value, location):
 
         super().__init__(location)
-        self._name = name
-        self._value      = value
+        self._name  = name
+        self._value = value
 
     def __eq__(self, other):
         return (isinstance(other, Assignment) and

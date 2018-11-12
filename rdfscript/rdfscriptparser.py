@@ -2,6 +2,7 @@ import ply.yacc as yacc
 import ply.lex as lex
 
 from . import reader
+
 from .reader import tokens
 
 from .core import (Uri,
@@ -12,7 +13,10 @@ from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
                      ImportPragma)
 
-from .templating import Assignment
+from .templating import Assignment, Template
+
+## old ast
+from .toplevel import InstanceExp
 
 def p_toplevels(p):
     '''toplevels : toplevel toplevels'''
@@ -26,25 +30,25 @@ def p_toplevel_types(p):
     '''toplevel : expr
                 | assignment
                 | pragma
-                | expansion
+                | template
                 | instanceexp'''
     p[0] = p[1]
 
-def p_expansion(p):
-    '''expansion : identifier '(' identifierlist ')' RARROW prefixconstructorapp'''
-    p[0] = ConstructorDef(None, p[1], p[3], [], p.lineno)
+def p_template(p):
+    '''template : identifier '(' identifierlist ')' RARROW prefixconstructorapp'''
+    p[0] = Template(p[1], p[3], [], location(p))
 
-def p_expansion_noargs(p):
-    '''expansion : identifier RARROW prefixconstructorapp'''
-    p[0] = ConstructorDef(None, p[1], [], [], p.lineno)
+def p_template_noargs(p):
+    '''template : identifier RARROW prefixconstructorapp'''
+    p[0] = Template(p[1], [], [], location(p))
 
 def p_instanceexp(p):
     '''instanceexp : identifier ':' prefixconstructorapp'''
-    p[0] = InstanceExp(p[1], p[3], p.lineno)
+    p[0] = InstanceExp(p[1], p[3], location(p))
 
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL expr'''
-    p[0] = PrefixPragma(p[2], p[3], location)
+    p[0] = PrefixPragma(p[2], p[3], location(p))
 
 def p_defaultprefix_pragma(p):
     '''pragma : DEFAULTPREFIX identifier'''
