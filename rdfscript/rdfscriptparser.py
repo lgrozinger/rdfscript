@@ -129,11 +129,11 @@ def p_parameterlist(p):
 
 def p_nonemptyparameterlist_1(p):
     '''nonemptyparameterlist : SYMBOL'''
-    p[0] = [Parameter(p[1], location(p))]
+    p[0] = [Parameter(p[1], 0, location(p))]
 
 def p_nonemptyparameterlist_n(p):
     '''nonemptyparameterlist : SYMBOL ',' nonemptyparameterlist'''
-    p[0] = [Parameter(p[1], location(p))] + p[3]
+    p[0] = [Parameter(p[1], 0, location(p))] + p[3]
 
 def p_uri(p):
     '''uri : URI'''

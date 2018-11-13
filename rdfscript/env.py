@@ -63,12 +63,13 @@ class Env:
 
     def put_template(self, template_as_triples):
 
-        for triple in template_as_triples:
-            self._rdf.add_internal(triple)
+        for (s, p, o) in template_as_triples:
+            self._rdf.add_internal(s, p, o, unique=True)
 
     def get_template_instance(self, instance_id, template_id):
 
-        template_graph = self._rdf.get_subgraph(template_id)
+        # template_graph = self._rdf.get_subgraph(template_id)
+        pass
 
     def interpret(self, forms):
         result = None

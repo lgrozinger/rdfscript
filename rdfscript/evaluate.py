@@ -57,6 +57,8 @@ def evaluate_template(template, env):
 
     triples = []
 
+    for parameter in template.parameters:
+        triples.append(
     template.parameterise()
 
     for body_statement in template.body:
@@ -64,6 +66,8 @@ def evaluate_template(template, env):
             triples.append((root_node, body_statement.name, body_statement.value))
         elif isinstance(body_statement, InstanceExp):
             pass
+
+    env.put_template(triples)
 
 _handler_index = {
     Uri          : evaluate_uri,

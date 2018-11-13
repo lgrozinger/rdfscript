@@ -5,11 +5,12 @@ from .core import Node, Name
 class Parameter(Node):
     """Env's abstraction of a RDF BNode for a template parameter."""
 
-    def __init__(self, parameter_name, location):
+    def __init__(self, parameter_name, position, location):
 
         super().__init__(location)
         self._param_name = parameter_name
-        self._binding    = rdflib.BNode(parameter_name)
+        self._binding    = rdflib.BNode()
+        self._position   = position
 
     @property
     def name(self):
@@ -18,6 +19,10 @@ class Parameter(Node):
     @property
     def binding(self):
         return self._binding
+
+    @property
+    def position(self):
+        return self._position
 
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
