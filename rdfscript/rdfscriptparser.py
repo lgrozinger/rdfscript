@@ -13,7 +13,10 @@ from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
                      ImportPragma)
 
-from .templating import Assignment, Template
+from .templating import (Assignment,
+                         Template,
+                         Property,
+                         Parameter)
 
 ## old ast
 from .toplevel import InstanceExp
@@ -35,12 +38,12 @@ def p_toplevel_types(p):
     p[0] = p[1]
 
 def p_template(p):
-    '''template : identifier '(' identifierlist ')' RARROW prefixconstructorapp'''
-    p[0] = Template(p[1], p[3], [], location(p))
+    '''template : identifier '(' parameterlist ')' RARROW prefixconstructorapp'''
+    p[0] = Template(p[1], p[3], p[6], location(p))
 
 def p_template_noargs(p):
     '''template : identifier RARROW prefixconstructorapp'''
-    p[0] = Template(p[1], [], [], location(p))
+    p[0] = Template(p[1], [], p[3], location(p))
 
 def p_instanceexp(p):
     '''instanceexp : identifier ':' prefixconstructorapp'''
@@ -119,6 +122,19 @@ def p_localname(p):
     '''localname : SYMBOL'''
     p[0] = Name(None, p[1], location(p))
 
+def p_parameterlist(p):
+    '''parameterlist : emptylist
+                     | nonemptyparameterlist'''
+    p[0] = p[1]
+
+def p_nonemptyparameterlist_1(p):
+    '''nonemptyparameterlist : SYMBOL'''
+    p[0] = [Parameter(p[1], location(p))]
+
+def p_nonemptyparameterlist_n(p):
+    '''nonemptyparameterlist : SYMBOL ',' nonemptyparameterlist'''
+    p[0] = [Parameter(p[1], location(p))] + p[3]
+
 def p_uri(p):
     '''uri : URI'''
     p[0] = Uri(p[1], location(p))
@@ -160,9 +176,13 @@ def p_empty_bodystatements(p):
 
 ## 1.0 also has infixassigment here
 def p_bodystatement(p):
-    '''bodystatement : assignment
+    '''bodystatement : property
                      | instanceexp'''
     p[0] = p[1]
+
+def p_property(p):
+    '''property : identifier '=' expr'''
+    p[0] = Property(p[1], p[3], location(p))
 
 # infixassigment breaks the parser, since it causes SR conflict with
 # assignment (resolved by default with shift, which is almost always

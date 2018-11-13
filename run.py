@@ -3,42 +3,33 @@ import ply.lex  as lex
 import rdflib
 import sys
 
-import rdfscript.parser as parser
-import rdfscript.reader as reader
-import rdfscript.env as env
+from rdfscript.rdfscriptparser import RDFScriptParser
+from rdfscript.env import Env
 
 def parse_from_file(filepath):
     print("Building parser with yacc...")
-    parser = yacc.yacc(module=parser)
+    parser = RDFScriptParser()
     print("Parser build success...")
-    print("Building lexer with lex...")
-    reader = lex.lex(module=reader)
-    reader.at_line_start = True
-    reader.indent_stack = [0]
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
     with open(filepath, 'r') as in_file:
         data = in_file.read()
 
-    env = env.Env()
-    forms = parser.parse(data, lexer=reader)
+    env = Env()
+    forms = parser.parse(data)
     env.interpret(forms)
 
     return env.g
 
 def rdf_repl():
     print("Building parser with yacc...")
-    p = yacc.yacc(module=parser)
+    parser = RDFScriptParser()	
     print("Parser build success...")
-    print("Building lexer with lex...")
-    r = lex.lex(module=reader)
-    r.at_line_start = True
-    r.indent_stack = [0]
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
-    e = env.Env(repl=True)
+    e = Env(repl=True)
 
     while True:
         try:
@@ -46,10 +37,10 @@ def rdf_repl():
         except EOFError:
             break
         if not s: continue
-        forms = p.parse(s, lexer=r)
+        forms = parser.parse(s)
         print(e.interpret(forms))
 
-    print("%s\n" % e.rdf.serialise().decode('utf-8'))
+    print(e)
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:

@@ -6,8 +6,11 @@ import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
-from rdfscript.core import Name, Value
-from rdfscript.templating import Assignment
+from rdfscript.core import Name, Value, Uri
+from rdfscript.templating import (Assignment,
+                                  Template,
+                                  Parameter,
+                                  Property)
 
 class ParserTopLevelTest(unittest.TestCase):
 
@@ -26,19 +29,34 @@ class ParserTopLevelTest(unittest.TestCase):
                                      Value("hello", None),
                                      None)])
 
-    @unittest.skip("Templates not implemented yet.")
-    def test_constructordef_onearg(self):
-        script = 'DNASequence(x) => Sequence\n  encoding = <SBOL:IUPACDNA>'
+    def test_template_def_noargs_nobase(self):
+        script = 'DNASequence =>\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)
 
-        self.assertEqual(forms,
-                         [ConstructorDef(LocalName('Sequence', 1),
-                                         LocalName('DNASequence', 1),
-                                         [LocalName('x', 1)],
-                                         [Assignment(LocalName('encoding', 1),
-                                                     URI('SBOL:IUPACDNA', 1),
-                                                     1)],
-                                         1)])
+        expected_template = Template(Name(None, 'DNASequence', None),
+                                     [],
+                                     [Property(Name(None, 'encoding', None),
+                                               Uri('SBOL:IUPACDNA', None),
+                                               None)],
+                                     None)
+
+
+        self.assertEqual(forms, [expected_template])
+
+
+    def test_constructordef_onearg_nobase(self):
+        script = 'DNASequence(x) =>\n  encoding = <SBOL:IUPACDNA>'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name(None, 'DNASequence', None),
+                                     [Parameter('x', None)],
+                                     [Property(Name(None, 'encoding', None),
+                                               Uri('SBOL:IUPACDNA', None),
+                                               None)],
+                                     None)
+
+
+        self.assertEqual(forms, [expected_template])
 
 if __name__ == '__main__':
     unittest.main()

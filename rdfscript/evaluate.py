@@ -8,8 +8,10 @@ from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
                      ImportPragma)
 
-from .templating import Assignment
-
+from .templating import (Assignment,
+                         Template,
+                         Property,
+                         InstanceExp)
 
 def evaluate(node, env):
 
@@ -48,10 +50,26 @@ def evaluate_value(value, env):
 
     return value.as_rdfliteral()
 
+def evaluate_template(template, env):
+
+    root_node = env.resolve_name(template.name.localname,
+                                 template.name.prefix)
+
+    triples = []
+
+    template.parameterise()
+
+    for body_statement in template.body:
+        if isinstance(body_statement, Property):
+            triples.append((root_node, body_statement.name, body_statement.value))
+        elif isinstance(body_statement, InstanceExp):
+            pass
+
 _handler_index = {
     Uri          : evaluate_uri,
     Name         : evaluate_name,
     PrefixPragma : evaluate_prefixpragma,
     Assignment   : evaluate_assignment,
-    Value        : evaluate_value
+    Value        : evaluate_value,
+    Template     : evaluate_template
 }
