@@ -19,7 +19,7 @@ class Env:
 
         self._assign_predicate = rdflib.BNode()
 
-        self._default_ns = rdflib.Namespace(self._rdf.internal_graph.identifier)
+        self._default_ns = rdflib.Namespace(self._rdf.internal_context)
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
@@ -40,7 +40,11 @@ class Env:
 
     def assign(self, identifier, value):
 
-        self._rdf.add_internal(identifier, self._assign_predicate, value, unique=True)
+        self._rdf.add(identifier,
+                      self._assign_predicate,
+                      value,
+                      self._rdf.internal_context,
+                      unique=True)
 
     def lookup(self, identifier):
 
@@ -66,14 +70,14 @@ class Env:
 
         return rdflib.URIRef(ns[name])
 
-    def put_template(self, template_as_triples):
+    def put_template(self, template_uri, template_as_triples):
 
         for (s, p, o) in template_as_triples:
-            self._rdf.add_internal(s, p, o, unique=True)
+            self._rdf.add(s, p, o, template_uri, unique=True)
 
     def get_template(self, template_uri):
 
-        graph = self._rdf.get_internal_context(template_uri)
+        graph = self._rdf.get_context_graph(template_uri)
         return [triple for triple in graph.triples((None, None, None))]
 
     def interpret(self, forms):
@@ -103,25 +107,21 @@ class RuntimeGraph:
         self._internal = rdflib.ConjunctiveGraph()
 
     @property
-    def user_graph(self):
-        return self._user
+    def user_context(self):
+        return self._user.identifier
 
     @property
-    def internal_graph(self):
-        return self._internal
+    def internal_context(self):
+        return self._internal.identifier
 
-    def add_internal(self, s, p, o, unique=False, context=None):
+    def get_context_graph(self, context):
+        return self._g.get_context(context)
+
+    def add(self, s, p, o, c, unique=False):
         if unique:
-            self._g.get_context(self._internal.identifier).set((s, p, o))
+            self._g.get_context(c).set((s, p, o))
         else:
-            self._g.get_context(self._internal.identifier).add((s, p, o))
-
-    def get_internal_context(self, context_uri):
-        internal = self._g.get_context(self._internal.identifier)
-        return rdflib.Graph(store=internal.store, identifier=context_uri, namespace_manager=internal)
-
-    def add_user(self, s, p, o):
-        self._g.get_context(self._user.identifier).add((s, p, o))
+            self._g.get_context(c).add((s, p, o))
 
     def bind_prefix(self, prefix, uri):
         self._g.bind(prefix, uri)

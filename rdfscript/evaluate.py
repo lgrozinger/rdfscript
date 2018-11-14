@@ -17,11 +17,6 @@ def evaluate(node, env):
 
     return _handler_index.get(type(node), unknown_node)(node, env)
 
-def unknown_node(node, env):
-
-    print("Unknown node type encountered.")
-    return None
-
 def evaluate_uri(uri, env):
 
     return uri.as_uriref()
@@ -48,7 +43,7 @@ def evaluate_assignment(assignment, env):
 def evaluate_prefixpragma(pragma, env):
 
     uri = pragma.uri
-    return env.bind_prefix(pragma.prefix, evaluate_uri(uri, env))
+    return env.bind_prefix(pragma.prefix, evaluate(uri, env))
 
 def evaluate_value(value, env):
 
@@ -78,7 +73,7 @@ def evaluate_template(template, env):
         elif isinstance(body_statement, InstanceExp):
             pass
 
-    env.put_template(triples)
+    env.put_template(root_node, triples)
 
 def evaluate_expansion(expansion, env):
 
