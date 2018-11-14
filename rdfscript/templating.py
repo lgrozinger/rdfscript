@@ -26,7 +26,8 @@ class Parameter(Node):
 
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
-                self._param_name == other._param_name)
+                self._param_name == other.name and
+                self.position == other.position)
 
     def __repr__(self):
         return format("<RDFscript PARAM: %s>" % self._python_val)
@@ -42,6 +43,30 @@ class Parameter(Node):
 
     def bind(self, binding):
         self._binding = binding
+
+class Argument(Node):
+
+    def __init__(self, value_expr, position, location):
+
+        super().__init__(location)
+        self._value = value_expr
+        self._position   = position
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def position(self):
+        return self._position
+
+    def __eq__(self, other):
+        return (isinstance(other, Argument) and
+                self.value == other.value and
+                self.position == other.position)
+
+    def __repr__(self):
+        return format("<RDFscript ARG: %s>" % self._value)
 
 class Property(Node):
 
@@ -74,8 +99,41 @@ class Property(Node):
     def value(self):
         return self._value
 
-class InstanceExp(Node):
-    pass
+class Expansion(Node):
+
+    def __init__(self, template, name, args, body, location):
+
+        super().__init__(location)
+        self._template      = template
+        self._name          = name
+        self._args          = args
+        self._body          = body
+
+    def __eq__(self, other):
+        return (isinstance(other, Expansion) and
+                self.template_name == other.template_name and
+                self.name == other.name and
+                self.args == other.args and
+                self.body == other.body)
+
+    def __repr__(self):
+        return format("<RDFscript EXPANSION: %s : %s>" % self.name, self.template_name)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def template(self):
+        return self._template_name
+
+    @property
+    def args(self):
+        return self._args
+
+    @property
+    def body(self):
+        return self._body
 
 class Template(Node):
     """Env's abstraction of a RDF subgraph for a template."""

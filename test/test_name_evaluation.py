@@ -25,12 +25,12 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
 
         ## going into the internals of Env
-        user_ns = env._rdf._user.identifier
+        user_ns = env._rdf._internal.identifier
         uri = rdflib.Namespace(user_ns)['UnboundSymbol']
 
         self.assertEqual(forms, [Name(None, 'UnboundSymbol', None)])
-        self.assertEqual(env.resolve_name(forms[0].localname,
-                                          prefix=forms[0].prefix),
+        self.assertEqual(env.resolve_name(forms[0].prefix,
+                                          forms[0].localname),
                          uri)
 
     def test_evaluate_localname_not_bound(self):
@@ -38,7 +38,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
         env = Env()
 
-        self.assertEqual(env.interpret(forms), None)
+        self.assertEqual(env.interpret(forms), env.resolve_name(None, 'UnboundSymbol'))
 
 
     def test_evaluate_localname_bound(self):
@@ -67,8 +67,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
         env.interpret(forms)
 
-        self.assertEqual(env.resolve_name(forms[1].localname,
-                                          prefix=forms[1].prefix),
+        self.assertEqual(env.resolve_name(forms[1].prefix, forms[1].localname),
                          uri)
 
     def test_evaluate_qname_not_bound(self):
@@ -80,7 +79,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
         env = Env()
 
-        self.assertEqual(env.interpret(forms), None)
+        self.assertEqual(env.interpret(forms), env.resolve_name('p', 'UnboundSymbol'))
 
 
     def test_evaluate_qname_bound(self):

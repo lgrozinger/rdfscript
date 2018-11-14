@@ -49,7 +49,23 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'DNASequence', None),
-                                     [Parameter('x', None)],
+                                     [Parameter('x', 0, None)],
+                                     [Property(Name(None, 'encoding', None),
+                                               Uri('SBOL:IUPACDNA', None),
+                                               None)],
+                                     None)
+
+
+        self.assertEqual(forms, [expected_template])
+
+    def test_constructordef_multiargs_nobase(self):
+        script = 'DNASequence(x, y, z) =>\n  encoding = <SBOL:IUPACDNA>'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name(None, 'DNASequence', None),
+                                     [Parameter('x', 2, None),
+                                      Parameter('y', 1, None),
+                                      Parameter('z', 0, None)],
                                      [Property(Name(None, 'encoding', None),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],

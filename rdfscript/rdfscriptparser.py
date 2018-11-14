@@ -126,14 +126,17 @@ def p_parameterlist(p):
     '''parameterlist : emptylist
                      | nonemptyparameterlist'''
     p[0] = p[1]
+    p.parser.param_number = 0
 
 def p_nonemptyparameterlist_1(p):
     '''nonemptyparameterlist : SYMBOL'''
     p[0] = [Parameter(p[1], 0, location(p))]
+    p.parser.param_number = 0
 
 def p_nonemptyparameterlist_n(p):
     '''nonemptyparameterlist : SYMBOL ',' nonemptyparameterlist'''
-    p[0] = [Parameter(p[1], 0, location(p))] + p[3]
+    p.parser.param_number += 1
+    p[0] = [Parameter(p[1], p.parser.param_number, location(p))] + p[3]
 
 def p_uri(p):
     '''uri : URI'''

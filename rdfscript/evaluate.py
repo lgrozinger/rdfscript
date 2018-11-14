@@ -11,7 +11,7 @@ from .pragma import (PrefixPragma,
 from .templating import (Assignment,
                          Template,
                          Property,
-                         InstanceExp)
+                         Expansion)
 
 def evaluate(node, env):
 
@@ -28,13 +28,17 @@ def evaluate_uri(uri, env):
 
 def evaluate_name(name, env):
 
-    return env.lookup(env.resolve_name(name.localname,
-                                       prefix=name.prefix))
+    resolved_name = env.resolve_name(name.prefix, name.localname)
+
+    lookup = env.lookup(resolved_name)
+
+    return lookup or resolved_name
 
 def evaluate_assignment(assignment, env):
 
-    uri   = env.resolve_name(assignment.name.localname,
-                             prefix = assignment.name.prefix)
+    uri   = env.resolve_name(assignment.name.prefix,
+                             assignment.name.localname)
+
     value = evaluate(assignment.value, env)
 
     env.assign(uri, value)
@@ -52,22 +56,56 @@ def evaluate_value(value, env):
 
 def evaluate_template(template, env):
 
-    root_node = env.resolve_name(template.name.localname,
-                                 template.name.prefix)
+    root_node = env.resolve_name(template.name.prefix,
+                                 template.name.localname)
+
+    template_ns = rdflib.Namespace(root_node)
 
     triples = []
 
     for parameter in template.parameters:
-        triples.append(
+        param_predicate = template_ns['parameter' + str(parameter.position)]
+        triples.append((root_node, param_predicate, parameter.as_rdfbnode()))
+
     template.parameterise()
 
     for body_statement in template.body:
         if isinstance(body_statement, Property):
-            triples.append((root_node, body_statement.name, body_statement.value))
+            triples.append((root_node,
+                            evaluate(body_statement.name, env),
+                            evaluate(body_statement.value, env)))
+
         elif isinstance(body_statement, InstanceExp):
             pass
 
     env.put_template(triples)
+
+def evaluate_expansion(expansion, env):
+
+    template = expansion.template
+
+    if isinstance(template, Uri):
+        template_uri = evaluate_uri(template, env)
+    elif isinstance(template, Name):
+        template_uri = env.resolve_name(template.localname, prefix=template.prefix)
+    else:
+        raise SyntaxError("Invalid template: %s at %s" % (template, template.location))
+
+
+    triples = env.get_template(template_uri)
+
+    ## replace parameters with given arguments
+
+    ## replace the root node with the name of the instancebody
+
+    ## add to the user context
+
+
+
+    pass
+
+def unknown_node(node, env):
+    return node
 
 _handler_index = {
     Uri          : evaluate_uri,
@@ -75,5 +113,6 @@ _handler_index = {
     PrefixPragma : evaluate_prefixpragma,
     Assignment   : evaluate_assignment,
     Value        : evaluate_value,
-    Template     : evaluate_template
+    Template     : evaluate_template,
+    Expansion    : evaluate_expansion,
 }

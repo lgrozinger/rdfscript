@@ -19,6 +19,8 @@ class Env:
 
         self._assign_predicate = rdflib.BNode()
 
+        self._default_ns = rdflib.Namespace(self._rdf.internal_graph.identifier)
+
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
 
@@ -33,7 +35,7 @@ class Env:
             # error condition
             return None
         else:
-            self._rdf.default_ns = ns
+            self._default_ns = ns
             return prefix
 
     def assign(self, identifier, value):
@@ -55,9 +57,12 @@ class Env:
         else:
             return expansions[0]
 
-    def resolve_name(self, name, prefix=None):
+    def resolve_name(self, prefix, name):
 
-        ns = self._rdf.ns_for_prefix(prefix)
+        if not prefix:
+            ns = self._default_ns
+        else:
+            ns = self._rdf.ns_for_prefix(prefix)
 
         return rdflib.URIRef(ns[name])
 
@@ -66,10 +71,10 @@ class Env:
         for (s, p, o) in template_as_triples:
             self._rdf.add_internal(s, p, o, unique=True)
 
-    def get_template_instance(self, instance_id, template_id):
+    def get_template(self, template_uri):
 
-        # template_graph = self._rdf.get_subgraph(template_id)
-        pass
+        graph = self._rdf.get_internal_context(template_uri)
+        return [triple for triple in graph.triples((None, None, None))]
 
     def interpret(self, forms):
         result = None
@@ -94,14 +99,26 @@ class RuntimeGraph:
 
         self._g = rdflib.ConjunctiveGraph()
 
-        self._user     = rdflib.Graph()
-        self._internal = rdflib.Graph()
+        self._user     = rdflib.ConjunctiveGraph()
+        self._internal = rdflib.ConjunctiveGraph()
 
-    def add_internal(self, s, p, o, unique=False):
+    @property
+    def user_graph(self):
+        return self._user
+
+    @property
+    def internal_graph(self):
+        return self._internal
+
+    def add_internal(self, s, p, o, unique=False, context=None):
         if unique:
             self._g.get_context(self._internal.identifier).set((s, p, o))
         else:
             self._g.get_context(self._internal.identifier).add((s, p, o))
+
+    def get_internal_context(self, context_uri):
+        internal = self._g.get_context(self._internal.identifier)
+        return rdflib.Graph(store=internal.store, identifier=context_uri, namespace_manager=internal)
 
     def add_user(self, s, p, o):
         self._g.get_context(self._user.identifier).add((s, p, o))
@@ -117,11 +134,8 @@ class RuntimeGraph:
 
         if len(matching) == 1:
             return rdflib.Namespace(matching[0])
-        elif len(matching) == 0 and not prefix:
-            return rdflib.Namespace(self._user.identifier)
-        else:
-            ## TODO: actually indicate an error
-            return None
+        elif len(matching) == 0:
+            raise SyntaxError("No such prefix as '%s'" % prefix)
 
     def get_internal_triples(self, triple):
         return self._g.get_context(self._internal.identifier).triples(triple)
