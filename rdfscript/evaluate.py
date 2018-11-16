@@ -51,53 +51,28 @@ def evaluate_value(value, env):
 
 def evaluate_template(template, env):
 
-    root_node = env.resolve_name(template.name.prefix,
-                                 template.name.localname)
-
-    template_ns = rdflib.Namespace(root_node)
-
-    triples = []
-
-    for parameter in template.parameters:
-        param_predicate = template_ns['parameter' + str(parameter.position)]
-        triples.append((root_node, param_predicate, parameter.as_rdfbnode()))
-
-    template.parameterise()
-
-    for body_statement in template.body:
-        if isinstance(body_statement, Property):
-            triples.append((root_node,
-                            evaluate(body_statement.name, env),
-                            evaluate(body_statement.value, env)))
-
-        elif isinstance(body_statement, InstanceExp):
-            pass
-
-    env.put_template(root_node, triples)
+    template_uri = env.resolve_name(template.name.prefix, template.name.localname)
+    env.assign(template_uri, template)
 
 def evaluate_expansion(expansion, env):
 
-    template = expansion.template
+    raw_triples = expansion.as_triples(env)
 
-    if isinstance(template, Uri):
-        template_uri = evaluate_uri(template, env)
-    elif isinstance(template, Name):
-        template_uri = env.resolve_name(template.localname, prefix=template.prefix)
-    else:
-        raise SyntaxError("Invalid template: %s at %s" % (template, template.location))
+    triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
+               for (s, p, o) in raw_triples]
 
+    env.add_triples(triples)
 
-    triples = env.get_template(template_uri)
+def property_as_triple(subject, prop, env):
+    return (subject, evaluate(prop.name, env), evaluate(prop.value, env))
 
-    ## replace parameters with given arguments
+def replace_in_triple(triple, victim, replacement):
+    (s, p, o) = triple
+    if s == victim: s = replacement
+    if p == victim: p = replacement
+    if o == victim: o = replacement
 
-    ## replace the root node with the name of the instancebody
-
-    ## add to the user context
-
-
-
-    pass
+    return (s, p, o)
 
 def unknown_node(node, env):
     return node

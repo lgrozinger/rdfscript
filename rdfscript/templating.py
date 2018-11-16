@@ -84,12 +84,12 @@ class Property(Node):
     def __repr__(self):
         return format("<RDFscript PROPERTY: %s>" % self.name)
 
-    def parameterise(self, parameters):
-        for param in parameters:
-            if self.name == param.as_name():
-                self._name = param.as_rdfbnode()
-            if self.value == param.as_name():
-                self._value = param.as_rdfbnode()
+    # def parameterise(self, parameters):
+    #     for param in parameters:
+    #         if self.name == param.as_name():
+    #             self._name = param
+    #         if self.value == param.as_name():
+    #             self._value = param
 
     @property
     def name(self):
@@ -135,6 +135,46 @@ class Expansion(Node):
     def body(self):
         return self._body
 
+    def as_triples(self, env):
+        p = self._template_name.prefix
+        l = self._template_name.localname
+        template = env.lookup(env.resolve_name(p, l))
+
+        triples = [sub_args(triple) for triple in template.as_triples()]
+
+        triples = [sub_name(triple) for triple in triples]
+
+        for expr in self._body:
+            if isinstance(expr, Property):
+                triples.append(self._name, expr.name, expr.value)
+            elif isinstance(expr, Expansion):
+                for triple in expr.as_triples(env):
+                    triples.append(triple)
+
+        return triples
+
+    def sub_name(self, triple):
+        (s, p, o) = triple
+        if isinstance(s, Name) and s == self._template_name:
+            s = self._name
+        if isinstance(p, Name) and p == self._template_name:
+            p = self._name
+        if isinstance(o, Name) and o == self._template_name:
+            o = self._name
+
+        return (s, p, o)
+
+    def sub_args(self, triple):
+        (s, p, o) = triple
+        for arg in self._args:
+            if isinstance(s, Parameter) and s.position == arg.position:
+                s = arg
+            if isinstance(p, Parameter) and p.position == arg.position:
+                p = arg
+            if isinstance(o, Parameter) and o.position == arg.position:
+                o = arg
+        return (s, p, o)
+
 class Template(Node):
     """Env's abstraction of a RDF subgraph for a template."""
 
@@ -156,9 +196,9 @@ class Template(Node):
         self._base_template = base_template
         self._body          = body
 
-    def parameterise(self):
-        for body_statement in self.body:
-            body_statement.parameterise(self._parameters)
+    # def parameterise(self):
+    #     for body_statement in self.body:
+    #         body_statement.parameterise(self._parameters)
 
     @property
     def name(self):
@@ -190,6 +230,26 @@ class Template(Node):
     def __repr__(self):
         return format("<RDFscript TEMPLATE: %s, from %s>" % (self._name, self._base_template))
 
+    def as_triples(self, env):
+
+        if self._base_template:
+            p = self._base_template.prefix
+            l = self._base_template.localname
+            base = env.lookup(env.resolve_name(p, l))
+
+            triples = base.as_triples(env)
+        else:
+            triples = []
+
+        for expr in self._body:
+            if isinstance(expr, Property):
+                triples.append(self._name, expr.name, expr.value)
+            elif isinstance(expr, Expansion):
+                for triple in expr.as_triples(env):
+                    triples.append(triple)
+
+        return paramterise_triples(triples)
+
 class Assignment(Node):
 
     def __init__(self, name, value, location):
@@ -214,3 +274,19 @@ class Assignment(Node):
     @property
     def value(self):
         return self._value
+
+
+def parameterise_triples(triples, parameters):
+    parameterised = []
+    for (s, p, o) in triples:
+        for param in parameters:
+            if s == param.as_name():
+                s = param
+            if p == param.as_name():
+                p = param
+            if o == param.as_name():
+                o = param
+
+        parameterised.append((s, p, o))
+
+    return parameterised

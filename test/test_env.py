@@ -40,9 +40,7 @@ class EnvTest(unittest.TestCase):
 
         evaluate(template, self.env)
 
-        template_triples = self.env.get_template(self.env.resolve_name(template.name.prefix,
-                                                                       template.name.localname))
+        stored_template = self.env.lookup(self.env.resolve_name(None, 'template'))
 
-
-        self.assertEqual(len(template_triples), 2)
+        self.assertEqual(stored_template, template)
 

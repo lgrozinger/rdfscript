@@ -13,6 +13,8 @@ from urllib.parse import quote as urlencode
 class Env:
     def __init__(self, repl=False, filename=None):
 
+        self._symbol_table = {}
+
         self._interactive_mode = repl
 
         self._rdf = RuntimeGraph()
@@ -23,6 +25,10 @@ class Env:
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
+
+    def add_triples(self, triples):
+        for (s, p, o) in triples:
+            self._rdf.add(s, p, o, self._rdf.user_context)
 
     def bind_prefix(self, prefix, uri):
         return self._rdf.bind_prefix(prefix, uri)
@@ -38,28 +44,30 @@ class Env:
             self._default_ns = ns
             return prefix
 
-    def assign(self, identifier, value):
+    def assign(self, uriref, value):
 
-        self._rdf.add(identifier,
-                      self._assign_predicate,
-                      value,
-                      self._rdf.internal_context,
-                      unique=True)
+        self._symbol_table[uriref] = value
+        # self._rdf.add(identifier,
+        #               self._assign_predicate,
+        #               value,
+        #               self._rdf.internal_context,
+        #               unique=True)
 
-    def lookup(self, identifier):
+    def lookup(self, uriref):
 
-        expansions = [o for (s, p, o)
-                      in self._rdf.get_internal_triples((identifier,
-                                                         self._assign_predicate,
-                                                         None))]
+        return self._symbol_table.get(uriref, None)
+        # expansions = [o for (s, p, o)
+        #               in self._rdf.get_internal_triples((identifier,
+        #                                                  self._assign_predicate,
+        #                                                  None))]
 
-        if len(expansions) > 1:
-            ## this is an error condition
-            raise SyntaxError("Multiple expansions found for identifier.")
-        elif len(expansions) == 0:
-            return None
-        else:
-            return expansions[0]
+        # if len(expansions) > 1:
+        #     ## this is an error condition
+        #     raise SyntaxError("Multiple expansions found for identifier.")
+        # elif len(expansions) == 0:
+        #     return None
+        # else:
+        #     return expansions[0]
 
     def resolve_name(self, prefix, name):
 
@@ -70,15 +78,15 @@ class Env:
 
         return rdflib.URIRef(ns[name])
 
-    def put_template(self, template_uri, template_as_triples):
+    # def put_template(self, template_uri, template_as_triples):
 
-        for (s, p, o) in template_as_triples:
-            self._rdf.add(s, p, o, template_uri, unique=True)
+    #     for (s, p, o) in template_as_triples:
+    #         self._rdf.add(s, p, o, template_uri, unique=True)
 
-    def get_template(self, template_uri):
+    # def get_template(self, template_uri):
 
-        graph = self._rdf.get_context_graph(template_uri)
-        return [triple for triple in graph.triples((None, None, None))]
+    #     graph = self._rdf.get_context_graph(template_uri)
+    #     return [triple for triple in graph.triples((None, None, None))]
 
     def interpret(self, forms):
         result = None
