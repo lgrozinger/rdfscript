@@ -11,7 +11,11 @@ from .pragma import (PrefixPragma,
 from .templating import (Assignment,
                          Template,
                          Property,
+                         Argument,
                          Expansion)
+
+from .error import (UnknownConstruct,
+                    PrefixError)
 
 def evaluate(node, env):
 
@@ -45,6 +49,16 @@ def evaluate_prefixpragma(pragma, env):
     uri = pragma.uri
     return env.bind_prefix(pragma.prefix, evaluate(uri, env))
 
+def evaluate_defaultprefixpragma(pragma, env):
+
+    if not env.set_default_prefix(pragma.prefix):
+        raise PrefixError(pragma.prefix, pragma.location)
+    else:
+        return pragma.prefix
+
+def evaluate_importpragma(pragma, env):
+    pass
+
 def evaluate_value(value, env):
 
     return value.as_rdfliteral()
@@ -63,6 +77,10 @@ def evaluate_expansion(expansion, env):
 
     env.add_triples(triples)
 
+def evaluate_argument(argument, env):
+
+    return evaluate(argument.value, env)
+
 def property_as_triple(subject, prop, env):
     return (subject, evaluate(prop.name, env), evaluate(prop.value, env))
 
@@ -75,14 +93,18 @@ def replace_in_triple(triple, victim, replacement):
     return (s, p, o)
 
 def unknown_node(node, env):
-    return node
+    raise UnknownConstruct(node, node.location)
 
 _handler_index = {
-    Uri          : evaluate_uri,
-    Name         : evaluate_name,
-    PrefixPragma : evaluate_prefixpragma,
-    Assignment   : evaluate_assignment,
-    Value        : evaluate_value,
-    Template     : evaluate_template,
-    Expansion    : evaluate_expansion,
+    Uri                 : evaluate_uri,
+    Name                : evaluate_name,
+    PrefixPragma        : evaluate_prefixpragma,
+    DefaultPrefixPragma : evaluate_defaultprefixpragma,
+    ImportPragma        : evaluate_importpragma,
+    Assignment          : evaluate_assignment,
+    Value               : evaluate_value,
+    Template            : evaluate_template,
+    Expansion           : evaluate_expansion,
+    Argument            : evaluate_argument,
+    type(None)          : unknown_node,
 }

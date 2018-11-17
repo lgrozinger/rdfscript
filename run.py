@@ -8,7 +8,7 @@ from rdfscript.env import Env
 
 def parse_from_file(filepath):
     print("Building parser with yacc...")
-    parser = RDFScriptParser()
+    parser = RDFScriptParser(filename=filepath)
     print("Parser build success...")
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
@@ -20,11 +20,11 @@ def parse_from_file(filepath):
     forms = parser.parse(data)
     env.interpret(forms)
 
-    return env.g
+    print(env)
 
 def rdf_repl():
     print("Building parser with yacc...")
-    parser = RDFScriptParser()	
+    parser = RDFScriptParser()
     print("Parser build success...")
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)

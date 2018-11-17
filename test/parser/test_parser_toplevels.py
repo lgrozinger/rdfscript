@@ -9,6 +9,7 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.core import Name, Value, Uri
 from rdfscript.templating import (Assignment,
                                   Template,
+                                  Expansion,
                                   Parameter,
                                   Property)
 
@@ -16,6 +17,8 @@ class ParserTopLevelTest(unittest.TestCase):
 
     def setUp(self):
         self.parser = RDFScriptParser()
+        self.maxDiff = None
+        self.logger = logging.getLogger(__name__)
 
     def tearDown(self):
         None
@@ -38,6 +41,7 @@ class ParserTopLevelTest(unittest.TestCase):
                                      [Property(Name(None, 'encoding', None),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
+                                     None,
                                      None)
 
 
@@ -49,10 +53,11 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'DNASequence', None),
-                                     [Parameter('x', 0, None)],
+                                     ['x'],
                                      [Property(Name(None, 'encoding', None),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
+                                     None,
                                      None)
 
 
@@ -63,16 +68,33 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'DNASequence', None),
-                                     [Parameter('x', 2, None),
-                                      Parameter('y', 1, None),
-                                      Parameter('z', 0, None)],
+                                     ['x','y','z'],
                                      [Property(Name(None, 'encoding', None),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
+                                     None,
                                      None)
 
 
         self.assertEqual(forms, [expected_template])
 
+    def test_constructordef_onearg_base(self):
+        script = 'B(x) =>\n  x = 42\nA(x) => B(x)\n  encoding = <SBOL:IUPACDNA>'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name(None, 'A', None),
+                                     ['x'],
+                                     [Property(Name(None, 'encoding', None),
+                                               Uri('SBOL:IUPACDNA', None),
+                                               None)],
+                                     None,
+                                     Expansion(Name(None, 'B', None),
+                                               Name(None, 'A', None),
+                                               [Name(None, 'x', None)],
+                                               [],
+                                               None))
+
+
+        self.assertEqual(forms[1], expected_template)
 if __name__ == '__main__':
     unittest.main()

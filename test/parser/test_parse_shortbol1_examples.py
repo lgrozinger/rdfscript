@@ -9,23 +9,22 @@ from rdfscript.pragma import (PrefixPragma,
                               DefaultPrefixPragma,
                               ImportPragma)
 
-from rdfscript.templating import Template, Assignment
-
-## old tree
-from rdfscript.toplevel import InstanceExp
+from rdfscript.templating import (Template,
+                                  Assignment,
+                                  Expansion)
 
 class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = RDFScriptParser()
+        self.parser = RDFScriptParser(debug=True)
 
         ## types of toplevel AST node
-        self.instanceexp_type = type(InstanceExp(None, None, None))
+        self.expansion_type = type(Expansion(None, None, [], None, None))
         self.prefix_type = type(PrefixPragma(None, None, None))
         self.import_type = type(ImportPragma(None, None))
         self.defaultprefix_type = type(DefaultPrefixPragma(None, None))
         self.assignment_type = type(Assignment(None, None, None))
-        self.template_type = type(Template(None, [], None, None))
+        self.template_type = type(Template(None, [], None, None, None))
 
     def tearDown(self):
         None
@@ -54,7 +53,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         # import_type = type(ImportPragma('', 0))
         # assignment_type = type(Assignment('', '', 0))
-        # self.instanceexp_type = type(InstanceExp('', '', 0))
+        # self.expansion_type = type(Expansion('', '', 0))
 
         self.assertTrue(None not in forms)
 
@@ -120,7 +119,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         self.assertTrue(None not in forms)
 
         self.assertEqual(form_type, [self.prefix_type] +
-                                    ([self.instanceexp_type] * 3))
+                                    ([self.expansion_type] * 3))
 
     def test_parse_sbo_sbol_file(self):
         with open("test/parser/example-files/sbo.sbol", 'r') as in_file:
@@ -172,7 +171,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         self.assertTrue(None not in forms)
 
-        self.assertEqual(form_type, [self.instanceexp_type] +
+        self.assertEqual(form_type, [self.expansion_type] +
                                     ([self.import_type] * 3))
 
     def test_parse_xmlns_sbol_file(self):
@@ -185,7 +184,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         self.assertTrue(None not in forms)
 
-        self.assertEqual(form_type, [self.instanceexp_type])
+        self.assertEqual(form_type, [self.expansion_type])
 
     def test_parse_xsd_sbol_file(self):
         with open("test/parser/example-files/xsd.sbol", 'r') as in_file:
@@ -210,7 +209,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         self.assertTrue(None not in forms)
 
-        self.assertEqual(form_type, [self.instanceexp_type] * 23)
+        self.assertEqual(form_type, [self.expansion_type] * 23)
 
     def test_parse_core_sbol_file(self):
         with open("test/parser/example-files/sbol/core.sbol", 'r') as in_file:
@@ -223,7 +222,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         self.assertTrue(None not in forms)
 
         self.assertEqual(form_type, ([self.assignment_type] * 2) +
-                                    ([self.instanceexp_type] * 3))
+                                    ([self.expansion_type] * 3))
 
     def test_parse_genomic_sbol_file(self):
         with open("test/parser/example-files/sbol/genomic.sbol", 'r') as in_file:
@@ -238,11 +237,11 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         self.assertEqual(form_type,
                          ([self.prefix_type] * 2) +
                          ([self.assignment_type] * 4) +
-                         ([self.instanceexp_type] * 4) +
+                         ([self.expansion_type] * 4) +
                          ([self.assignment_type] * 5) +
-                         ([self.instanceexp_type] * 6) +
+                         ([self.expansion_type] * 6) +
                          ([self.assignment_type] * 9) +
-                         ([self.instanceexp_type] * 11) +
+                         ([self.expansion_type] * 11) +
                          ([self.template_type] * 29))
 
     def test_parse_genomic_generics_sbol_file(self):
@@ -257,7 +256,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         self.assertEqual(form_type,
                          [self.import_type] +
-                         ([self.instanceexp_type] * 9))
+                         ([self.expansion_type] * 9))
 
     def test_parse_model_sbol_file(self):
         with open("test/parser/example-files/sbol/model.sbol", 'r') as in_file:
@@ -283,7 +282,7 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
         self.assertTrue(None not in forms)
 
-        self.assertEqual(form_type, [self.instanceexp_type] * 16)
+        self.assertEqual(form_type, [self.expansion_type] * 16)
 
     def test_parse_modules_sbol_file(self):
         with open("test/parser/example-files/sbol/modules.sbol", 'r') as in_file:

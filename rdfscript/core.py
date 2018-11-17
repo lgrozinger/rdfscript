@@ -1,5 +1,7 @@
 import rdflib
 
+from .error import PrefixError
+
 class Node:
 
     def __init__(self, location):
@@ -51,18 +53,6 @@ class Name(Node):
     def localname(self):
         return self._localname
 
-    def as_uriref(self, graph):
-
-        all_namespaces      = graph.namespaces()
-        matching_namespaces = [ns for (prefix, ns)
-                               in all_namespaces
-                               if prefix == self._prefix]
-
-        if not len(matching_namespaces) == 1:
-            raise NameError(self._prefix)
-        else:
-            return rdflib.URIRef(matching_namespaces[0])
-
 class Uri(Node):
     """Env's abstraction of a URI"""
 
@@ -76,12 +66,12 @@ class Uri(Node):
                 self.uri == other.uri)
 
     def __repr__(self):
-        return format("<RDFscript URI: %s>" % self._python_val)
+        return format("<RDFscript URI: %s>" % self._uri)
 
     @property
     def uri(self):
         return self._uri
-    
+
     def as_uriref(self):
         return rdflib.URIRef(self._uri)
 
@@ -139,79 +129,3 @@ class Parameter:
 
     def bind(self, binding):
         self._binding = binding
-
-class Template:
-    """Env's abstraction of a RDF subgraph for a template."""
-
-    def __init__(self, name, parameters, body, base_template=None):
-
-        self._name          = name
-
-        self._base_parameters = []
-        self._parameters      = []
-
-        for parameter in parameters:
-            if (base_template
-                and parameter in base_template.parameters):
-                self._base_parameters.append(parameter)
-            else:
-                self._parameters.append(parameter)
-
-        self._base_template = base_template
-        self._body          = body
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def parameters(self):
-        return self._parameters
-
-    @property
-    def base(self):
-        return self._base_template
-
-    @property
-    def body(self):
-        return self._body
-
-    def __eq__(self, other):
-        return (isinstance(other, Template) and
-                self._name == other.name and
-                self._parameters == other.parameters and
-                self._base_template == other.base_template and
-                self._body == other.body)
-
-    def __repr__(self):
-        return format("<RDFscript TEMPLATE: %s>" % self._name)
-
-    def pass_arguments(self, name_arg_pairs):
-
-        for name, argument in name_arg_pairs:
-
-            try:
-                parameter = Parameter(name)
-
-                if parameter in self.parameters:
-                    self._parameters[self._parameters.index(parameter)].bind(argument)
-                else:
-                    self._base_parameters[self._base_parameters.index(parameter)].bind(argument)
-
-            except ValueError:
-                ## call out to logger, handler, try to recover, etc.
-                raise
-
-        for parameter in self._parameters + self._base_parameters:
-            if not parameter.isBound():
-                ## required argument not given
-                raise
-
-    def as_instance(self, instance_name, arguments):
-
-        template_namespace = rdflib.Namespace(template_uri)
-
-        self.pass_arguments(arguments)
-
-        triples = self.base_template.as_instance(instance_name,
-                                                 self._base_parameters)

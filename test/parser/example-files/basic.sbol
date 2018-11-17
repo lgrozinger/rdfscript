@@ -1,0 +1,15 @@
+@prefix p <http://uri.org/p>
+
+A(x, y) =>
+  x = 42
+  <http://example.eg/predicate> = y
+
+B() => A(x, "VALUE")
+  x = p.y
+  z = "STRING"
+
+C(x) => B()
+  x = 43
+  z = "STRING"
+
+t : C(<http://uri.org/x>)

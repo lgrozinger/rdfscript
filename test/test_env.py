@@ -10,6 +10,7 @@ from rdfscript.templating import (Template,
                                   Property)
 
 from rdfscript.evaluate import evaluate
+from rdfscript.error import PrefixError
 
 class EnvTest(unittest.TestCase):
 
@@ -20,9 +21,6 @@ class EnvTest(unittest.TestCase):
         None
 
     def test_prefix_binding(self):
-
-        with self.assertRaises(Exception):
-            self.env.resolve_name('prefix', 'local')
 
         prefix_uri = 'http://test.prefix.eg/'
 
@@ -36,6 +34,7 @@ class EnvTest(unittest.TestCase):
         template = Template(Name(None, 'template', None),
                             [Parameter('x', 0, None)],
                             [Property(Name(None, 'x', None), Value(42, None), None)],
+                            None,
                             None)
 
         evaluate(template, self.env)

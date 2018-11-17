@@ -1,6 +1,8 @@
 import rdflib
+import pdb
 
 from .core import Node, Name
+from .error import TemplateNotFound
 
 class Parameter(Node):
     """Env's abstraction of a RDF BNode for a template parameter."""
@@ -26,11 +28,10 @@ class Parameter(Node):
 
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
-                self._param_name == other.name and
-                self.position == other.position)
+                self._param_name == other.name)
 
     def __repr__(self):
-        return format("<RDFscript PARAM: %s>" % self._python_val)
+        return format("<RDFscript PARAM: %s>" % self.name)
 
     def as_rdfbnode(self):
         return self._binding
@@ -49,8 +50,8 @@ class Argument(Node):
     def __init__(self, value_expr, position, location):
 
         super().__init__(location)
-        self._value = value_expr
-        self._position   = position
+        self._value    = value_expr
+        self._position = position
 
     @property
     def value(self):
@@ -82,14 +83,7 @@ class Property(Node):
                 self.value == other.value)
 
     def __repr__(self):
-        return format("<RDFscript PROPERTY: %s>" % self.name)
-
-    # def parameterise(self, parameters):
-    #     for param in parameters:
-    #         if self.name == param.as_name():
-    #             self._name = param
-    #         if self.value == param.as_name():
-    #             self._value = param
+        return format("<RDFscript PROPERTY: %s, %s>" % (self.name, self.value))
 
     @property
     def name(self):
@@ -106,18 +100,19 @@ class Expansion(Node):
         super().__init__(location)
         self._template      = template
         self._name          = name
-        self._args          = args
+        self._args          = [Argument(arg, args.index(arg), location)
+                               for arg in args]
         self._body          = body
 
     def __eq__(self, other):
         return (isinstance(other, Expansion) and
-                self.template_name == other.template_name and
+                self.template == other.template and
                 self.name == other.name and
                 self.args == other.args and
                 self.body == other.body)
 
     def __repr__(self):
-        return format("<RDFscript EXPANSION: %s : %s>" % self.name, self.template_name)
+        return format("<RDFscript EXPANSION: %s : %s : %s> : %s" % (self.name, self.template, self.args, self.body))
 
     @property
     def name(self):
@@ -125,7 +120,7 @@ class Expansion(Node):
 
     @property
     def template(self):
-        return self._template_name
+        return self._template
 
     @property
     def args(self):
@@ -136,17 +131,19 @@ class Expansion(Node):
         return self._body
 
     def as_triples(self, env):
-        p = self._template_name.prefix
-        l = self._template_name.localname
+        p = self.template.prefix
+        l = self.template.localname
         template = env.lookup(env.resolve_name(p, l))
+        if not template:
+            raise TemplateNotFound(self._template, self._location)
 
-        triples = [sub_args(triple) for triple in template.as_triples()]
+        triples = [self.sub_args(triple) for triple in template.as_triples(env)]
 
-        triples = [sub_name(triple) for triple in triples]
+        triples = [self.sub_name(triple) for triple in triples]
 
         for expr in self._body:
             if isinstance(expr, Property):
-                triples.append(self._name, expr.name, expr.value)
+                triples.append((self._name, expr.name, expr.value))
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
@@ -155,11 +152,11 @@ class Expansion(Node):
 
     def sub_name(self, triple):
         (s, p, o) = triple
-        if isinstance(s, Name) and s == self._template_name:
+        if isinstance(s, Name) and s == self._template:
             s = self._name
-        if isinstance(p, Name) and p == self._template_name:
+        if isinstance(p, Name) and p == self._template:
             p = self._name
-        if isinstance(o, Name) and o == self._template_name:
+        if isinstance(o, Name) and o == self._template:
             o = self._name
 
         return (s, p, o)
@@ -168,45 +165,28 @@ class Expansion(Node):
         (s, p, o) = triple
         for arg in self._args:
             if isinstance(s, Parameter) and s.position == arg.position:
-                s = arg
+                s = arg.value
             if isinstance(p, Parameter) and p.position == arg.position:
-                p = arg
+                p = arg.value
             if isinstance(o, Parameter) and o.position == arg.position:
-                o = arg
+                o = arg.value
         return (s, p, o)
 
 class Template(Node):
     """Env's abstraction of a RDF subgraph for a template."""
 
-    def __init__(self, name, parameters, body, location, base_template=None):
+    def __init__(self, name, parameters, body, location, base):
 
         super().__init__(location)
         self._name          = name
-
-        #self._base_parameters = []
-        self._parameters    = parameters
-
-        # for parameter in parameters:
-        #     if (base_template and
-        #         parameter in base_template.parameters):
-        #         self._base_parameters.append(parameter)
-        #     else:
-        #         self._parameters.append(parameter)
-
-        self._base_template = base_template
+        self._parameters    = [Parameter(p, parameters.index(p), location)
+                               for p in parameters]
+        self._base          = base
         self._body          = body
-
-    # def parameterise(self):
-    #     for body_statement in self.body:
-    #         body_statement.parameterise(self._parameters)
 
     @property
     def name(self):
         return self._name
-
-    @property
-    def base_parameters(self):
-        return self._base_parameters
 
     @property
     def parameters(self):
@@ -214,7 +194,7 @@ class Template(Node):
 
     @property
     def base(self):
-        return self._base_template
+        return self._base
 
     @property
     def body(self):
@@ -224,31 +204,39 @@ class Template(Node):
         return (isinstance(other, Template) and
                 self._name == other.name and
                 self._parameters == other.parameters and
-                self._base_template == other.base and
+                self._base == other.base and
                 self._body == other.body)
 
     def __repr__(self):
-        return format("<RDFscript TEMPLATE: %s, from %s>" % (self._name, self._base_template))
+        return format("<RDFscript TEMPLATE: %s, params: %s, body: %s>, base: %s" %
+                      (self._name, self._parameters, self._body, self._base))
 
     def as_triples(self, env):
 
-        if self._base_template:
-            p = self._base_template.prefix
-            l = self._base_template.localname
-            base = env.lookup(env.resolve_name(p, l))
-
-            triples = base.as_triples(env)
+        if self._base:
+            triples = [self.sub_name(triple) for triple in self._base.as_triples(env)]
         else:
             triples = []
 
         for expr in self._body:
             if isinstance(expr, Property):
-                triples.append(self._name, expr.name, expr.value)
+                triples.append((self._name, expr.name, expr.value))
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
 
-        return paramterise_triples(triples)
+        return parameterise_triples(triples, self._parameters)
+
+    def sub_name(self, triple):
+        (s, p, o) = triple
+        if isinstance(s, Name) and s == self._base.name:
+            s = self._name
+        if isinstance(p, Name) and p == self._base.name:
+            p = self._name
+        if isinstance(o, Name) and o == self._base.name:
+            o = self._name
+
+        return (s, p, o)
 
 class Assignment(Node):
 

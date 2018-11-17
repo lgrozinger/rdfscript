@@ -25,8 +25,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
 
         ## going into the internals of Env
-        user_ns = env._rdf._internal.identifier
-        uri = rdflib.Namespace(user_ns)['UnboundSymbol']
+        uri = rdflib.Namespace(env._default_ns)['UnboundSymbol']
 
         self.assertEqual(forms, [Name(None, 'UnboundSymbol', None)])
         self.assertEqual(env.resolve_name(forms[0].prefix,

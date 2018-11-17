@@ -15,8 +15,8 @@ from .pragma import (PrefixPragma,
 
 from .templating import (Assignment,
                          Template,
-                         Property,
-                         Parameter)
+                         Expansion,
+                         Property)
 
 ## old ast
 from .toplevel import InstanceExp
@@ -34,27 +34,45 @@ def p_toplevel_types(p):
                 | assignment
                 | pragma
                 | template
-                | instanceexp'''
+                | expansion'''
     p[0] = p[1]
 
 def p_template(p):
     '''template : identifier '(' parameterlist ')' RARROW prefixconstructorapp'''
-    p[0] = Template(p[1], p[3], p[6], location(p))
+    if isinstance(p[6], Expansion):
+        body = p[6].body
+        p[6]._body = []
+        p[6]._name = p[1]
+        base = p[6]
+    else:
+        body = p[6]
+        base = None
+
+    p[0] = Template(p[1], p[3], body, location(p), base=base)
 
 def p_template_noargs(p):
     '''template : identifier RARROW prefixconstructorapp'''
-    p[0] = Template(p[1], [], p[3], location(p))
+    if isinstance(p[3], Expansion):
+        body = p[3].body
+        p[3]._body = []
+        p[3]._name = p[1]
+        base = p[3]
+    else:
+        body = p[3]
+        base = None
 
-def p_instanceexp(p):
-    '''instanceexp : identifier ':' prefixconstructorapp'''
-    p[0] = InstanceExp(p[1], p[3], location(p))
+    p[0] = Template(p[1], [], body, location(p), base=base)
+
+def p_expansion(p):
+    '''expansion : identifier ':' prefixconstructorapp'''
+    p[0] = Expansion(p[3].template, p[1], p[3].args, p[3].body, location(p))
 
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL expr'''
     p[0] = PrefixPragma(p[2], p[3], location(p))
 
 def p_defaultprefix_pragma(p):
-    '''pragma : DEFAULTPREFIX identifier'''
+    '''pragma : DEFAULTPREFIX SYMBOL'''
     p[0] = DefaultPrefixPragma(p[2], location(p))
 
 def p_pragma_import(p):
@@ -68,7 +86,6 @@ def p_assignment(p):
 # def p_triple(p):
 #     '''triple : identifier identifier expr'''
 #     p[0] = TripleObject(p[1], p[2], p[3], location(p))
-
 
 def p_expr(p):
     '''expr : identifier
@@ -126,17 +143,14 @@ def p_parameterlist(p):
     '''parameterlist : emptylist
                      | nonemptyparameterlist'''
     p[0] = p[1]
-    p.parser.param_number = 0
 
 def p_nonemptyparameterlist_1(p):
     '''nonemptyparameterlist : SYMBOL'''
-    p[0] = [Parameter(p[1], 0, location(p))]
-    p.parser.param_number = 0
+    p[0] = [p[1]]
 
 def p_nonemptyparameterlist_n(p):
     '''nonemptyparameterlist : SYMBOL ',' nonemptyparameterlist'''
-    p.parser.param_number += 1
-    p[0] = [Parameter(p[1], p.parser.param_number, location(p))] + p[3]
+    p[0] = [p[1]] + p[3]
 
 def p_uri(p):
     '''uri : URI'''
@@ -144,18 +158,22 @@ def p_uri(p):
 
 def p_prefixconstructorapp(p):
     '''prefixconstructorapp : tpeconstructor indentedinstancebody'''
-    p[0] = p[2]
+    if p[1]:
+        p[0] = Expansion(p[1].template, None, [a.value for a in p[1].args], p[2], location(p))
+    else:
+        p[0] = p[2]
 
 def p_tpeconstructor_args(p):
     '''tpeconstructor : identifier  '(' exprlist ')' '''
-    pass
+    p[0] = Expansion(p[1], None, p[3], [], location(p))
 
 def p_tpeconstructor_noargs(p):
     '''tpeconstructor : identifier'''
+    p[0] = Expansion(p[1], None, [], [], location(p))
 
 def p_tpeconstructorstar(p):
     '''tpeconstructor : empty'''
-    pass
+    p[0] = None
 
 def p_indentedinstancebody(p):
     '''indentedinstancebody : INDENT instancebody DEDENT'''
@@ -180,7 +198,7 @@ def p_empty_bodystatements(p):
 ## 1.0 also has infixassigment here
 def p_bodystatement(p):
     '''bodystatement : property
-                     | instanceexp'''
+                     | expansion'''
     p[0] = p[1]
 
 def p_property(p):
@@ -211,10 +229,10 @@ def p_error(p):
         pass
     else:
         print("Syntax error!: the offending token is '%s' on line %d"
-              % (p.value, location(p)))
+              % (p.value, p.lineno))
 
 def location(p):
-    pos = Position(p.lineno, p.lexpos)
+    pos = Position(p.lineno(0), p.lexpos(0))
     return Location(pos, p.parser.filename)
 
 class RDFScriptParser:
@@ -230,7 +248,7 @@ class RDFScriptParser:
 
     def parse(self, script):
 
-        return self.parser.parse(script, lexer=self.scanner)
+        return self.parser.parse(script, lexer=self.scanner, tracking=True)
 
     def reset(self):
 
@@ -243,6 +261,9 @@ class Position:
 
         self._line = line
         self._col  = col
+
+    def __repr__(self):
+        return format("(%s, %s)" % (self.line, self.col))
 
     @property
     def line(self):
@@ -262,6 +283,9 @@ class Location:
             self._filename = "REPL"
         else:
             self._filename = filename
+
+    def __repr__(self):
+        return format("%s in '%s'" % (self.position, self.filename))
 
     @property
     def position(self):
