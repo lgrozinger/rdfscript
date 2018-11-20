@@ -19,4 +19,5 @@ D(x) =>
   y = "That one"
 
 t : C(<http://uri.org/x>)
-s : D(<http://uri.org/x>)
+  v = True
+  s : D(<http://uri.org/x>)
