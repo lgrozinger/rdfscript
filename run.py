@@ -7,16 +7,12 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 
 def parse_from_file(filepath):
-    print("Building parser with yacc...")
-    parser = RDFScriptParser(filename=filepath)
-    print("Parser build success...")
-    print("Lexer build success... Enjoy your RDF...")
-    print("#"*40)
+    parser = RDFScriptParser(debug=True, filename=filepath)
 
     with open(filepath, 'r') as in_file:
         data = in_file.read()
 
-    env = Env()
+    env = Env(filename=filepath)
     forms = parser.parse(data)
     env.interpret(forms)
 

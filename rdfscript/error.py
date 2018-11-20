@@ -11,6 +11,25 @@ class RDFScriptError(Exception):
     def __str__(self):
         return format("ERROR: %s\n at %s:\n" % (self._type, self.location))
 
+class UnexpectedType(RDFScriptError):
+    def __init__(self, expected, actual, location):
+        super().__init__(location)
+        self._expected = expected
+        self._actual = actual
+        self._type = 'Unexpected Type Error'
+
+    @property
+    def expected(self):
+        return self._expected
+
+    @property
+    def actual(self):
+        return self._actual
+
+    def __str__(self):
+        return super().__str__() + format("Expected object of type: %s, but found %s\n\n."
+                                          % (self.expected, self.actual))
+
 class PrefixError(RDFScriptError):
 
     def __init__(self, prefix, location):

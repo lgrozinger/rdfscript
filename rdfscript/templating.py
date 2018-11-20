@@ -2,7 +2,8 @@ import rdflib
 import pdb
 
 from .core import Node, Name
-from .error import TemplateNotFound
+from .error import (TemplateNotFound,
+                    UnexpectedType)
 
 class Parameter(Node):
     """Env's abstraction of a RDF BNode for a template parameter."""
@@ -136,6 +137,8 @@ class Expansion(Node):
         template = env.lookup(env.resolve_name(p, l))
         if not template:
             raise TemplateNotFound(self._template, self._location)
+        if not isinstance(template, Template):
+            raise UnexpectedType(Template, template, self._location)
 
         triples = [self.sub_args(triple) for triple in template.as_triples(env)]
 

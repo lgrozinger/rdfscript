@@ -76,7 +76,7 @@ def p_defaultprefix_pragma(p):
     p[0] = DefaultPrefixPragma(p[2], location(p))
 
 def p_pragma_import(p):
-    '''pragma : IMPORT expr'''
+    '''pragma : IMPORT identifier'''
     p[0] = ImportPragma(p[2], location(p))
 
 def p_assignment(p):
@@ -110,19 +110,6 @@ def p_identifier(p):
                   | localname
                   | uri'''
     p[0] = p[1]
-
-def p_identifierlist(p):
-    '''identifierlist : emptylist
-                      | notemptyidentifierlist'''
-    p[0] = p[1]
-
-def p_not_empty_identifierlist_1(p):
-    '''notemptyidentifierlist : identifier'''
-    p[0] = [p[1]]
-
-def p_not_empty_identifierlist_n(p):
-    '''notemptyidentifierlist : identifier ',' notemptyidentifierlist'''
-    p[0] = [p[1]] + p[3]
 
 def p_qname(p):
     '''qname : SYMBOL '.' SYMBOL'''
@@ -202,7 +189,8 @@ def p_bodystatement(p):
     p[0] = p[1]
 
 def p_property(p):
-    '''property : identifier '=' expr'''
+    '''property : identifier '=' expr
+                | identifier '=' expansion'''
     p[0] = Property(p[1], p[3], location(p))
 
 # infixassigment breaks the parser, since it causes SR conflict with
@@ -237,7 +225,7 @@ def location(p):
 
 class RDFScriptParser:
 
-    def __init__(self, debug=False, scanner=reader, filename=None):
+    def __init__(self, debug=True, scanner=reader, filename=None):
 
         self.scanner = lex.lex(module=scanner)
         self.scanner.at_line_start = True

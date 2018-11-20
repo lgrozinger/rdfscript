@@ -11,7 +11,7 @@ from .error import RDFScriptError
 
 from rdfscript.identifier import URI
 
-from urllib.parse import quote as urlencode
+from .rdfscriptparser import RDFScriptParser
 
 class Env:
     def __init__(self, repl=False, filename=None):
@@ -26,7 +26,10 @@ class Env:
 
         self._logger = logging.getLogger(__name__)
 
-        self._cwd = pathlib.Path('.')
+        if filename:
+            self._path = pathlib.Path(filename).parent
+        else:
+            self._path = pathlib.Path('.')
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
@@ -79,6 +82,13 @@ class Env:
 
         return result
 
+    def eval_import(self, uri):
+
+        filename = uri.toPython()
+        parser = RDFScriptParser(filename=filename)
+
+        self.interpret(parser.parse((self._path / filename).read_text()))
+
 class RuntimeGraph:
 
     def __init__(self):
@@ -120,4 +130,4 @@ class RuntimeGraph:
             None
 
     def serialise(self):
-        return self._g.serialize(format='nt')
+        return self._g.serialize(format='xml').decode("utf-8")

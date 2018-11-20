@@ -1,4 +1,6 @@
-@prefix p <http://uri.org/p>
+@prefix p <http://uri.org/>
+@prefix sbol <http://sbols.org/v2#>
+@defaultPrefix sbol
 
 A(x, y) =>
   x = 42
@@ -12,4 +14,9 @@ C(x) => B()
   x = 43
   z = "STRING"
 
+D(x) =>
+  h = g : C(x)
+  y = "That one"
+
 t : C(<http://uri.org/x>)
+s : D(<http://uri.org/x>)

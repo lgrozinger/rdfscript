@@ -57,7 +57,7 @@ def evaluate_defaultprefixpragma(pragma, env):
         return pragma.prefix
 
 def evaluate_importpragma(pragma, env):
-    pass
+    env.eval_import(evaluate(pragma.target, env))
 
 def evaluate_value(value, env):
 
@@ -72,14 +72,18 @@ def evaluate_expansion(expansion, env):
 
     raw_triples = expansion.as_triples(env)
 
-    triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
-               for (s, p, o) in raw_triples]
+    for triple in raw_triples:
+        evaluate_triple(triple, env)
 
-    env.add_triples(triples)
+    return evaluate(expansion.name, env)
 
 def evaluate_argument(argument, env):
 
     return evaluate(argument.value, env)
+
+def evaluate_triple(triple, env):
+    (s, p, o) = triple
+    env.add_triples([(evaluate(s, env), evaluate(p, env), evaluate(o, env))])
 
 def property_as_triple(subject, prop, env):
     return (subject, evaluate(prop.name, env), evaluate(prop.value, env))
