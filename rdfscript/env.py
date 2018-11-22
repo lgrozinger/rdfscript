@@ -7,32 +7,39 @@ import rdfscript.toplevel
 import rdfscript.core
 
 from .evaluate import evaluate
-from .error import RDFScriptError
+from .error import RDFScriptError, FailToImport
 
 from rdfscript.identifier import URI
 
 from .rdfscriptparser import RDFScriptParser
 
+from .importer import Importer
+
 class Env:
-    def __init__(self, repl=False, filename=None):
+    def __init__(self, repl=False, filename=None, serialiser=None):
 
         self._symbol_table = {}
 
         self._interactive_mode = repl
 
-        self._rdf = RuntimeGraph()
+        self._rdf = RuntimeGraph(serialiser=serialiser)
 
         self._default_ns = rdflib.Namespace(self._rdf.namespace)
+        self._default_prefix = None
 
         self._logger = logging.getLogger(__name__)
 
         if filename:
-            self._path = pathlib.Path(filename).parent
+            self._importer = Importer(extrapaths=[pathlib.Path(filename).parent])
         else:
-            self._path = pathlib.Path('.')
+            self._importer = Importer()
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
+
+    @property
+    def default_prefix(self):
+        return self._default_prefix
 
     def add_triples(self, triples):
         for (s, p, o) in triples:
@@ -49,6 +56,7 @@ class Env:
             return None
         else:
             self._default_ns = ns
+            self._default_prefix = prefix
             return prefix
 
     def assign(self, uriref, value):
@@ -87,13 +95,22 @@ class Env:
         filename = uri.toPython()
         parser = RDFScriptParser(filename=filename)
 
-        self.interpret(parser.parse((self._path / filename).with_suffix('.rdfsh').read_text()))
+        self._importer.add_path(pathlib.Path(filename).parent)
+        import_text = self._importer.import_file(filename)
+        if not import_text:
+            return False
+        else:
+            self.interpret(parser.parse(self._importer.import_file(filename)))
+
+        self._importer.remove_path(pathlib.Path(filename).parent)
+        return True
 
 class RuntimeGraph:
 
-    def __init__(self):
+    def __init__(self, serialiser=None):
 
         self._g = rdflib.Graph()
+        self._serialiser = serialiser
 
     @property
     def namespace(self):
@@ -130,4 +147,7 @@ class RuntimeGraph:
             None
 
     def serialise(self):
-        return self._g.serialize(format='xml').decode("utf-8")
+        if not self._serialiser:
+            return self._g.serialize(format='xml').decode("utf-8")
+        else:
+            return self._serialiser(self._g).decode("utf-8")

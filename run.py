@@ -5,6 +5,7 @@ import sys
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
+from rdfscript.SBOL2Serialize import serialize_sboll2
 
 def parse_from_file(filepath):
     parser = RDFScriptParser(debug=True, filename=filepath)
@@ -12,7 +13,7 @@ def parse_from_file(filepath):
     with open(filepath, 'r') as in_file:
         data = in_file.read()
 
-    env = Env(filename=filepath)
+    env = Env(filename=filepath, serialiser=serialize_sboll2)
     forms = parser.parse(data)
     env.interpret(forms)
 
@@ -25,7 +26,7 @@ def rdf_repl():
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
-    e = Env(repl=True)
+    e = Env(repl=True, serialiser=serialize_sboll2)
 
     while True:
         try:

@@ -11,7 +11,22 @@ class RDFScriptError(Exception):
     def __str__(self):
         return format("ERROR: %s\n at %s:\n" % (self._type, self.location))
 
-class RDFScriptSyntax(Exception):
+class FailToImport(RDFScriptError):
+
+    def __init__(self, target, location):
+        super().__init__(location)
+        self._target = target
+        self._type = 'Import Failure Error'
+
+    @property
+    def target(self):
+        return self._target
+
+    def __str__(self):
+        return super().__str__() + format("Could not find import '%s'\n\n"
+                                          % self.target)
+
+class RDFScriptSyntax(RDFScriptError):
 
     def __init__(self, token, location):
         super().__init__(location)
@@ -23,7 +38,7 @@ class RDFScriptSyntax(Exception):
         return self._token
 
     def __str__(self):
-        return super().__str__() + format("Did not expect to find '%s'"
+        return super().__str__() + format("Did not expect to find '%s'\n\n"
                                           % self.token)
 
 class UnexpectedType(RDFScriptError):

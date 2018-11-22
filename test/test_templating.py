@@ -85,7 +85,7 @@ class TemplatingTest(unittest.TestCase):
     def test_derived_template_as_triples(self):
 
         self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
-        self.env.assign(self.env.resolve_name(None, 'C'), self.templateB)
+        self.env.assign(self.env.resolve_name(None, 'C'), self.templateC)
 
         template_triples = [(Name(None, 'C', None),
                              Parameter('x', 1, None),
@@ -100,7 +100,7 @@ class TemplatingTest(unittest.TestCase):
                              Name(None, 'z', None),
                              Value("STRING", None))]
 
-        self.assertEqual(self.templateC.as_triples(self.env), template_triples)
+        self.assertEqual(self.env.lookup(self.env.resolve_name(None, 'C')).as_triples(self.env), template_triples)
 
     def test_expansion_as_triples(self):
 
@@ -154,3 +154,40 @@ class TemplatingTest(unittest.TestCase):
 
         self.assertEqual(expansion_triples, expansion.as_triples(self.env))
 
+        def test_default_prefixed_template(self):
+            self.env.bind_prefix('eg', rdflib.URIRef('http://eg.org/'))
+            self.env.set_default_prefix('eg')
+            self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
+
+            template_triples = [(Name('eg', 'A', None),
+                                 Parameter('x', 1, None),
+                                 Value(42, None)),
+                                (Name('eg', 'A', None),
+                                 Uri('http://example.eg/predicate', None),
+                                 Parameter('y', 0, None))]
+
+            self.assertEqual(template_triples, self.env.lookup(self.env.resolve_name('eg', 'A')).as_triples(env))
+
+        def test_default_prefixed_template_expansion(self):
+            self.env.bind_prefix('eg', rdflib.URIRef('http://eg.org/'))
+            self.env.set_default_prefix('eg')
+            self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
+
+            expansion = Expansion(Name('eg', 'A', None),
+                                  Name(None, 'E', None),
+                                  [Uri('http://uri.org/x', None),
+                                   Value(True, None)],
+                                  [],
+                                  None)
+
+            expansion_triples = [(Name(None, 'E', None),
+                                  Uri('http://uri.org/x', None),
+                                  Value(42, None)),
+                                 (Name(None, 'E', None),
+                                  Uri('http://example.eg/predicate', None),
+                                  Value(True, None)),
+                                 (Name(None, 'E', None),
+                                  Uri('http://www.w3.org/1999/02/22-rdf-syntax-ns#type', None),
+                                  Uri('http://eg.org/', 'A', None))]
+
+            self.assertEqual(expansion_triples, expansion.as_triples(self.env))

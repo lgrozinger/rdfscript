@@ -1,4 +1,5 @@
 import rdflib
+import logging
 
 from .core import (Uri,
                    Value,
@@ -15,7 +16,8 @@ from .templating import (Assignment,
                          Expansion)
 
 from .error import (UnknownConstruct,
-                    PrefixError)
+                    PrefixError,
+                    FailToImport)
 
 def evaluate(node, env):
 
@@ -57,7 +59,10 @@ def evaluate_defaultprefixpragma(pragma, env):
         return pragma.prefix
 
 def evaluate_importpragma(pragma, env):
-    env.eval_import(evaluate(pragma.target, env))
+    if not env.eval_import(evaluate(pragma.target, env)):
+        raise FailToImport(pragma.target, pragma.location)
+
+    return pragma.target
 
 def evaluate_value(value, env):
 
@@ -65,11 +70,14 @@ def evaluate_value(value, env):
 
 def evaluate_template(template, env):
 
+    template.parameterise()
+    template.prefixify(env.default_prefix)
     template_uri = env.resolve_name(template.name.prefix, template.name.localname)
     env.assign(template_uri, template)
 
 def evaluate_expansion(expansion, env):
 
+    #expansion.prefixify(env.default_prefix)
     raw_triples = expansion.as_triples(env)
 
     for triple in raw_triples:
@@ -82,6 +90,7 @@ def evaluate_argument(argument, env):
     return evaluate(argument.value, env)
 
 def evaluate_triple(triple, env):
+    logging.getLogger(__name__).error(triple)
     (s, p, o) = triple
     env.add_triples([(evaluate(s, env), evaluate(p, env), evaluate(o, env))])
 

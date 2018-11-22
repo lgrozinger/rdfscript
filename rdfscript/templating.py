@@ -94,6 +94,20 @@ class Property(Node):
     def value(self):
         return self._value
 
+    def parameterise(self, parameters):
+        for param in parameters:
+            if self.value == param.as_name():
+                self._value = param
+
+            if self.name == param.as_name():
+                self._name = param
+
+    def prefixify(self, prefix):
+        self._name.prefixify(prefix)
+
+        if isinstance(self._value, Name):
+            self._value.prefixify(prefix)
+
 class Expansion(Node):
 
     def __init__(self, template, name, args, body, location):
@@ -131,6 +145,25 @@ class Expansion(Node):
     def body(self):
         return self._body
 
+    def parameterise(self, parameters):
+        for param in parameters:
+            if self.name == param.as_name():
+                self._name = param
+
+            if self.template == param.as_name():
+                self._template = param
+
+            for arg in self.args:
+                if arg.value == param.as_name():
+                    arg = param
+
+    def prefixify(self, prefix):
+        self._name.prefixify(prefix)
+        self._template.prefixify(prefix)
+        for arg in self.args:
+            if isinstance(arg, Name):
+                arg.value.prefixify(prefix)
+
     def as_triples(self, env):
         p = self.template.prefix
         l = self.template.localname
@@ -142,10 +175,7 @@ class Expansion(Node):
 
         triples = [self.sub_args(triple) for triple in template.as_triples(env)]
 
-        triples = [self.sub_name(triple) for triple in triples]
-
-        triples = [self.sub_type(triple, template.as_uri()) for triple in triples]
-        triples.append((self._name, rdftype_uri(), template.as_uri()))
+        triples = [self.sub_name(triple, env) for triple in triples]
 
         for expr in self._body:
             if isinstance(expr, Property):
@@ -156,21 +186,21 @@ class Expansion(Node):
 
         return triples
 
-    def sub_type(self, triple, type_uri):
+    def sub_type(self, triple, type_uri, env):
         (s, p, o) = triple
-        if s == self._name and p == rdftype_uri():
+        if s == self._name.as_uri(env) and p == rdftype_uri():
             o = type_uri
 
         return (s, p, o)
 
-    def sub_name(self, triple):
+    def sub_name(self, triple, env):
         (s, p, o) = triple
-        if isinstance(s, Name) and s == self._template:
-            s = self._name
-        if isinstance(p, Name) and p == self._template:
-            p = self._name
-        if isinstance(o, Name) and o == self._template:
-            o = self._name
+        if isinstance(s, Uri) and s == self._template.as_uri(env):
+            s = self._name.as_uri(env)
+        if isinstance(p, Uri) and p == self._template.as_uri(env):
+            p = self._name.as_uri(env)
+        if isinstance(o, Uri) and o == self._template.as_uri(env):
+            o = self._name.as_uri(env)
 
         return (s, p, o)
 
@@ -213,8 +243,23 @@ class Template(Node):
     def body(self):
         return self._body
 
-    def as_uri(self):
-        return self._name.as_uri()
+    def parameterise(self):
+        if self.base:
+            self.base.parameterise(self.parameters)
+        for expr in self.body:
+            expr.parameterise(self.parameters)
+
+    def prefixify(self, prefix):
+
+        self._name.prefixify(prefix)
+        if self._base:
+            self._base.prefixify(prefix)
+
+        for expr in self._body:
+            expr.prefixify(prefix)
+
+    def as_uri(self, env):
+        return self._name.as_uri(env)
 
     def __eq__(self, other):
         return (isinstance(other, Template) and
@@ -236,7 +281,7 @@ class Template(Node):
 
         for expr in self._body:
             if isinstance(expr, Property):
-                triples.append((self._name, expr.name, expr.value))
+                triples.append((self._name.as_uri(env), expr.name, expr.value))
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
