@@ -87,13 +87,13 @@ class Env:
         filename = uri.toPython()
         parser = RDFScriptParser(filename=filename)
 
-        self.interpret(parser.parse((self._path / filename).read_text()))
+        self.interpret(parser.parse((self._path / filename).with_suffix('.rdfsh').read_text()))
 
 class RuntimeGraph:
 
     def __init__(self):
 
-        self._g = rdflib.ConjunctiveGraph()
+        self._g = rdflib.Graph()
 
     @property
     def namespace(self):

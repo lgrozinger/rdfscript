@@ -53,6 +53,11 @@ class Name(Node):
     def localname(self):
         return self._localname
 
+    def as_uri(self):
+        prefix = self._prefix or ''
+        localname = self._localname or ''
+        return Uri(prefix + localname, self.location)
+
 class Uri(Node):
     """Env's abstraction of a URI"""
 

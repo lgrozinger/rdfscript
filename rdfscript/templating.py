@@ -1,7 +1,7 @@
 import rdflib
 import pdb
 
-from .core import Node, Name
+from .core import Node, Name, Uri
 from .error import (TemplateNotFound,
                     UnexpectedType)
 
@@ -144,6 +144,9 @@ class Expansion(Node):
 
         triples = [self.sub_name(triple) for triple in triples]
 
+        triples = [self.sub_type(triple, template.as_uri()) for triple in triples]
+        triples.append((self._name, rdftype_uri(), template.as_uri()))
+
         for expr in self._body:
             if isinstance(expr, Property):
                 triples.append((self._name, expr.name, expr.value))
@@ -152,6 +155,13 @@ class Expansion(Node):
                     triples.append(triple)
 
         return triples
+
+    def sub_type(self, triple, type_uri):
+        (s, p, o) = triple
+        if s == self._name and p == rdftype_uri():
+            o = type_uri
+
+        return (s, p, o)
 
     def sub_name(self, triple):
         (s, p, o) = triple
@@ -202,6 +212,9 @@ class Template(Node):
     @property
     def body(self):
         return self._body
+
+    def as_uri(self):
+        return self._name.as_uri()
 
     def __eq__(self, other):
         return (isinstance(other, Template) and
@@ -266,6 +279,8 @@ class Assignment(Node):
     def value(self):
         return self._value
 
+def rdftype_uri():
+    return Uri(rdflib.RDF.type.toPython(), None)
 
 def parameterise_triples(triples, parameters):
     parameterised = []

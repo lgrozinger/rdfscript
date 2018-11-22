@@ -18,8 +18,7 @@ from .templating import (Assignment,
                          Expansion,
                          Property)
 
-## old ast
-from .toplevel import InstanceExp
+from .error import RDFScriptSyntax
 
 def p_toplevels(p):
     '''toplevels : toplevel toplevels'''
@@ -216,8 +215,8 @@ def p_error(p):
     if p == None:
         pass
     else:
-        print("Syntax error!: the offending token is '%s' on line %d"
-              % (p.value, p.lineno))
+        location = Location(Position(p.lineno, p.lexpos), p.lexer.filename)
+        raise RDFScriptSyntax(p, location)
 
 def location(p):
     pos = Position(p.lineno(0), p.lexpos(0))
@@ -230,6 +229,7 @@ class RDFScriptParser:
         self.scanner = lex.lex(module=scanner)
         self.scanner.at_line_start = True
         self.scanner.indent_stack  = [0]
+        self.scanner.filename = filename
 
         self.parser = yacc.yacc(debug=debug)
         self.parser.filename = filename

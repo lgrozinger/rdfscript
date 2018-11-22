@@ -11,6 +11,21 @@ class RDFScriptError(Exception):
     def __str__(self):
         return format("ERROR: %s\n at %s:\n" % (self._type, self.location))
 
+class RDFScriptSyntax(Exception):
+
+    def __init__(self, token, location):
+        super().__init__(location)
+        self._token = token
+        self._type = 'Invalid Syntax Error'
+
+    @property
+    def token(self):
+        return self._token
+
+    def __str__(self):
+        return super().__str__() + format("Did not expect to find '%s'"
+                                          % self.token)
+
 class UnexpectedType(RDFScriptError):
     def __init__(self, expected, actual, location):
         super().__init__(location)

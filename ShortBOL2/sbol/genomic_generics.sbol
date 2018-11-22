@@ -1,0 +1,19 @@
+# Generic genomic parts
+
+import <genomic.sbol>
+
+dna : DnaComponent
+
+rna : RnaComponent
+
+protein : ProteinComponent
+
+promoter : Promoter
+rbs : RBS
+cds : CDS
+terminator : Terminator
+
+cds_rna : CDS_RNA
+
+proteinProduction : ProteinProduction(cds, cds_rna, protein)
+

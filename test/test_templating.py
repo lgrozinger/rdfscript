@@ -9,11 +9,13 @@ from rdfscript.env import Env
 from rdfscript.core import (Name,
                             Uri,
                             Value)
+
 from rdfscript.templating import (Template,
                                   Parameter,
                                   Property,
                                   Expansion,
                                   Argument)
+
 from rdfscript.evaluate import evaluate
 
 class TemplatingTest(unittest.TestCase):
@@ -112,11 +114,14 @@ class TemplatingTest(unittest.TestCase):
                               None)
 
         expansion_triples = [(Name(None, 'E', None),
-                             Uri('http://uri.org/x', None),
-                             Value(42, None)),
-                            (Name(None, 'E', None),
-                             Uri('http://example.eg/predicate', None),
-                             Value(True, None))]
+                              Uri('http://uri.org/x', None),
+                              Value(42, None)),
+                             (Name(None, 'E', None),
+                              Uri('http://example.eg/predicate', None),
+                              Value(True, None)),
+                             (Name(None, 'E', None),
+                              Uri('http://www.w3.org/1999/02/22-rdf-syntax-ns#type', None),
+                              Name(None, 'A', None).as_uri())]
 
         self.assertEqual(expansion.as_triples(self.env), expansion_triples)
 
@@ -142,7 +147,10 @@ class TemplatingTest(unittest.TestCase):
                               Name('p', 'y', None)),
                              (Name(None, 'E', None),
                               Name(None, 'z', None),
-                              Value("STRING", None))]
+                              Value("STRING", None)),
+                             (Name(None, 'E', None),
+                              Uri('http://www.w3.org/1999/02/22-rdf-syntax-ns#type', None),
+                              Name(None, 'C', None).as_uri())]
 
         self.assertEqual(expansion_triples, expansion.as_triples(self.env))
 

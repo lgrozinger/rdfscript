@@ -1,0 +1,14 @@
+@import <sbol>
+
+@prefix test <http://me.name/test#>
+@defaultPrefix test
+
+seq : sbol.DnaSequence("agct")
+
+cmp : sbol.DnaComponent
+  sequence = seq
+
+prom : sbol.Promoter
+  displayId = "p1"
+  name = "Promoter 1"
+  description = "The first promoter"
