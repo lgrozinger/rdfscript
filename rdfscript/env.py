@@ -15,22 +15,26 @@ from .rdfscriptparser import RDFScriptParser
 
 from .importer import Importer
 
+from .SBOL2Serialize import serialize_sboll2
+
 class Env:
-    def __init__(self, repl=False, filename=None, serialiser=None):
+    def __init__(self, repl=False, filename=None, serializer=None, extrapaths=[]):
 
         self._symbol_table = {}
 
         self._interactive_mode = repl
 
-        self._rdf = RuntimeGraph(serialiser=serialiser)
+        self._rdf = RuntimeGraph(serializer=serializer)
 
         self._default_ns = rdflib.Namespace(self._rdf.namespace)
         self._default_prefix = None
 
         self._logger = logging.getLogger(__name__)
 
+        paths = [pathlib.Path(path) for path in extrapaths]
         if filename:
-            self._importer = Importer(extrapaths=[pathlib.Path(filename).parent])
+            paths.append(pathlib.Path(filename).parent)
+            self._importer = Importer(extrapaths=paths)
         else:
             self._importer = Importer()
 
@@ -107,10 +111,10 @@ class Env:
 
 class RuntimeGraph:
 
-    def __init__(self, serialiser=None):
+    def __init__(self, serializer=None):
 
         self._g = rdflib.Graph()
-        self._serialiser = serialiser
+        self._serializer = serializer
 
     @property
     def namespace(self):
@@ -147,7 +151,11 @@ class RuntimeGraph:
             None
 
     def serialise(self):
-        if not self._serialiser:
+        if self._serializer == 'rdfxml':
             return self._g.serialize(format='xml').decode("utf-8")
-        else:
-            return self._serialiser(self._g).decode("utf-8")
+        elif self._serializer == 'n3':
+            return self._g.serialize(format='n3').decode("utf-8")
+        elif self._serializer == 'turtle':
+            return self._g.serialize(format='turtle').decode("utf-8")
+        elif self._serializer == 'sbolxml':
+            return serialize_sboll2(self._g).decode("utf-8")

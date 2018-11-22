@@ -71,12 +71,99 @@ class TemplatingTest(unittest.TestCase):
     def tearDown(self):
         None
 
+    def test_parameterise_template_no_base(self):
+
+        template = Template(Name(None, 'A', None),
+                            ['a', 'b', 'c'],
+                            [Property(Name(None, 'a', None),
+                                      Value(1, None),
+                                      None),
+                             Property(Name(None, 'x', None),
+                                      Name(None, 'b', None),
+                                      None),
+                             Property(Name(None, 'c', None),
+                                      Name(None, 'a', None),
+                                      None)],
+                            None,
+                            None)
+
+        template.parameterise()
+
+        parameterised = Template(Name(None, 'A', None),
+                                 ['a', 'b', 'c'],
+                                 [Property(Parameter('a', 0, None),
+                                           Value(1, None),
+                                           None),
+                                  Property(Name(None, 'x', None),
+                                           Parameter('b', 1, None),
+                                           None),
+                                  Property(Parameter('c', 2, None),
+                                           Parameter('a', 1, None),
+                                           None)],
+                                 None,
+                                 None)
+
+        self.assertEqual(template, parameterised)
+
+    def test_parameterise_expansion(self):
+
+        template = Template(Name(None, 'A', None),
+                            ['a', 'b', 'c'],
+                            [Property(Name(None, 'a', None),
+                                      Value(1, None),
+                                      None),
+                             Property(Name(None, 'x', None),
+                                      Name(None, 'b', None),
+                                      None),
+                             Property(Name(None, 'c', None),
+                                      Name(None, 'a', None),
+                                      None)],
+                            None,
+                            None)
+
+        expansion = Expansion(Name(None, 'T', None),
+                              Name(None, 'E', None),
+                              [Name(None, 'x', None),
+                               Name(None, 'y', None),
+                               Name(None, 'z', None)],
+                              [Property(Name(None, 'y', None),
+                                      Value(1, None),
+                                      None),
+                               Property(Name(None, 'x', None),
+                                        Name(None, 'b', None),
+                                        None),
+                               Property(Name(None, 'z', None),
+                                        Name(None, 'a', None),
+                                        None)],
+                              None)
+
+        expansion.parameterise([Parameter('x', None, None), Parameter('a', None, None)])
+
+        parameterised = Expansion(Name(None, 'T', None),
+                                  Name(None, 'E', None),
+                                  [Parameter('x', None, None),
+                                   Name(None, 'y', None),
+                                   Name(None, 'z', None)],
+                                  [Property(Name(None, 'y', None),
+                                            Value(1, None),
+                                            None),
+                                   Property(Name(None, 'x', None),
+                                            Name(None, 'b', None),
+                                            None),
+                                   Property(Name(None, 'z', None),
+                                            Name(None, 'a', None),
+                                            None)],
+                                  None)
+
+        self.assertEqual(expansion, parameterised)
+
+
     def test_template_as_triples(self):
 
-        template_triples = [(Name(None, 'A', None),
+        template_triples = [(Name(None, 'A', None).as_uri(self.env),
                              Parameter('x', 1, None),
                              Value(42, None)),
-                            (Name(None, 'A', None),
+                            (Name(None, 'A', None).as_uri(self.env),
                              Uri('http://example.eg/predicate', None),
                              Parameter('y', 0, None))]
 
@@ -87,16 +174,16 @@ class TemplatingTest(unittest.TestCase):
         self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
         self.env.assign(self.env.resolve_name(None, 'C'), self.templateC)
 
-        template_triples = [(Name(None, 'C', None),
+        template_triples = [(Name(None, 'C', None).as_uri(self.env),
                              Parameter('x', 1, None),
                              Value(42, None)),
-                            (Name(None, 'C', None),
+                            (Name(None, 'C', None).as_uri(self.env),
                              Uri('http://example.eg/predicate', None),
                              Value("VALUE", None)),
-                            (Name(None, 'C', None),
+                            (Name(None, 'C', None).as_uri(self.env),
                              Parameter('x', 0, None),
                              Name('p', 'y', None)),
-                            (Name(None, 'C', None),
+                            (Name(None, 'C', None).as_uri(self.env),
                              Name(None, 'z', None),
                              Value("STRING", None))]
 
@@ -113,15 +200,12 @@ class TemplatingTest(unittest.TestCase):
                               [],
                               None)
 
-        expansion_triples = [(Name(None, 'E', None),
+        expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
                               Uri('http://uri.org/x', None),
                               Value(42, None)),
-                             (Name(None, 'E', None),
+                             (Name(None, 'E', None).as_uri(self.env),
                               Uri('http://example.eg/predicate', None),
-                              Value(True, None)),
-                             (Name(None, 'E', None),
-                              Uri('http://www.w3.org/1999/02/22-rdf-syntax-ns#type', None),
-                              Name(None, 'A', None).as_uri())]
+                              Value(True, None))]
 
         self.assertEqual(expansion.as_triples(self.env), expansion_triples)
 
@@ -136,21 +220,18 @@ class TemplatingTest(unittest.TestCase):
                               [],
                               None)
 
-        expansion_triples = [(Name(None, 'E', None),
+        expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
                               Uri('http://uri.org/x', None),
                               Value(42, None)),
-                             (Name(None, 'E', None),
+                             (Name(None, 'E', None).as_uri(self.env),
                               Uri('http://example.eg/predicate', None),
                               Value("VALUE", None)),
-                             (Name(None, 'E', None),
+                             (Name(None, 'E', None).as_uri(self.env),
                               Uri('http://uri.org/x', None),
                               Name('p', 'y', None)),
-                             (Name(None, 'E', None),
+                             (Name(None, 'E', None).as_uri(self.env),
                               Name(None, 'z', None),
-                              Value("STRING", None)),
-                             (Name(None, 'E', None),
-                              Uri('http://www.w3.org/1999/02/22-rdf-syntax-ns#type', None),
-                              Name(None, 'C', None).as_uri())]
+                              Value("STRING", None))]
 
         self.assertEqual(expansion_triples, expansion.as_triples(self.env))
 

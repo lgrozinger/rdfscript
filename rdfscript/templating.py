@@ -58,6 +58,10 @@ class Argument(Node):
     def value(self):
         return self._value
 
+    @value.setter
+    def value(self, value):
+        self._value = value
+
     @property
     def position(self):
         return self._position
@@ -155,13 +159,13 @@ class Expansion(Node):
 
             for arg in self.args:
                 if arg.value == param.as_name():
-                    arg = param
+                    arg.value = param
 
     def prefixify(self, prefix):
         self._name.prefixify(prefix)
         self._template.prefixify(prefix)
         for arg in self.args:
-            if isinstance(arg, Name):
+            if isinstance(arg.value, Name):
                 arg.value.prefixify(prefix)
 
     def as_triples(self, env):

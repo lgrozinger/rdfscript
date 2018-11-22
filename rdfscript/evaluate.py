@@ -90,7 +90,6 @@ def evaluate_argument(argument, env):
     return evaluate(argument.value, env)
 
 def evaluate_triple(triple, env):
-    logging.getLogger(__name__).error(triple)
     (s, p, o) = triple
     env.add_triples([(evaluate(s, env), evaluate(p, env), evaluate(o, env))])
 
