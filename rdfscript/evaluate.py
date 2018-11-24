@@ -60,7 +60,7 @@ def evaluate_defaultprefixpragma(pragma, env):
 
 def evaluate_importpragma(pragma, env):
     if not env.eval_import(evaluate(pragma.target, env)):
-        raise FailToImport(pragma.target, pragma.location)
+        raise FailToImport(pragma.target, env.get_current_path(), pragma.location)
 
     return pragma.target
 

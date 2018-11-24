@@ -13,18 +13,19 @@ class RDFScriptError(Exception):
 
 class FailToImport(RDFScriptError):
 
-    def __init__(self, target, location):
+    def __init__(self, target, path, location):
         super().__init__(location)
         self._target = target
         self._type = 'Import Failure Error'
+        self._path = path
 
     @property
     def target(self):
         return self._target
 
     def __str__(self):
-        return super().__str__() + format("Could not find import '%s'\n\n"
-                                          % self.target)
+        return super().__str__() + format("Could not find import '%s'\non path %s\n\n"
+                                          % (self.target, self._path))
 
 class RDFScriptSyntax(RDFScriptError):
 

@@ -31,12 +31,12 @@ class Env:
 
         self._logger = logging.getLogger(__name__)
 
-        paths = [pathlib.Path(path) for path in extrapaths]
+        paths = extrapaths
         if filename:
             paths.append(pathlib.Path(filename).parent)
             self._importer = Importer(extrapaths=paths)
         else:
-            self._importer = Importer()
+            self._importer = Importer(extrapaths=paths)
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
@@ -108,6 +108,10 @@ class Env:
 
         self._importer.remove_path(pathlib.Path(filename).parent)
         return True
+
+    def get_current_path(self):
+
+        return [str(p) for p in self._importer.path]
 
 class RuntimeGraph:
 
