@@ -1,0 +1,37 @@
+@prefix templates <http://github.com/lgrozinger/templates/#>
+@defaultPrefix templates
+
+# templates define common patterns of triples you can use to save typing
+
+SimpleTemplate =>
+  property = "value"
+
+# you can expand the template to add its triples to the RDF graph
+
+expand : SimpleTemplate
+
+# templates can take parameters
+
+ParamTemplate(x, y) =>
+  propertyA = x
+  propertyB = y
+
+# when you expand you must give the arguments the template expects
+
+arguments : ParamTemplate(1, 2)
+
+# templates can 'specialise' other templates
+
+SpecialisedTemplate(x) => ParamTemplate(x, 2)
+
+specialised : SpecialisedTemplate(3, 2)
+
+# expansions can add their own triples
+
+moreProperties : SpecialisedTemplate(1)
+  otherProperty = true
+
+# and even their own expansions
+
+nestedExpand : SpecialisedTemplate("expand")
+  inner = nested : SpecialisedTemplate("expand")
