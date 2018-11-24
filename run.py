@@ -57,7 +57,8 @@ if __name__ == "__main__":
                         help="The format into which the graph is serialised")
     parser.add_argument('-p', '--path',
                         help="Additions to the path in which to search for imports",
-                        nargs='*')
+                        nargs='*',
+                        default=[])
     parser.add_argument('filename', default=None, nargs='?',
                         help="File to parse as RDFScript")
 
