@@ -21,8 +21,7 @@ class Env:
     def __init__(self, repl=False, filename=None, serializer=None, extrapaths=[]):
 
         self._symbol_table = {}
-
-        self._interactive_mode = repl
+        self._template_table = {}
 
         self._rdf = RuntimeGraph(serializer=serializer)
 
@@ -70,6 +69,14 @@ class Env:
     def lookup(self, uriref):
 
         return self._symbol_table.get(uriref, None)
+
+    def assign_template(self, uriref, template):
+
+        self._template_table[uriref] = template
+
+    def lookup_template(self, uriref):
+
+        return self._template_table.get(uriref, None)
 
     def resolve_name(self, prefix, name):
 
