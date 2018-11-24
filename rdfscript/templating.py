@@ -171,7 +171,7 @@ class Expansion(Node):
     def as_triples(self, env):
         p = self.template.prefix
         l = self.template.localname
-        template = env.lookup(env.resolve_name(p, l))
+        template = env.lookup_template(env.resolve_name(p, l))
         if not template:
             raise TemplateNotFound(self._template, self._location)
         if not isinstance(template, Template):

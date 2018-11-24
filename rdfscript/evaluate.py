@@ -73,7 +73,7 @@ def evaluate_template(template, env):
     template.parameterise()
     template.prefixify(env.default_prefix)
     template_uri = env.resolve_name(template.name.prefix, template.name.localname)
-    env.assign(template_uri, template)
+    env.assign_template(template_uri, template)
 
 def evaluate_expansion(expansion, env):
 
