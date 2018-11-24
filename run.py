@@ -50,7 +50,7 @@ def rdf_repl(serializer='turtle', optpaths=[]):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="RDFScript compiler and REPL.")
+    parser = argparse.ArgumentParser(description="RDFScript interpreter and REPL.")
 
     parser.add_argument('-s', '--serializer', default='turtle',
                         choices=['rdfxml', 'n3', 'turtle', 'sbolxml'],
