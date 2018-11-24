@@ -8,13 +8,13 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.SBOL2Serialize import serialize_sboll2
 
-def parse_from_file(filepath, serializer='turtle', extrapaths=[], out=None):
+def parse_from_file(filepath, serializer='turtle', optpaths=[], out=None):
     parser = RDFScriptParser(debug=True, filename=filepath)
 
     with open(filepath, 'r') as in_file:
         data = in_file.read()
 
-    env = Env(filename=filepath, serializer=serializer, extrapaths=extrapaths)
+    env = Env(filename=filepath, serializer=serializer, paths=optpaths)
     forms = parser.parse(data)
     env.interpret(forms)
 
@@ -24,14 +24,14 @@ def parse_from_file(filepath, serializer='turtle', extrapaths=[], out=None):
         with open(out, 'w') as o:
             o.write(str(env))
 
-def rdf_repl(serializer='turtle'):
+def rdf_repl(serializer='turtle', optpaths=[]):
     print("Building parser with yacc...")
     parser = RDFScriptParser()
     print("Parser build success...")
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
-    env = Env(repl=True, serializer=serializer)
+    env = Env(repl=True, serializer=serializer, paths=optpaths)
 
     while True:
         try:
@@ -56,7 +56,8 @@ if __name__ == "__main__":
                         choices=['rdfxml', 'n3', 'turtle', 'sbolxml'],
                         help="The format into which the graph is serialised")
     parser.add_argument('-p', '--path',
-                        help="Additions to the path in which to search for imports")
+                        help="Additions to the path in which to search for imports",
+                        nargs='*')
     parser.add_argument('filename', default=None, nargs='?',
                         help="File to parse as RDFScript")
 
@@ -65,6 +66,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.filename:
-        parse_from_file(args.filename, serializer=args.serializer, out=args.output)
+        parse_from_file(args.filename,
+                        serializer=args.serializer,
+                        out=args.output,
+                        optpaths=args.path)
     else:
-        rdf_repl(serializer=args.serializer, out=args.output)
+        rdf_repl(serializer=args.serializer,
+                 out=args.output,
+                 optpaths=args.path)

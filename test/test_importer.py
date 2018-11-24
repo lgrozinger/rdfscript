@@ -19,14 +19,14 @@ class ImporterTest(unittest.TestCase):
 
     def test_importer_setup(self):
 
-        i = Importer()
+        i = Importer([])
 
         self.assertEqual(i.path, [pathlib.Path('.').resolve()])
 
     def test_importer_setup_extras(self):
 
         p = ['..', '~/']
-        i = Importer(extrapaths=p)
+        i = Importer(p)
 
         expected = [pathlib.Path('..').resolve(),
                     pathlib.Path('~/').expanduser().resolve(),
@@ -36,7 +36,7 @@ class ImporterTest(unittest.TestCase):
 
     def test_importer_add_path(self):
 
-        i = Importer()
+        i = Importer([])
 
         before = [p for p in i.path]
         i.add_path('~/')
@@ -46,7 +46,7 @@ class ImporterTest(unittest.TestCase):
 
     def test_importer_remove_path(self):
 
-        i = Importer()
+        i = Importer([])
 
         i.remove_path('.')
 
@@ -54,7 +54,7 @@ class ImporterTest(unittest.TestCase):
 
     def test_importer_test_files(self):
 
-        env = Env(extrapaths=["test/test_files/"])
+        env = Env(paths=["test/test_files/"])
 
         parser = RDFScriptParser()
 

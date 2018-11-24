@@ -2,9 +2,9 @@ import pathlib
 
 class Importer:
 
-    def __init__(self, extrapaths=[]):
+    def __init__(self, paths):
 
-        self._dirs = [pathlib.Path(path).expanduser().resolve() for path in extrapaths]
+        self._dirs = [pathlib.Path(path).expanduser().resolve() for path in paths]
         self._dirs.append(pathlib.Path('.').resolve())
 
     @property

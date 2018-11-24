@@ -18,7 +18,7 @@ from .importer import Importer
 from .SBOL2Serialize import serialize_sboll2
 
 class Env:
-    def __init__(self, repl=False, filename=None, serializer=None, extrapaths=[]):
+    def __init__(self, repl=False, filename=None, serializer=None, paths=[]):
 
         self._symbol_table = {}
 
@@ -31,12 +31,11 @@ class Env:
 
         self._logger = logging.getLogger(__name__)
 
-        paths = extrapaths
         if filename:
             paths.append(pathlib.Path(filename).parent)
-            self._importer = Importer(extrapaths=paths)
+            self._importer = Importer(paths)
         else:
-            self._importer = Importer(extrapaths=paths)
+            self._importer = Importer(paths)
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
