@@ -25,6 +25,7 @@ arguments : ParamTemplate(1, 2)
 # templates can 'specialise' other templates
 
 SpecialisedTemplate(x) => ParamTemplate(x, 2)
+  @extension SbolIdentity
 
 specialised : SpecialisedTemplate(3, 2)
 
@@ -33,6 +34,7 @@ specialised : SpecialisedTemplate(3, 2)
 moreProperties : SpecialisedTemplate(1)
   otherProperty = true
   propertyC = true
+
 
 # and even their own expansions
 

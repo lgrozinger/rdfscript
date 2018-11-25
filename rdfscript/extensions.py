@@ -8,6 +8,9 @@ class ExtensionManager:
         self._extensions = {}
         self.add_extra_extension('extensions.cardinality.AtLeastOne',
                                  shortname='AtLeastOne')
+        self.add_extra_extension('extensions.sbol.SbolIdentity',
+                                 shortname='SbolIdentity')
+
         for name in extras:
             self.add_extra_extension(name)
 
