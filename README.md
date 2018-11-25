@@ -31,7 +31,7 @@ Run the REPL
 
 `python run.py -s rdfxml -o <output-file>`
 
-Display command line options
+Display command line options, including available serialisations.
 
 `python run.py -h`
 
