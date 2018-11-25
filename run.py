@@ -8,13 +8,21 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.SBOL2Serialize import serialize_sboll2
 
-def parse_from_file(filepath, serializer='turtle', optpaths=[], out=None):
+def parse_from_file(filepath,
+                    serializer='turtle',
+                    optpaths=[],
+                    out=None,
+                    extensions=[]):
+
     parser = RDFScriptParser(debug=True, filename=filepath)
 
     with open(filepath, 'r') as in_file:
         data = in_file.read()
 
-    env = Env(filename=filepath, serializer=serializer, paths=optpaths)
+    env = Env(filename=filepath,
+              serializer=serializer,
+              paths=optpaths,
+              extensions=extensions)
     forms = parser.parse(data)
     env.interpret(forms)
 
@@ -24,14 +32,20 @@ def parse_from_file(filepath, serializer='turtle', optpaths=[], out=None):
         with open(out, 'w') as o:
             o.write(str(env))
 
-def rdf_repl(serializer='turtle', out=None, optpaths=[]):
+def rdf_repl(serializer='turtle',
+             out=None,
+             optpaths=[],
+             extensions=[]):
     print("Building parser with yacc...")
     parser = RDFScriptParser()
     print("Parser build success...")
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
-    env = Env(repl=True, serializer=serializer, paths=optpaths)
+    env = Env(repl=True,
+              serializer=serializer,
+              paths=optpaths,
+              extensions=extensions)
 
     while True:
         try:
@@ -64,14 +78,22 @@ if __name__ == "__main__":
 
     parser.add_argument('-o', '--output', help="The name of the output file", default=None)
 
+    parser.add_argument('--version', action='version', version='%(prog)s 0.0alpha')
+
+    parser.add_argument('-e', '--extensions', action='append', nargs=2, default=[])
+
     args = parser.parse_args()
+
+    extensions = [(ext[0], ext[1]) for ext in args.extensions]
 
     if args.filename:
         parse_from_file(args.filename,
                         serializer=args.serializer,
                         out=args.output,
-                        optpaths=args.path)
+                        optpaths=args.path,
+                        extensions=extensions)
     else:
         rdf_repl(serializer=args.serializer,
                  out=args.output,
-                 optpaths=args.path)
+                 optpaths=args.path,
+                 extensions=extensions)

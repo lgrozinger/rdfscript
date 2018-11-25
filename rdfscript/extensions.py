@@ -11,8 +11,8 @@ class ExtensionManager:
         self.add_extra_extension('extensions.sbol.SbolIdentity',
                                  shortname='SbolIdentity')
 
-        for name in extras:
-            self.add_extra_extension(name)
+        for (name, shortname) in extras:
+            self.add_extra_extension(name, shortname=shortname)
 
     @property
     def extensions(self):

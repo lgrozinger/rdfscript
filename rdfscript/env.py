@@ -20,11 +20,16 @@ from .SBOL2Serialize import serialize_sboll2
 from .extensions import ExtensionManager
 
 class Env:
-    def __init__(self, repl=False, filename=None, serializer=None, paths=[]):
+    def __init__(self,
+                 repl=False,
+                 filename=None,
+                 serializer=None,
+                 paths=[],
+                 extensions=[]):
 
         self._symbol_table = {}
         self._template_table = {}
-        self._extension_manager = ExtensionManager()
+        self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RuntimeGraph(serializer=serializer)
 
