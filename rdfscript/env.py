@@ -17,11 +17,14 @@ from .importer import Importer
 
 from .SBOL2Serialize import serialize_sboll2
 
+from .extensions import ExtensionManager
+
 class Env:
     def __init__(self, repl=False, filename=None, serializer=None, paths=[]):
 
         self._symbol_table = {}
         self._template_table = {}
+        self._extension_manager = ExtensionManager()
 
         self._rdf = RuntimeGraph(serializer=serializer)
 
@@ -76,6 +79,9 @@ class Env:
     def lookup_template(self, uriref):
 
         return self._template_table.get(uriref, None)
+
+    def get_extension(self, name):
+        return self._extension_manager.get_extension(name)
 
     def resolve_name(self, prefix, name):
 

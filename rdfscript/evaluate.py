@@ -7,7 +7,8 @@ from .core import (Uri,
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
-                     ImportPragma)
+                     ImportPragma,
+                     ExtensionPragma)
 
 from .templating import (Assignment,
                          Template,
@@ -17,7 +18,9 @@ from .templating import (Assignment,
 
 from .error import (UnknownConstruct,
                     PrefixError,
-                    FailToImport)
+                    FailToImport,
+                    NoSuchExtension,
+                    ExtensionFailure)
 
 def evaluate(node, env):
 
@@ -64,6 +67,15 @@ def evaluate_importpragma(pragma, env):
 
     return pragma.target
 
+def evaluate_extensionpragma(pragma, env):
+    ext = env.get_extension(pragma.name)
+
+    if not ext:
+        raise NoSuchExtension(pragma.name, pragma.location)
+    else:
+        args = [evaluate(arg, env) for arg in pragma.args]
+        return ext(*args)
+
 def evaluate_value(value, env):
 
     return value.as_rdfliteral()
@@ -80,8 +92,22 @@ def evaluate_expansion(expansion, env):
     #expansion.prefixify(env.default_prefix)
     raw_triples = expansion.as_triples(env)
 
-    for triple in raw_triples:
-        evaluate_triple(triple, env)
+    evaluated_triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
+                          for (s, p, o) in raw_triples]
+
+    final_triples = evaluated_triples
+    for extension in expansion.get_extensions(env):
+        e = evaluate(extension, env)
+        result = e.run(final_triples, env)
+        if not result:
+            if e.failure_message:
+                raise ExtensionFailure(e.failure_message, expansion.location)
+            else:
+                raise ExtensionFailure(None, expansion.location)
+        else:
+            final_triples = result
+
+    env.add_triples(final_triples)
 
     return evaluate(expansion.name, env)
 
@@ -113,6 +139,7 @@ _handler_index = {
     PrefixPragma        : evaluate_prefixpragma,
     DefaultPrefixPragma : evaluate_defaultprefixpragma,
     ImportPragma        : evaluate_importpragma,
+    ExtensionPragma     : evaluate_extensionpragma,
     Assignment          : evaluate_assignment,
     Value               : evaluate_value,
     Template            : evaluate_template,

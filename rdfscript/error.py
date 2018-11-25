@@ -87,7 +87,34 @@ class TemplateNotFound(RDFScriptError):
         return self._template
 
     def __str__(self):
-        return super().__str__() + format("Cannnot find template '%s'.\n\n" % self.template)
+        return super().__str__() + format("Cannot find template '%s'.\n\n" % self.template)
+
+class NoSuchExtension(RDFScriptError):
+
+    def __init__(self, name, location):
+        self._name = name
+        self._type = 'Extension Not Found Error'
+
+    @property
+    def name(self):
+        return self._name
+
+    def __str__(self):
+        return super().__str__() + format("Cannot find extension '%s'.\n\n" % self.name)
+
+class ExtensionFailure(RDFScriptError):
+
+    def __init__(self, message, location):
+        super().__init__(location)
+        if message:
+            self._message = message
+        else:
+            self._message = (f"An extension failed, but author did not provide message.")
+
+        self._type = 'Extension Failed Error'
+
+    def __str__(self):
+        return super().__str__() + format("%s" % self._message)
 
 class UnknownConstruct(RDFScriptError):
 

@@ -4,6 +4,7 @@ import pdb
 from .core import Node, Name, Uri
 from .error import (TemplateNotFound,
                     UnexpectedType)
+from .pragma import (ExtensionPragma)
 
 class Parameter(Node):
     """Env's abstraction of a RDF BNode for a template parameter."""
@@ -25,7 +26,7 @@ class Parameter(Node):
 
     @property
     def position(self):
-        return self._position
+        return self._position 
 
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
@@ -122,6 +123,7 @@ class Expansion(Node):
         self._args          = [Argument(arg, args.index(arg), location)
                                for arg in args]
         self._body          = body
+        self._extensions    = []
 
     def __eq__(self, other):
         return (isinstance(other, Expansion) and
@@ -148,6 +150,12 @@ class Expansion(Node):
     @property
     def body(self):
         return self._body
+
+    def get_extensions(self, env):
+        p = self.template.prefix
+        l = self.template.localname
+        template = env.lookup_template(env.resolve_name(p, l))
+        return self._extensions + template.get_extensions(env)
 
     def parameterise(self, parameters):
         for param in parameters:
@@ -187,6 +195,8 @@ class Expansion(Node):
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
+            elif isinstance(expr, ExtensionPragma):
+                self._extensions.append(expr)
 
         return triples
 
@@ -230,6 +240,7 @@ class Template(Node):
                                for p in parameters]
         self._base          = base
         self._body          = body
+        self._extensions    = []
 
     @property
     def name(self):
@@ -247,11 +258,18 @@ class Template(Node):
     def body(self):
         return self._body
 
+    def get_extensions(self, env):
+        if self._base:
+            return self._extensions + self._base.get_extensions(env)
+        else:
+            return self._extensions
+
     def parameterise(self):
         if self.base:
             self.base.parameterise(self.parameters)
         for expr in self.body:
-            expr.parameterise(self.parameters)
+            if not isinstance(expr, ExtensionPragma):
+                expr.parameterise(self.parameters)
 
     def prefixify(self, prefix):
 
@@ -260,7 +278,8 @@ class Template(Node):
             self._base.prefixify(prefix)
 
         for expr in self._body:
-            expr.prefixify(prefix)
+            if not isinstance(expr, ExtensionPragma):
+                expr.prefixify(prefix)
 
     def as_uri(self, env):
         return self._name.as_uri(env)
@@ -289,6 +308,8 @@ class Template(Node):
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
+            elif isinstance(expr, ExtensionPragma):
+                self._extensions.append(expr)
 
         return parameterise_triples(triples, self._parameters)
 
@@ -327,6 +348,22 @@ class Assignment(Node):
     @property
     def value(self):
         return self._value
+
+
+class Extension(Node):
+
+    def __init__(self, name, location):
+
+        super().__init__(location)
+        self._name = name
+
+    def __eq__(self, other):
+        return (isinstance(other, Extension) and
+                self.name == other.name)
+
+    def __repr__(self):
+        return format("EXTENSION: %s" % self.name)
+
 
 def rdftype_uri():
     return Uri(rdflib.RDF.type.toPython(), None)

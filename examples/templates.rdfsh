@@ -15,6 +15,8 @@ expand : SimpleTemplate
 ParamTemplate(x, y) =>
   propertyA = x
   propertyB = y
+  @extension AtLeastOne(propertyC)
+  @extension AtLeastOne(propertyA)
 
 # when you expand you must give the arguments the template expects
 
@@ -30,6 +32,7 @@ specialised : SpecialisedTemplate(3, 2)
 
 moreProperties : SpecialisedTemplate(1)
   otherProperty = true
+  propertyC = true
 
 # and even their own expansions
 
