@@ -9,8 +9,33 @@ A scripting language for creating RDF graphs.
 
 ## Get Started
 
-## Example
+### Dependencies
+
+RDFScript requires Python 3.x.
+
+Python package dependencies are listed in `setup.py`.
+
+### Install
+
+1. Download or clone repository. `git clone https://github.com/lgrozinger/rdfscript.git`
+2. Navigate to RDFScript directory. `cd rdfscript`
+3. As a non-root user. `python setup.py install --user`
+
+## Example usage
+
+Running the example in `examples/templates.rdfsh`
+
+`python run.py -s rdfxml examples/templates.rdfsh -o <output-file>`
+
+Run the REPL
+
+`python run.py -s rdfxml -o <output-file>`
+
+Display command line options
+
+`python run.py -h`
+
+The example files in `examples/` are commented with some a explaination of the language.
 
 ## Contributing
 
-## Dependencies

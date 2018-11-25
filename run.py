@@ -14,7 +14,7 @@ def parse_from_file(filepath,
                     out=None,
                     extensions=[]):
 
-    parser = RDFScriptParser(debug=True, filename=filepath)
+    parser = RDFScriptParser(debug=False, filename=filepath)
 
     with open(filepath, 'r') as in_file:
         data = in_file.read()
