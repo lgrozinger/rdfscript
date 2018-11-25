@@ -15,8 +15,6 @@ expand : SimpleTemplate
 ParamTemplate(x, y) =>
   propertyA = x
   propertyB = y
-  @extension AtLeastOne(propertyC)
-  @extension AtLeastOne(propertyA)
 
 # when you expand you must give the arguments the template expects
 
@@ -25,7 +23,6 @@ arguments : ParamTemplate(1, 2)
 # templates can 'specialise' other templates
 
 SpecialisedTemplate(x) => ParamTemplate(x, 2)
-  @extension SbolIdentity
 
 specialised : SpecialisedTemplate(3, 2)
 
