@@ -1,0 +1,7 @@
+@prefix top <http://top.org/>
+
+@import <thislevel>
+thislevel.test
+
+@import <down/thislevel>
+downthislevel.test

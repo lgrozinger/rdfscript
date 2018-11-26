@@ -39,8 +39,6 @@ class EnvTest(unittest.TestCase):
 
         evaluate(template, self.env)
 
-        stored_template = self.env.lookup(self.env.resolve_name(None, 'template'))
+        stored_template = self.env.lookup_template(self.env.resolve_name(None, 'template'))
 
         self.assertEqual(stored_template, template)
-
-    

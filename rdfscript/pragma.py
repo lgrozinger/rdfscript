@@ -61,3 +61,26 @@ class ImportPragma(Node):
     @property
     def target(self):
         return self._target
+
+class ExtensionPragma(Node):
+
+    def __init__(self, name, args, location):
+        super().__init__(location)
+        self._name = name
+        self._args = args
+
+    def __eq__(self, other):
+        return (isinstance(other, ExtensionPragma) and
+                self.name == other.name and
+                self.args == other.args)
+
+    def __repr__(self):
+        return format("EXT DIRECTIVE: %s)" % self.name)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def args(self):
+        return self._args

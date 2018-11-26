@@ -2,26 +2,26 @@ import pathlib
 
 class Importer:
 
-    def __init__(self, extrapaths=None):
+    def __init__(self, paths):
 
-        self._paths = extrapaths or []
-        self._paths.append(pathlib.Path('.'))
+        self._dirs = [pathlib.Path(path).expanduser().resolve() for path in paths]
+        self._dirs.append(pathlib.Path('.').resolve())
 
     @property
     def path(self):
-        return self._paths
+        return self._dirs
 
     def add_path(self, newpath):
-        self._paths.append(newpath)
+        self._dirs.append(pathlib.Path(newpath).expanduser().resolve())
 
     def remove_path(self, path):
-        self._paths.remove(path)
+        self._dirs.remove(pathlib.Path(path).resolve())
 
     def import_file(self, filepath):
 
-        for path in self.path:
+        for dir in self._dirs:
             try:
-                return (path / filepath).with_suffix('.rdfsh').read_text()
+                return (dir / filepath).with_suffix('.rdfsh').read_text()
             except FileNotFoundError:
                 pass
 

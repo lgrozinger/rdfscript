@@ -11,7 +11,8 @@ from .core import (Uri,
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
-                     ImportPragma)
+                     ImportPragma,
+                     ExtensionPragma)
 
 from .templating import (Assignment,
                          Template,
@@ -184,13 +185,22 @@ def p_empty_bodystatements(p):
 ## 1.0 also has infixassigment here
 def p_bodystatement(p):
     '''bodystatement : property
-                     | expansion'''
+                     | expansion
+                     | extension'''
     p[0] = p[1]
 
 def p_property(p):
     '''property : identifier '=' expr
                 | identifier '=' expansion'''
     p[0] = Property(p[1], p[3], location(p))
+
+def p_extension_no_args(p):
+    '''extension : EXTENSION SYMBOL'''
+    p[0] = ExtensionPragma(p[2], [], location(p))
+
+def p_extension_args(p):
+    '''extension : EXTENSION SYMBOL '(' exprlist ')' '''
+    p[0] = ExtensionPragma(p[2], p[4], location(p))
 
 # infixassigment breaks the parser, since it causes SR conflict with
 # assignment (resolved by default with shift, which is almost always

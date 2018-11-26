@@ -17,12 +17,19 @@ from .importer import Importer
 
 from .SBOL2Serialize import serialize_sboll2
 
+from .extensions import ExtensionManager
+
 class Env:
-    def __init__(self, repl=False, filename=None, serializer=None, extrapaths=[]):
+    def __init__(self,
+                 repl=False,
+                 filename=None,
+                 serializer=None,
+                 paths=[],
+                 extensions=[]):
 
         self._symbol_table = {}
-
-        self._interactive_mode = repl
+        self._template_table = {}
+        self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RuntimeGraph(serializer=serializer)
 
@@ -31,12 +38,11 @@ class Env:
 
         self._logger = logging.getLogger(__name__)
 
-        paths = [pathlib.Path(path) for path in extrapaths]
         if filename:
             paths.append(pathlib.Path(filename).parent)
-            self._importer = Importer(extrapaths=paths)
+            self._importer = Importer(paths)
         else:
-            self._importer = Importer()
+            self._importer = Importer(paths)
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
@@ -70,6 +76,17 @@ class Env:
     def lookup(self, uriref):
 
         return self._symbol_table.get(uriref, None)
+
+    def assign_template(self, uriref, template):
+
+        self._template_table[uriref] = template
+
+    def lookup_template(self, uriref):
+
+        return self._template_table.get(uriref, None)
+
+    def get_extension(self, name):
+        return self._extension_manager.get_extension(name)
 
     def resolve_name(self, prefix, name):
 
@@ -108,6 +125,10 @@ class Env:
 
         self._importer.remove_path(pathlib.Path(filename).parent)
         return True
+
+    def get_current_path(self):
+
+        return [str(p) for p in self._importer.path]
 
 class RuntimeGraph:
 

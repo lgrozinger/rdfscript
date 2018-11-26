@@ -171,8 +171,8 @@ class TemplatingTest(unittest.TestCase):
 
     def test_derived_template_as_triples(self):
 
-        self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
-        self.env.assign(self.env.resolve_name(None, 'C'), self.templateC)
+        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
+        self.env.assign_template(self.env.resolve_name(None, 'C'), self.templateC)
 
         template_triples = [(Name(None, 'C', None).as_uri(self.env),
                              Parameter('x', 1, None),
@@ -187,11 +187,11 @@ class TemplatingTest(unittest.TestCase):
                              Name(None, 'z', None),
                              Value("STRING", None))]
 
-        self.assertEqual(self.env.lookup(self.env.resolve_name(None, 'C')).as_triples(self.env), template_triples)
+        self.assertEqual(self.env.lookup_template(self.env.resolve_name(None, 'C')).as_triples(self.env), template_triples)
 
     def test_expansion_as_triples(self):
 
-        self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
+        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
 
         expansion = Expansion(Name(None, 'A', None),
                               Name(None, 'E', None),
@@ -211,8 +211,8 @@ class TemplatingTest(unittest.TestCase):
 
     def test_double_expansion_as_triples(self):
 
-        self.env.assign(self.env.resolve_name(None, 'A'), self.templateA)
-        self.env.assign(self.env.resolve_name(None, 'C'), self.templateC)
+        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
+        self.env.assign_template(self.env.resolve_name(None, 'C'), self.templateC)
 
         expansion = Expansion(Name(None, 'C', None),
                               Name(None, 'E', None),

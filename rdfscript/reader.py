@@ -12,6 +12,7 @@ tokens = (
      "DEDENT",
      "PREFIX",
      "DEFAULTPREFIX",
+     "EXTENSION",
      "IMPORT")
 
 t_ignore = '\t'
@@ -31,8 +32,9 @@ reserved_words = {
      'false'          : 'BOOLEAN',
      '@prefix'        : 'PREFIX',
      '@import'        : 'IMPORT',
-     'import'        : 'IMPORT',
-     '@defaultPrefix' : 'DEFAULTPREFIX'
+     'import'         : 'IMPORT',
+     '@defaultPrefix' : 'DEFAULTPREFIX',
+     '@extension'     : 'EXTENSION'
     }
 
 def t_eof(t):
