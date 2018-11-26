@@ -24,7 +24,7 @@ def parse_from_file(filepath, serializer='turtle', extrapaths=[], out=None):
         with open(out, 'w') as o:
             o.write(str(env))
 
-def rdf_repl(serializer='turtle'):
+def rdf_repl(serializer='turtle', out=None):
     print("Building parser with yacc...")
     parser = RDFScriptParser()
     print("Parser build success...")
