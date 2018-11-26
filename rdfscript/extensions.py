@@ -40,45 +40,6 @@ class ExtensionManager:
     def get_extension(self, name):
         return self._extensions[name]
 
-class Extension:
-
-    def __init__(self, name, rules):
-
-        self._name = name
-        self._rules = rules
-
-    def add_rule(self, rule):
-        self._rule.append(rule)
-
-class AndExtension(Extension):
-
-    def __init__(self, name, rules):
-        super().__init__(name, rules)
-
-    def run(self, triples, env):
-        for rule in self._rules:
-            new_triples = rule.run(triples, env)
-            if new_triples:
-                triples = new_triples
-            else:
-                return None
-
-        return triples
-
-class OrExtension(Extension):
-
-    def __init__(self, name, rules):
-        super().__init__(name, rules)
-
-    def run(self, triples, env):
-        for rule in self._rules:
-            new_triples = rule.run(triples, env)
-            if new_triples:
-                return new_triples
-            else:
-                pass
-
-        return None
 
 class DuplicateExtension(Exception):
 
