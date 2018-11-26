@@ -37,7 +37,7 @@ class SbolIdentity:
         elif len(result) == 1:
             return result[0].toPython()
         else:
-            dId = re.split('# / :', subject.toPython())[-1]
+            dId = re.split('#|/|:', subject.toPython())[-1]
             self._g.set((subject, self._display_uri, rdflib.Literal(dId)))
             return dId
 
@@ -47,5 +47,5 @@ class SbolIdentity:
         if len(result) > 1:
             return False
         elif len(result) == 1:
-            dId = re.split('# / :', result[0].toPython())[-1]
+            dId = re.split('#|/|:', result[0].toPython())[-1]
             return dId == displayId
