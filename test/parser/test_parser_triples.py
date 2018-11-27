@@ -5,10 +5,6 @@ import ply.lex as leex
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
-from rdfscript.toplevel import TripleObject
-from rdfscript.identifier import URI, QName, LocalName
-from rdfscript.literal import Literal
-
 class ParserIdentifierTest(unittest.TestCase):
 
     def setUp(self):

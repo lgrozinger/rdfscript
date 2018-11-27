@@ -3,13 +3,8 @@ import sys
 import pathlib
 import logging
 
-import rdfscript.toplevel
-import rdfscript.core
-
 from .evaluate import evaluate
 from .error import RDFScriptError, FailToImport
-
-from rdfscript.identifier import URI
 
 from .rdfscriptparser import RDFScriptParser
 

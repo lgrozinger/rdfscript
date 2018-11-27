@@ -21,10 +21,6 @@ class Parameter(Node):
         return self._param_name
 
     @property
-    def binding(self):
-        return self._binding
-
-    @property
     def position(self):
         return self._position
 
@@ -35,17 +31,8 @@ class Parameter(Node):
     def __repr__(self):
         return format("<RDFscript PARAM: %s>" % self.name)
 
-    def as_rdfbnode(self):
-        return self._binding
-
     def as_name(self):
         return Name(None, self.name, None)
-
-    def isBound(self):
-        return not isinstance(self._binding, rdflib.BNode)
-
-    def bind(self, binding):
-        self._binding = binding
 
 class Argument(Node):
 
