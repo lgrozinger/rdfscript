@@ -11,18 +11,31 @@ class Importer:
     def path(self):
         return self._dirs
 
+    @property
+    def extension(self):
+        return '.rdfsh'
+
     def add_path(self, newpath):
-        self._dirs.append(pathlib.Path(newpath).expanduser().resolve())
+        self._dirs.append(self.to_absolute(pathlib.Path(newpath)))
 
     def remove_path(self, path):
-        self._dirs.remove(pathlib.Path(path).resolve())
+        self._dirs.remove(self.to_absolute(pathlib.Path(path)))
 
     def import_file(self, filepath):
 
         for dir in self._dirs:
             try:
-                return (dir / filepath).with_suffix('.rdfsh').read_text()
+                return (dir / filepath).with_suffix(self.extension).read_text()
             except FileNotFoundError:
-                pass
+                return self.try_absolute(filepath)
 
-        return None
+    def to_absolute(self, pathlib_path):
+        return pathlib_path.expanduser().resolve()
+
+    def try_absolute(self, filepath):
+
+        try:
+            absolute = self.to_absolute(pathlib.Path(filepath))
+            return absolute.with_suffix(self.extension).read_text()
+        except FileNotFoundError:
+            return None
