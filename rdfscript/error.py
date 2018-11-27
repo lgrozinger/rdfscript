@@ -127,6 +127,6 @@ class UnknownConstruct(RDFScriptError):
         return self._construct
 
     def __str__(self):
-        return super().__str__() + format("%s is not an RDFScript object.\n\n" % self.construct)
+        return super().__str__() + format("%s cannot be evaluated.\n\n" % self.construct)
 
 

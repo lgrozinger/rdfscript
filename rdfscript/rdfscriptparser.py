@@ -7,7 +7,8 @@ from .reader import tokens
 
 from .core import (Uri,
                    Name,
-                   Value)
+                   Value,
+                   Self)
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,

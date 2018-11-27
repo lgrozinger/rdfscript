@@ -40,6 +40,18 @@ class RuntimeIdentifierTest(unittest.TestCase):
         self.assertEqual(env.interpret(forms), env.resolve_name(None, 'UnboundSymbol'))
 
 
+    def test_evaluate_self(self):
+
+        script = "self"
+
+        forms = self.parser.parse(script)
+
+        env = Env()
+
+        expected_value = env._default_ns['']
+
+        self.assertEqual(env.interpret(forms), expected_value)
+
     def test_evaluate_localname_bound(self):
 
         script = (f"X=\"value\"\n"
