@@ -30,11 +30,11 @@ def p_empty_toplevels(p):
     p[0] =[]
 
 def p_toplevel_types(p):
-    '''toplevel : expr
-                | assignment
+    '''toplevel : assignment
                 | pragma
                 | template
-                | expansion'''
+                | expansion
+                | expr'''
     p[0] = p[1]
 
 def p_template(p):
@@ -108,7 +108,8 @@ def p_not_empty_exprlist_n(p):
 def p_identifier(p):
     '''identifier : qname
                   | localname
-                  | uri'''
+                  | uri
+                  | self'''
     p[0] = p[1]
 
 def p_qname(p):
@@ -126,6 +127,10 @@ def p_localname(p):
     '''localname : SYMBOL'''
     p[0] = Name(None, p[1], location(p))
 
+def p_self(p):
+    '''self : SELF'''
+    p[0] = Self(location(p))
+    
 def p_parameterlist(p):
     '''parameterlist : emptylist
                      | nonemptyparameterlist'''

@@ -1,7 +1,7 @@
 import rdflib
 import pdb
 
-from .core import Node, Name, Uri
+from .core import Node, Name, Uri, Self
 from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
@@ -26,7 +26,7 @@ class Parameter(Node):
 
     @property
     def position(self):
-        return self._position 
+        return self._position
 
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
@@ -155,7 +155,7 @@ class Expansion(Node):
         p = self.template.prefix
         l = self.template.localname
         template = env.lookup_template(env.resolve_name(p, l))
-        return self._extensions + template.get_extensions(env)
+        return template.get_extensions(env) + self._extensions
 
     def parameterise(self, parameters):
         for param in parameters:
@@ -182,12 +182,10 @@ class Expansion(Node):
         template = env.lookup_template(env.resolve_name(p, l))
         if not template:
             raise TemplateNotFound(self._template, self._location)
-        if not isinstance(template, Template):
+        elif not isinstance(template, Template):
             raise UnexpectedType(Template, template, self._location)
 
         triples = [self.sub_args(triple) for triple in template.as_triples(env)]
-
-        triples = [self.sub_name(triple, env) for triple in triples]
 
         for expr in self._body:
             if isinstance(expr, Property):
@@ -198,25 +196,23 @@ class Expansion(Node):
             elif isinstance(expr, ExtensionPragma):
                 self._extensions.append(expr)
 
+        triples = [self.replace_names(triple, env) for triple in triples]
+
         return triples
 
-    def sub_type(self, triple, type_uri, env):
+    def replace_names(self, triple, env):
         (s, p, o) = triple
-        if s == self._name.as_uri(env) and p == rdftype_uri():
-            o = type_uri
+        return (self.replace_name(s, env),
+                self.replace_name(p, env),
+                self.replace_name(o, env))
 
-        return (s, p, o)
-
-    def sub_name(self, triple, env):
-        (s, p, o) = triple
-        if isinstance(s, Uri) and s == self._template.as_uri(env):
-            s = self._name.as_uri(env)
-        if isinstance(p, Uri) and p == self._template.as_uri(env):
-            p = self._name.as_uri(env)
-        if isinstance(o, Uri) and o == self._template.as_uri(env):
-            o = self._name.as_uri(env)
-
-        return (s, p, o)
+    def replace_name(self, victim, env):
+        if isinstance(victim, Uri) and victim == self._template.as_uri(env):
+            return self._name.as_uri(env)
+        elif isinstance(victim, Self):
+            return self._name.as_uri(env)
+        else:
+            return victim
 
     def sub_args(self, triple):
         (s, p, o) = triple
@@ -298,7 +294,7 @@ class Template(Node):
     def as_triples(self, env):
 
         if self._base:
-            triples = [self.sub_name(triple) for triple in self._base.as_triples(env)]
+            triples = [self.replace_names(triple) for triple in self._base.as_triples(env)]
         else:
             triples = []
 
@@ -313,16 +309,17 @@ class Template(Node):
 
         return parameterise_triples(triples, self._parameters)
 
-    def sub_name(self, triple):
+    def replace_names(self, triple):
         (s, p, o) = triple
-        if isinstance(s, Name) and s == self._base.name:
-            s = self._name
-        if isinstance(p, Name) and p == self._base.name:
-            p = self._name
-        if isinstance(o, Name) and o == self._base.name:
-            o = self._name
+        return (self.replace_name(s),
+                self.replace_name(p),
+                self.replace_name(o))
 
-        return (s, p, o)
+    def replace_name(self, victim):
+        if isinstance(victim, Name) and victim == self._base.name:
+            return self._name
+        else:
+            return victim
 
 class Assignment(Node):
 
@@ -363,10 +360,6 @@ class Extension(Node):
 
     def __repr__(self):
         return format("EXTENSION: %s" % self.name)
-
-
-def rdftype_uri():
-    return Uri(rdflib.RDF.type.toPython(), None)
 
 def parameterise_triples(triples, parameters):
     parameterised = []

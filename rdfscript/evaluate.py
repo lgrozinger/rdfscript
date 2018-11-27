@@ -89,7 +89,7 @@ def evaluate_template(template, env):
 
 def evaluate_expansion(expansion, env):
 
-    #expansion.prefixify(env.default_prefix)
+    expansion.prefixify(env.default_prefix)
     raw_triples = expansion.as_triples(env)
 
     evaluated_triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))

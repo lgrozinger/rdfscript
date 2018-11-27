@@ -106,34 +106,14 @@ class Value(Node):
 
         return rdflib.Literal(self._python_val)
 
-class Parameter:
-    """Env's abstraction of a RDF BNode for a template parameter."""
+class Self(Node):
 
-    def __init__(self, parameter_name):
+    def __init__(self, location):
 
-        self._param_name = parameter_name
-        self._binding    = rdflib.BNode()
-
-    @property
-    def name(self):
-        return self._param_name
-
-    @property
-    def binding(self):
-        return self._binding
+        super().__init__(location)
 
     def __eq__(self, other):
-        return (isinstance(other, Parameter) and
-                self.name == other.name)
+        return isinstance(other, Self)
 
     def __repr__(self):
-        return format("<RDFscript PARAMETER: %s>" % self.name)
-
-    def as_rdfbnode(self):
-        return self._binding
-
-    def isBound(self):
-        return not isinstance(self._binding, rdflib.BNode)
-
-    def bind(self, binding):
-        self._binding = binding
+        return format("<RDFscript SELF>")
