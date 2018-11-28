@@ -93,11 +93,23 @@ class SBOLPersistentId:
                 triples.remove(persistentId[0])
                 return self.run(triples, env)
         else:
-            return triples + [(self._subject, self.sbol.persistentIdURI, self.compute_persistentId())]
+            sbol_type = [o for (s, p, o) in triples if p == rdflib.RDF.type and s == self._subject]
+            if len(sbol_type) == 1:
+                return triples + [(self._subject, self.sbol.persistentIdURI, self.compute_persistentId(triples))]
+            else:
+                self._failure_message = "SBOL objects must have exactly one type"
+                return None
 
-    def compute_persistentId(self):
+    def compute_persistentId(self, triples):
         ## TODO: check for top level, compute persistentId accordingly
-        return self._subject
+        sbol_type = [o for (s, p, o) in triples if p == rdflib.RDF.type and s == self._subject][0]
+
+        if self.sbol.is_toplevel(sbol_type):
+            return self._subject
+        else:
+            parent = [s for (s, p, o) in triples if o == self._subject][0]
+            dId    = [o for (s, p, o) in triples if p == self.sbol.displayIdURI][0]
+            return rdflib.Namespace(parent)['#' + dId.toPython()]
 
 class SBOLDisplayId:
 

@@ -1,4 +1,5 @@
 import pathlib
+import pdb
 
 class Importer:
 
@@ -23,11 +24,13 @@ class Importer:
 
     def import_file(self, filepath):
 
-        for dir in self._dirs:
+        for d in self._dirs:
             try:
-                return (dir / filepath).with_suffix(self.extension).read_text()
+                return (d / filepath).with_suffix('.rdfsh').read_text()
             except FileNotFoundError:
-                return self.try_absolute(filepath)
+                pass
+
+        return self.try_absolute(filepath)
 
     def to_absolute(self, pathlib_path):
         return pathlib_path.expanduser().resolve()
