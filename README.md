@@ -52,3 +52,9 @@ Extensions are expected to supply a `run(triples, env)` method. The `run` method
 ### Language
 
 Please branch off of `dev` for feature development, or work directly on `dev` for bug-fixes.
+
+### Testing
+
+A test suite using the Python3 `unittest` package is under the `test/` directory.
+
+Run the tests from the project root using `python -m unittest`
