@@ -23,12 +23,12 @@ sbol_participations.Donor      = <http://identifiers.org/psimi/MI:0842>
 sbol_participations.Template   = <http://identifiers.org/SBO:0000645>
 
 
-PairInteraction(sbj, obj, tpe, sbjRole, objRole) => sbol.Interaction()
+PairInteraction(sbj, obj, tpe, sbjRole, objRole) => sbol.Interaction
   sbol.type = tpe
-  sbol.participation : sbol.Participation()
+  sbol.participation : sbol.Participation
     sbol.participant = sbj
     sbol.role = sbjRole
-  sbol.participation : sbol.Participation()
+  sbol.participation : sbol.Participation
     sbol.participant = obj
     sbol.role = objRole
 

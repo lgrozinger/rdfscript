@@ -95,10 +95,9 @@ class Property(Node):
                 self._name = param
 
     def prefixify(self, prefix):
-        if isinstance(self._name, Name):
-            self._name.prefixify(prefix)
+        self._name.prefixify(prefix)
 
-        if isinstance(self._value, Name) or isinstance(self._value, Expansion):
+        if isinstance(self._value, Name):
             self._value.prefixify(prefix)
 
 class Expansion(Node):
@@ -108,13 +107,8 @@ class Expansion(Node):
         super().__init__(location)
         self._template      = template
         self._name          = name
-        self._args          = []
-        for arg in args:
-            if isinstance(arg, Argument):
-                self._args.append(Argument(arg.value, args.index(arg), location))
-            else:
-                self._args.append(Argument(arg, args.index(arg), location))
-
+        self._args          = [Argument(arg, args.index(arg), location)
+                               for arg in args]
         self._body          = body
         self._extensions    = []
 
@@ -221,18 +215,12 @@ class Expansion(Node):
 class Template(Node):
     """Env's abstraction of a RDF subgraph for a template."""
 
-    def __init__(self, name, parameters, body, base, location):
+    def __init__(self, name, parameters, body, location, base):
 
         super().__init__(location)
         self._name          = name
-
-        self._parameters = []
-        for param in parameters:
-            self.check_param(param)
-            self._parameters.append(Parameter(param.localname,
-                                              parameters.index(param),
-                                              location))
-
+        self._parameters    = [Parameter(p, parameters.index(p), location)
+                               for p in parameters]
         self._base          = base
         self._body          = body
         self._extensions    = []
@@ -265,10 +253,6 @@ class Template(Node):
         for expr in self.body:
             if not isinstance(expr, ExtensionPragma):
                 expr.parameterise(self.parameters)
-
-    def check_param(self, param):
-        if not isinstance(param, Name):
-            raise UnexpectedType(Name, param, self.location)
 
     def prefixify(self, prefix):
 
