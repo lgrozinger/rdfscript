@@ -1,43 +1,43 @@
 identity = rdf.about
 name = dc.title
 
-Identified : owl.Class
+Identified : owl.Class()
   dc.description = "The base type for SBOL entities."
-  identity : owl.propertyRestriction
+  identity : owl.propertyRestriction()
     owl.maxCardinality = 1
-  persistentIdentity : owl.propertyRestriction
+  persistentIdentity : owl.propertyRestriction()
     owl.subPropertyOf = prov.wasRevisionOf
     owl.minCardinality = 0
     owl.maxCardinality = 1
     owl.allValuesFrom = prov.Entity
-  displayId : owl.propertyRestriction
+  displayId : owl.propertyRestriction()
     owl.subPropertyOf = dc.identifier
     owl.minCardinality = 0
     owl.maxCardinality = 1
     owl.allValuesFrom = xsd.string
-  version : owl.propertyRestriction
+  version : owl.propertyRestriction()
     owl.minCardinality = 0
     owl.maxCardinality = 1
     owl.allValuesFrom = xsd.string
-  prov.wasDerivedFrom : owl.propertyRestriction
+  prov.wasDerivedFrom : owl.propertyRestriction()
     owl.minCardinality = 0
     owl.maxCardinality = 1
     owl.allValuesFrom = prov.Entity
-  name : owl.propertyRestriction
+  name : owl.propertyRestriction()
     owl.minCardinality = 0
     owl.maxCardinality = 1
     owl.allValuesFrom = xsd.string
-  dc.description : owl.restriction
+  dc.description : owl.restriction()
     owl.minCardinality = 0
     owl.maxCardinality = 1
     owl.allValuesFrom = xsd.string
 
-TopLevel : owl.Class
+TopLevel : owl.Class()
   dc.description = "The type of all entities that can be at the top of an SBOL file."
   owl.subClassOf = Identified
 
-Collection : owl.Class
+Collection : owl.Class()
   dc.description = "A group of TopLevel objects that have something in common."
   owl.subClassOf = TopLevel
-  member : owl.propertyRestriction
+  member : owl.propertyRestriction()
     owl.allValuesFrom = TopLevel

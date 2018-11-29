@@ -1,96 +1,96 @@
 # The behavioural module hierarchy
 
 
-ModelLanguage : owl.Class
+ModelLanguage : owl.Class()
 
-edam._2013 : owl.Class
+edam._2013 : owl.Class()
   owl.subClassOf = ModelLanguage
 
 
-ModelFramework : owl.Class
+ModelFramework : owl.Class()
 
-sbo._0000004 : owl.Class
+sbo._0000004 : owl.Class()
   owl.subClassOf = ModelFramework
 
 
-Model : owl.Class
+Model : owl.Class()
   dc.description = "A placeholder for an external computational model."
   owl.subClassOf = TopLevel
-  source : owl.propertyRestriction
+  source : owl.propertyRestriction()
     dc.description = "A URL/resource where the model source can be fetched."
     owl.exactCardinality = 1
     owl.allValuesFrom = owl.Thing
-  language : owl.propertyRestriction
+  language : owl.propertyRestriction()
     owl.exactCardinality = 1
     owl.allValuesFrom = ModelLanguage
-  framework : owl.propertyRestriction
+  framework : owl.propertyRestriction()
     owl.exactCardinality = 1
     owl.allValuesFrom = ModelFramework
 
 
-ModuleDefinitionRole : owl.Class
+ModuleDefinitionRole : owl.Class()
 
-ModuleDefinition : owl.Class
+ModuleDefinition : owl.Class()
   dc.description = "A grouping of structural and functional entities in a biological design."
   owl.subClassOf = TopLevel
-  role : owl.propertyRestriction
+  role : owl.propertyRestriction()
     owl.allValuesFrom = ModuleDefinitionRole
-  module : owl.propertyRestriction
+  module : owl.propertyRestriction()
     owl.allValuesFrom = Module
-  functionalComponent : owl.propertyRestriction
+  functionalComponent : owl.propertyRestriction()
     owl.allValuesFrom = FunctionalComonent
-  interaction : owl.propertyRestriction
+  interaction : owl.propertyRestriction()
     owl.allValuesFrom = Interaction
-  model : owl.propertyRestriction
+  model : owl.propertyRestriction()
     owl.allValuesFrom = Model
 
-Module : owl.Class
+Module : owl.Class()
   dc.description = "A usage or occurrence of a ModuleDefinition within a larger design."
   owl.subClassOf = Identified
-  definition : owl.propertyRestriction
+  definition : owl.propertyRestriction()
     owl.exactCardinality = 1
     owl.allValuesFrom = ModuleDefinition
-  mapsTo : owl.propertyRestriction
+  mapsTo : owl.propertyRestriction()
     owl.allValuesFrom = MapsTo
 
 
-FunctionalComponentDirection : owl.Class
+FunctionalComponentDirection : owl.Class()
   owl.oneOf : rdf.list(in, out, inout, none)
 
-FunctionalComponent : owl.Class
+FunctionalComponent : owl.Class()
   dc.description = "An instance of a ComponentDefinition being used as part of a ModuleDefinition."
   owl.subClassOf = ComponentInstance
-  direction : owl.proprtyRestriction
+  direction : owl.proprtyRestriction()
     owl.exactCardinality = 1
     owl.allValuesFrom = FunctionalComponentDirection
 
 
-InteractionType : owl.Class
+InteractionType : owl.Class()
 
-<http://identifiers.org/biomodels.sbo/SBO:0000168> : owl.Class
+<http://identifiers.org/biomodels.sbo/SBO:0000168> : owl.Class()
   owl.subClassOf = InteractionType
 
-Interaction : owl.Class
+Interaction : owl.Class()
   dc.description = "How the FunctionalCompoent objects of a ModuleDefinition are intended to work together."
   owl.subClassOf = Identified
-  type : owl.propertyRestriction
+  type : owl.propertyRestriction()
     owl.minCardinality = 1
     owl.allValuesFrom = InteractionType
-  participation : owl.propertyRestriction
+  participation : owl.propertyRestriction()
     owl.allValuesFrom = Participation
 
 
-ParticipationRole : owl.Class
+ParticipationRole : owl.Class()
 
-sbo._0000019 : owl.Class
+sbo._0000019 : owl.Class()
   owl.subClassOf = ParticipationRole
 
-Participation : owl.Class
+Participation : owl.Class()
   dc.description = "How a particular FunctionalComponent behaves in its parent Interaction."
   owl.subClassOf = Identified
-  role : owl.propertyRestriction
+  role : owl.propertyRestriction()
     owl.minCardinality = 1
     owl.allValuesFrom = ParticipationRole
-  participant : owl.propertyRestriction
+  participant : owl.propertyRestriction()
     owl.exactCardinality = 1
     owl.allValuesFrom = FunctionalComponent

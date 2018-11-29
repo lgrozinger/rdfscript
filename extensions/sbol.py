@@ -66,10 +66,15 @@ class SBOLPersistentId:
     def __init__(self, for_subject):
         self._sbol = SBOL2()
         self._subject = for_subject
+        self._failure_message = ""
 
     @property
     def sbol(self):
         return self._sbol
+
+    @property
+    def failure_message(self):
+        return self._failure_message
 
     def run(self, triples, env):
 

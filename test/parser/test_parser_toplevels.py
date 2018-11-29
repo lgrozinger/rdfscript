@@ -33,7 +33,7 @@ class ParserTopLevelTest(unittest.TestCase):
                                      None)])
 
     def test_template_def_noargs_nobase(self):
-        script = 'DNASequence =>\n  encoding = <SBOL:IUPACDNA>'
+        script = 'DNASequence() =>\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'DNASequence', None),
@@ -53,7 +53,7 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'DNASequence', None),
-                                     ['x'],
+                                     [Name(None, 'x', None)],
                                      [Property(Name(None, 'encoding', None),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
@@ -68,7 +68,9 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'DNASequence', None),
-                                     ['x','y','z'],
+                                     [Name(None, 'x', None),
+                                      Name(None, 'y', None),
+                                      Name(None, 'z', None)],
                                      [Property(Name(None, 'encoding', None),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
@@ -83,18 +85,18 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         expected_template = Template(Name(None, 'A', None),
-                                     ['x'],
-                                     [Property(Name(None, 'encoding', None),
-                                               Uri('SBOL:IUPACDNA', None),
-                                               None)],
-                                     None,
+                                     [Name(None, 'x', None)],
+                                     [],
                                      Expansion(Name(None, 'B', None),
                                                Name(None, 'A', None),
                                                [Name(None, 'x', None)],
-                                               [],
-                                               None))
+                                               [Property(Name(None, 'encoding', None),
+                                                         Uri('SBOL:IUPACDNA', None),
+                                                         None)],
+                                               None),
+                                     None)
 
 
-        self.assertEqual(forms[1], expected_template)
+        self.assertEqual([forms[1]], [expected_template])
 if __name__ == '__main__':
     unittest.main()

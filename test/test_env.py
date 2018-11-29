@@ -32,7 +32,7 @@ class EnvTest(unittest.TestCase):
     def test_template_binding(self):
 
         template = Template(Name(None, 'template', None),
-                            [Parameter('x', 0, None)],
+                            [Name(None, 'x', None)],
                             [Property(Name(None, 'x', None), Value(42, None), None)],
                             None,
                             None)

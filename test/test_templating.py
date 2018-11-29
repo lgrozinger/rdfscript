@@ -27,7 +27,8 @@ class TemplatingTest(unittest.TestCase):
         self.maxDiff = None
 
         self.templateA = Template(Name(None, 'A', None),
-                                  ['x', 'y'],
+                                  [Name(None, 'x', None),
+                                   Name(None, 'y', None)],
                                   [Property(Name(None, 'x', None),
                                             Value(42, None),
                                             None),
@@ -39,35 +40,35 @@ class TemplatingTest(unittest.TestCase):
 
         self.templateB = Template(Name(None, 'B', None),
                                   [],
-                                  [Property(Name(None, 'x', None),
-                                            Name('p', 'y', None),
-                                            None),
-                                   Property(Name(None, 'z', None),
-                                            Value("STRING", None),
-                                            None)],
-                                  None,
+                                  [],
                                   Expansion(Name(None, 'A', None),
                                             Name(None, 'B', None),
                                             [Argument(Name(None, 'x', None), 1, None),
                                              Argument(Value("VALUE", None), 0, None)],
-                                            [],
-                                            None))
+                                            [Property(Name(None, 'x', None),
+                                                      Name('p', 'y', None),
+                                                      None),
+                                             Property(Name(None, 'z', None),
+                                                      Value("STRING", None),
+                                                      None)],
+                                            None),
+                                  None)
 
         self.templateC = Template(Name(None, 'C', None),
-                                  ['x'],
-                                  [Property(Name(None, 'x', None),
-                                            Name('p', 'y', None),
-                                            None),
-                                   Property(Name(None, 'z', None),
-                                            Value("STRING", None),
-                                            None)],
-                                  None,
+                                  [Name(None, 'x', None)],
+                                  [],
                                   Expansion(Name(None, 'A', None),
                                             Name(None, 'C', None),
                                             [Name(None, 'x', None),
                                              Value("VALUE", None)],
-                                            [],
-                                            None))
+                                            [Property(Name(None, 'x', None),
+                                                      Name('p', 'y', None),
+                                                      None),
+                                             Property(Name(None, 'z', None),
+                                                      Value("STRING", None),
+                                                      None)],
+                                            None),
+                                  None)
 
     def tearDown(self):
         None
@@ -75,7 +76,9 @@ class TemplatingTest(unittest.TestCase):
     def test_parameterise_template_no_base(self):
 
         template = Template(Name(None, 'A', None),
-                            ['a', 'b', 'c'],
+                            [Name(None, 'a', None),
+                             Name(None, 'b', None),
+                             Name(None, 'c', None)],
                             [Property(Name(None, 'a', None),
                                       Value(1, None),
                                       None),
@@ -91,7 +94,9 @@ class TemplatingTest(unittest.TestCase):
         template.parameterise()
 
         parameterised = Template(Name(None, 'A', None),
-                                 ['a', 'b', 'c'],
+                                 [Name(None, 'a', None),
+                                  Name(None, 'b', None),
+                                  Name(None, 'c', None)],
                                  [Property(Parameter('a', 0, None),
                                            Value(1, None),
                                            None),
@@ -109,7 +114,9 @@ class TemplatingTest(unittest.TestCase):
     def test_parameterise_expansion(self):
 
         template = Template(Name(None, 'A', None),
-                            ['a', 'b', 'c'],
+                            [Name(None, 'a', None),
+                             Name(None, 'b', None),
+                             Name(None, 'c', None)],
                             [Property(Name(None, 'a', None),
                                       Value(1, None),
                                       None),
@@ -299,18 +306,18 @@ class TemplatingTest(unittest.TestCase):
     def test_self_in_template(self):
         templateA = Template(Name(None, 'A', None),
                                   [],
-                                  [Property(Name(None, 'x', None),
-                                            Value(42, None),
-                                            None),
-                                   Property(Uri('http://example.eg/predicate', None),
-                                            Self(None),
-                                            None)],
-                                  None,
+                                  [],
                                   Expansion(Name(None, 'B', None),
                                             Name(None, 'A', None),
-                                            [],
-                                            [],
-                                            None))
+                                            []
+                                            [Property(Name(None, 'x', None),
+                                                      Value(42, None),
+                                                      None),
+                                             Property(Uri('http://example.eg/predicate', None),
+                                                      Self(None),
+                                                      None)],
+                                            None),
+                             None)
 
         templateB = Template(Name(None, 'B', None),
                                   [],
