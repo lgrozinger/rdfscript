@@ -29,13 +29,12 @@ class Node:
         return self._location.filename
 
 class Name(Node):
-    """Env's abstraction of a identifier node in the RDF graph."""
 
-    def __init__(self, prefix, localname, location):
+    def __init__(self, prefix_string, localname_string, location):
 
         super().__init__(location)
-        self._prefix = prefix
-        self._localname = localname
+        self._prefix = prefix_string
+        self._localname = localname_string
 
     def __eq__(self, other):
         return (isinstance(other, Name) and
@@ -64,10 +63,13 @@ class Name(Node):
 class Uri(Node):
     """Env's abstraction of a URI"""
 
-    def __init__(self, uri, location):
+    def __init__(self, uri_string, location):
 
         super().__init__(location)
-        self._uri = uri
+        if isinstance(uri_string, rdflib.URIRef):
+            self._uri = uri_string.toPython()
+        else:
+            self._uri = uri_string
 
     def __eq__(self, other):
         return (isinstance(other, Uri) and
