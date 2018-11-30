@@ -49,7 +49,8 @@ def rdf_repl(serializer='turtle',
 
     while True:
         try:
-            s = input('RDF > ')
+            prompt = env.default_prefix or 'RDF'
+            s = input(prompt + '  > ')
         except EOFError:
             break
         if not s: continue
