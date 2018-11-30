@@ -13,5 +13,7 @@ setup(name='rdfscript',
 
       packages=['rdfscript', 'extensions'],
 
+      py_modules=['run'],
+
       install_requires=['rdflib', 'lxml', 'requests', 'ply']
 )
