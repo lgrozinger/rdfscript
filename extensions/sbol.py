@@ -58,8 +58,7 @@ class SbolIdentity:
 
     @property
     def failure_message(self):
-        return (f"EXTENSION FAILED:\n"
-                f"The author does not expect the extension to fail.\n\n")
+        return "EXTENSION FAILED:\nThe author does not expect the extension to fail.\n\n"
 
 class SBOLPersistentId:
 

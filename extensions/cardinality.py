@@ -15,6 +15,6 @@ class AtLeastOne:
 
     @property
     def failure_message(self):
-        return (f"EXTENSION FAILED:\n"
-                f"Reason: At least one value for property {self._prop}"
-                f" was expected.\nNone were found.")
+        return ("EXTENSION FAILED:\n" + 
+                format("Reason: At least one value for property %s" % self._prop) +
+                " was expected.\nNone were found.")

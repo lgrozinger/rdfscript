@@ -5,7 +5,7 @@ from .core import Node
 class PrefixPragma(Node):
 
     def __init__(self, prefix, uri, location):
-        super().__init__(location)
+        Node.__init__(self, location)
 
         self._prefix = prefix
         self._uri    = uri
@@ -29,7 +29,7 @@ class PrefixPragma(Node):
 class DefaultPrefixPragma(Node):
 
     def __init__(self, prefix, location):
-        super().__init__(location)
+        Node.__init__(self, location)
 
         self._prefix = prefix
 
@@ -47,7 +47,7 @@ class DefaultPrefixPragma(Node):
 class ImportPragma(Node):
 
     def __init__(self, target, location):
-        super().__init__(location)
+        Node.__init__(self, location)
 
         self._target =  target
 
@@ -65,7 +65,7 @@ class ImportPragma(Node):
 class ExtensionPragma(Node):
 
     def __init__(self, name, args, location):
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name = name
         self._args = args
 

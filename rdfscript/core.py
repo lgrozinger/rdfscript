@@ -2,7 +2,7 @@ import rdflib
 
 from .error import PrefixError
 
-class Node:
+class Node(object):
 
     def __init__(self, location):
 
@@ -33,7 +33,7 @@ class Name(Node):
 
     def __init__(self, prefix, localname, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._prefix = prefix
         self._localname = localname
 
@@ -43,7 +43,7 @@ class Name(Node):
                 self.localname == other.localname)
 
     def __repr__(self):
-        return format("<RDFscript NAME: <%s%s> >" % (self.prefix, self.localname))
+        return format("[NAME: %s.%s]" % (self.prefix, self.localname))
 
     @property
     def prefix(self):
@@ -66,7 +66,7 @@ class Uri(Node):
 
     def __init__(self, uri, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._uri = uri
 
     def __eq__(self, other):
@@ -74,7 +74,7 @@ class Uri(Node):
                 self.uri == other.uri)
 
     def __repr__(self):
-        return format("<RDFscript URI: %s>" % self._uri)
+        return format("[URI: %s]" % self._uri)
 
     @property
     def uri(self):
@@ -88,7 +88,7 @@ class Value(Node):
 
     def __init__(self, python_literal, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._python_val = python_literal
 
     def __eq__(self, other):
@@ -96,7 +96,7 @@ class Value(Node):
                 self.as_pythonval() == other.as_pythonval())
 
     def __repr__(self):
-        return format("<RDFscript VALUE: %s>" % self.as_pythonval())
+        return format("[VALUE: %s]" % self.as_pythonval())
 
     def as_pythonval(self):
 
@@ -110,10 +110,10 @@ class Self(Node):
 
     def __init__(self, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
 
     def __eq__(self, other):
         return isinstance(other, Self)
 
     def __repr__(self):
-        return format("<RDFscript SELF>")
+        return format("[SELF]")

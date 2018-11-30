@@ -1,5 +1,6 @@
 import rdflib
 import logging
+import pdb
 
 from .core import (Uri,
                    Value,

@@ -238,7 +238,7 @@ def location(p):
     pos = Position(p.lineno(0), p.lexpos(0))
     return Location(pos, p.parser.filename)
 
-class RDFScriptParser:
+class RDFScriptParser(object):
 
     def __init__(self, debug=True, scanner=reader, filename=None):
 
@@ -259,7 +259,7 @@ class RDFScriptParser:
         self.scanner.at_line_start = True
         self.scanner.indent_stack  = [0]
 
-class Position:
+class Position(object):
 
     def __init__(self, line, col):
 
@@ -277,7 +277,7 @@ class Position:
     def col(self):
         return self._col
 
-class Location:
+class Location(object):
 
     def __init__(self, position, filename=None):
 

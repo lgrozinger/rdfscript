@@ -11,7 +11,7 @@ class Parameter(Node):
 
     def __init__(self, parameter_name, position, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._param_name = parameter_name
         self._binding    = rdflib.BNode()
         self._position   = position
@@ -29,7 +29,7 @@ class Parameter(Node):
                 self._param_name == other.name)
 
     def __repr__(self):
-        return format("<RDFscript PARAM: %s>" % self.name)
+        return format("[PARAM: %s]" % self.name)
 
     def as_name(self):
         return Name(None, self.name, None)
@@ -38,7 +38,7 @@ class Argument(Node):
 
     def __init__(self, value_expr, position, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._value    = value_expr
         self._position = position
 
@@ -60,13 +60,13 @@ class Argument(Node):
                 self.position == other.position)
 
     def __repr__(self):
-        return format("<RDFscript ARG: %s>" % self._value)
+        return format("[ARG: %s]" % self._value)
 
 class Property(Node):
 
     def __init__(self, name, value, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name          = name
         self._value         = value
 
@@ -76,7 +76,7 @@ class Property(Node):
                 self.value == other.value)
 
     def __repr__(self):
-        return format("<RDFscript PROPERTY: %s, %s>" % (self.name, self.value))
+        return format("[PROPERTY: %s, %s]" % (self.name, self.value))
 
     @property
     def name(self):
@@ -104,7 +104,7 @@ class Expansion(Node):
 
     def __init__(self, template, name, args, body, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._template      = template
         self._name          = name
         self._args          = [Argument(arg, args.index(arg), location)
@@ -120,7 +120,8 @@ class Expansion(Node):
                 self.body == other.body)
 
     def __repr__(self):
-        return format("<RDFscript EXPANSION: %s : %s : %s> : %s" % (self.name, self.template, self.args, self.body))
+        return format("[EXPANSION: %s\n Base: %s\n Args: %s\n Body: %s]\n\n"
+                      % (self.name, self.template, self.args, self.body))
 
     @property
     def name(self):
@@ -217,7 +218,7 @@ class Template(Node):
 
     def __init__(self, name, parameters, body, location, base):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name          = name
         self._parameters    = [Parameter(p, parameters.index(p), location)
                                for p in parameters]
@@ -275,7 +276,7 @@ class Template(Node):
                 self._body == other.body)
 
     def __repr__(self):
-        return format("<RDFscript TEMPLATE: %s, params: %s, body: %s>, base: %s" %
+        return format("[TEMPLATE: %s\n Params: %s\n Body: %s\n Specialised on: %s]\n\n" %
                       (self._name, self._parameters, self._body, self._base))
 
     def as_triples(self, env):
@@ -312,7 +313,7 @@ class Assignment(Node):
 
     def __init__(self, name, value, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name  = name
         self._value = value
 
@@ -338,7 +339,7 @@ class Extension(Node):
 
     def __init__(self, name, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name = name
 
     def __eq__(self, other):
