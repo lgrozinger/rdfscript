@@ -7,6 +7,7 @@ tokens = (
      "INTEGER",
      "DOUBLE",
      "URI",
+     "SELF",
      "RARROW",
      "INDENT",
      "DEDENT",
@@ -34,7 +35,8 @@ reserved_words = {
      '@import'        : 'IMPORT',
      'import'         : 'IMPORT',
      '@defaultPrefix' : 'DEFAULTPREFIX',
-     '@extension'     : 'EXTENSION'
+     '@extension'     : 'EXTENSION',
+     'self'           : 'SELF'
     }
 
 def t_eof(t):

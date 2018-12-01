@@ -1,7 +1,7 @@
 import rdflib
 import pdb
 
-from .core import Node, Name, Uri
+from .core import Node, Name, Uri, Self
 from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
@@ -11,7 +11,7 @@ class Parameter(Node):
 
     def __init__(self, parameter_name, position, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._param_name = parameter_name
         self._binding    = rdflib.BNode()
         self._position   = position
@@ -21,37 +21,24 @@ class Parameter(Node):
         return self._param_name
 
     @property
-    def binding(self):
-        return self._binding
-
-    @property
     def position(self):
-        return self._position 
+        return self._position
 
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
                 self._param_name == other.name)
 
     def __repr__(self):
-        return format("<RDFscript PARAM: %s>" % self.name)
-
-    def as_rdfbnode(self):
-        return self._binding
+        return format("[PARAM: %s]" % self.name)
 
     def as_name(self):
         return Name(None, self.name, None)
-
-    def isBound(self):
-        return not isinstance(self._binding, rdflib.BNode)
-
-    def bind(self, binding):
-        self._binding = binding
 
 class Argument(Node):
 
     def __init__(self, value_expr, position, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._value    = value_expr
         self._position = position
 
@@ -73,13 +60,13 @@ class Argument(Node):
                 self.position == other.position)
 
     def __repr__(self):
-        return format("<RDFscript ARG: %s>" % self._value)
+        return format("[ARG: %s]" % self._value)
 
 class Property(Node):
 
     def __init__(self, name, value, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name          = name
         self._value         = value
 
@@ -89,7 +76,7 @@ class Property(Node):
                 self.value == other.value)
 
     def __repr__(self):
-        return format("<RDFscript PROPERTY: %s, %s>" % (self.name, self.value))
+        return format("[PROPERTY: %s, %s]" % (self.name, self.value))
 
     @property
     def name(self):
@@ -117,7 +104,7 @@ class Expansion(Node):
 
     def __init__(self, template, name, args, body, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._template      = template
         self._name          = name
         self._args          = [Argument(arg, args.index(arg), location)
@@ -133,7 +120,8 @@ class Expansion(Node):
                 self.body == other.body)
 
     def __repr__(self):
-        return format("<RDFscript EXPANSION: %s : %s : %s> : %s" % (self.name, self.template, self.args, self.body))
+        return format("[EXPANSION: %s\n Base: %s\n Args: %s\n Body: %s]\n\n"
+                      % (self.name, self.template, self.args, self.body))
 
     @property
     def name(self):
@@ -155,7 +143,7 @@ class Expansion(Node):
         p = self.template.prefix
         l = self.template.localname
         template = env.lookup_template(env.resolve_name(p, l))
-        return self._extensions + template.get_extensions(env)
+        return template.get_extensions(env) + self._extensions
 
     def parameterise(self, parameters):
         for param in parameters:
@@ -182,12 +170,10 @@ class Expansion(Node):
         template = env.lookup_template(env.resolve_name(p, l))
         if not template:
             raise TemplateNotFound(self._template, self._location)
-        if not isinstance(template, Template):
+        elif not isinstance(template, Template):
             raise UnexpectedType(Template, template, self._location)
 
         triples = [self.sub_args(triple) for triple in template.as_triples(env)]
-
-        triples = [self.sub_name(triple, env) for triple in triples]
 
         for expr in self._body:
             if isinstance(expr, Property):
@@ -198,25 +184,23 @@ class Expansion(Node):
             elif isinstance(expr, ExtensionPragma):
                 self._extensions.append(expr)
 
+        triples = [self.replace_names(triple, env) for triple in triples]
+
         return triples
 
-    def sub_type(self, triple, type_uri, env):
+    def replace_names(self, triple, env):
         (s, p, o) = triple
-        if s == self._name.as_uri(env) and p == rdftype_uri():
-            o = type_uri
+        return (self.replace_name(s, env),
+                self.replace_name(p, env),
+                self.replace_name(o, env))
 
-        return (s, p, o)
-
-    def sub_name(self, triple, env):
-        (s, p, o) = triple
-        if isinstance(s, Uri) and s == self._template.as_uri(env):
-            s = self._name.as_uri(env)
-        if isinstance(p, Uri) and p == self._template.as_uri(env):
-            p = self._name.as_uri(env)
-        if isinstance(o, Uri) and o == self._template.as_uri(env):
-            o = self._name.as_uri(env)
-
-        return (s, p, o)
+    def replace_name(self, victim, env):
+        if isinstance(victim, Uri) and victim == self._template.as_uri(env):
+            return self._name.as_uri(env)
+        elif isinstance(victim, Self):
+            return self._name.as_uri(env)
+        else:
+            return victim
 
     def sub_args(self, triple):
         (s, p, o) = triple
@@ -234,7 +218,7 @@ class Template(Node):
 
     def __init__(self, name, parameters, body, location, base):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name          = name
         self._parameters    = [Parameter(p, parameters.index(p), location)
                                for p in parameters]
@@ -292,13 +276,13 @@ class Template(Node):
                 self._body == other.body)
 
     def __repr__(self):
-        return format("<RDFscript TEMPLATE: %s, params: %s, body: %s>, base: %s" %
+        return format("[TEMPLATE: %s\n Params: %s\n Body: %s\n Specialised on: %s]\n\n" %
                       (self._name, self._parameters, self._body, self._base))
 
     def as_triples(self, env):
 
         if self._base:
-            triples = [self.sub_name(triple) for triple in self._base.as_triples(env)]
+            triples = [self.replace_names(triple) for triple in self._base.as_triples(env)]
         else:
             triples = []
 
@@ -313,22 +297,23 @@ class Template(Node):
 
         return parameterise_triples(triples, self._parameters)
 
-    def sub_name(self, triple):
+    def replace_names(self, triple):
         (s, p, o) = triple
-        if isinstance(s, Name) and s == self._base.name:
-            s = self._name
-        if isinstance(p, Name) and p == self._base.name:
-            p = self._name
-        if isinstance(o, Name) and o == self._base.name:
-            o = self._name
+        return (self.replace_name(s),
+                self.replace_name(p),
+                self.replace_name(o))
 
-        return (s, p, o)
+    def replace_name(self, victim):
+        if isinstance(victim, Name) and victim == self._base.name:
+            return self._name
+        else:
+            return victim
 
 class Assignment(Node):
 
     def __init__(self, name, value, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name  = name
         self._value = value
 
@@ -354,7 +339,7 @@ class Extension(Node):
 
     def __init__(self, name, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._name = name
 
     def __eq__(self, other):
@@ -363,10 +348,6 @@ class Extension(Node):
 
     def __repr__(self):
         return format("EXTENSION: %s" % self.name)
-
-
-def rdftype_uri():
-    return Uri(rdflib.RDF.type.toPython(), None)
 
 def parameterise_triples(triples, parameters):
     parameterised = []

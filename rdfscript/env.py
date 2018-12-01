@@ -3,13 +3,8 @@ import sys
 import pathlib
 import logging
 
-import rdfscript.toplevel
-import rdfscript.core
-
 from .evaluate import evaluate
 from .error import RDFScriptError, FailToImport
-
-from rdfscript.identifier import URI
 
 from .rdfscriptparser import RDFScriptParser
 
@@ -19,7 +14,7 @@ from .SBOL2Serialize import serialize_sboll2
 
 from .extensions import ExtensionManager
 
-class Env:
+class Env(object):
     def __init__(self,
                  repl=False,
                  filename=None,
@@ -35,8 +30,6 @@ class Env:
 
         self._default_ns = rdflib.Namespace(self._rdf.namespace)
         self._default_prefix = None
-
-        self._logger = logging.getLogger(__name__)
 
         if filename:
             paths.append(pathlib.Path(filename).parent)
@@ -107,7 +100,7 @@ class Env:
             try:
                 result = evaluate(form, self)
             except RDFScriptError as e:
-                self._logger.error(str(e))
+                logging.error(str(e))
 
         return result
 
@@ -130,7 +123,7 @@ class Env:
 
         return [str(p) for p in self._importer.path]
 
-class RuntimeGraph:
+class RuntimeGraph(object):
 
     def __init__(self, serializer=None):
 

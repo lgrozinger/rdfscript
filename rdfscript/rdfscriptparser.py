@@ -7,7 +7,8 @@ from .reader import tokens
 
 from .core import (Uri,
                    Name,
-                   Value)
+                   Value,
+                   Self)
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
@@ -30,11 +31,11 @@ def p_empty_toplevels(p):
     p[0] =[]
 
 def p_toplevel_types(p):
-    '''toplevel : expr
-                | assignment
+    '''toplevel : assignment
                 | pragma
                 | template
-                | expansion'''
+                | expansion
+                | expr'''
     p[0] = p[1]
 
 def p_template(p):
@@ -108,7 +109,8 @@ def p_not_empty_exprlist_n(p):
 def p_identifier(p):
     '''identifier : qname
                   | localname
-                  | uri'''
+                  | uri
+                  | self'''
     p[0] = p[1]
 
 def p_qname(p):
@@ -126,6 +128,10 @@ def p_localname(p):
     '''localname : SYMBOL'''
     p[0] = Name(None, p[1], location(p))
 
+def p_self(p):
+    '''self : SELF'''
+    p[0] = Self(location(p))
+    
 def p_parameterlist(p):
     '''parameterlist : emptylist
                      | nonemptyparameterlist'''
@@ -232,7 +238,7 @@ def location(p):
     pos = Position(p.lineno(0), p.lexpos(0))
     return Location(pos, p.parser.filename)
 
-class RDFScriptParser:
+class RDFScriptParser(object):
 
     def __init__(self, debug=True, scanner=reader, filename=None):
 
@@ -253,7 +259,7 @@ class RDFScriptParser:
         self.scanner.at_line_start = True
         self.scanner.indent_stack  = [0]
 
-class Position:
+class Position(object):
 
     def __init__(self, line, col):
 
@@ -271,7 +277,7 @@ class Position:
     def col(self):
         return self._col
 
-class Location:
+class Location(object):
 
     def __init__(self, position, filename=None):
 

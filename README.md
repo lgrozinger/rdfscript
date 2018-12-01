@@ -50,3 +50,9 @@ The interface to the extensions system will change soon, see https://github.com/
 ### Language
 
 Please branch off of `dev` for feature development, or work directly on `dev` for bug-fixes.
+
+### Testing
+
+A test suite using the Python3 `unittest` package is under the `test/` directory.
+
+Run the tests from the project root using `python -m unittest`

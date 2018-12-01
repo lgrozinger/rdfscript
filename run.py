@@ -3,6 +3,7 @@ import ply.lex  as lex
 import rdflib
 import sys
 import argparse
+import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
@@ -49,7 +50,11 @@ def rdf_repl(serializer='turtle',
 
     while True:
         try:
-            s = input('RDF > ')
+            prompt = env.default_prefix or 'RDF'
+            if sys.version_info >= (3, 0):
+                s = input(prompt + '  > ')
+            else:
+                s = raw_input(prompt + '  > ')
         except EOFError:
             break
         if not s: continue
@@ -62,7 +67,7 @@ def rdf_repl(serializer='turtle',
         with open(out, 'w') as o:
             o.write(str(env))
 
-if __name__ == "__main__":
+def rdfscript_args():
 
     parser = argparse.ArgumentParser(description="RDFScript interpreter and REPL.")
 
@@ -77,13 +82,15 @@ if __name__ == "__main__":
                         help="File to parse as RDFScript")
 
     parser.add_argument('-o', '--output', help="The name of the output file", default=None)
-
     parser.add_argument('--version', action='version', version='%(prog)s 0.0alpha')
-
     parser.add_argument('-e', '--extensions', action='append', nargs=2, default=[])
 
-    args = parser.parse_args()
+    return  parser.parse_args()
 
+if __name__ == "__main__":
+
+    logging.basicConfig(format='\n%(message)s\n', level=logging.DEBUG)
+    args = rdfscript_args()
     extensions = [(ext[0], ext[1]) for ext in args.extensions]
 
     if args.filename:

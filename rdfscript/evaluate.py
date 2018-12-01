@@ -1,9 +1,11 @@
 import rdflib
 import logging
+import pdb
 
 from .core import (Uri,
                    Value,
-                   Name)
+                   Name,
+                   Self)
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
@@ -76,6 +78,10 @@ def evaluate_extensionpragma(pragma, env):
         args = [evaluate(arg, env) for arg in pragma.args]
         return ext(*args)
 
+def evaluate_self(myself, env):
+
+    return evaluate_name(Name(None, '', myself.location), env)
+
 def evaluate_value(value, env):
 
     return value.as_rdfliteral()
@@ -89,7 +95,7 @@ def evaluate_template(template, env):
 
 def evaluate_expansion(expansion, env):
 
-    #expansion.prefixify(env.default_prefix)
+    expansion.prefixify(env.default_prefix)
     raw_triples = expansion.as_triples(env)
 
     evaluated_triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
@@ -145,5 +151,6 @@ _handler_index = {
     Template            : evaluate_template,
     Expansion           : evaluate_expansion,
     Argument            : evaluate_argument,
+    Self                : evaluate_self,
     type(None)          : unknown_node,
 }

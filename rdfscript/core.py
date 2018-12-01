@@ -2,7 +2,7 @@ import rdflib
 
 from .error import PrefixError
 
-class Node:
+class Node(object):
 
     def __init__(self, location):
 
@@ -33,7 +33,7 @@ class Name(Node):
 
     def __init__(self, prefix, localname, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._prefix = prefix
         self._localname = localname
 
@@ -43,7 +43,7 @@ class Name(Node):
                 self.localname == other.localname)
 
     def __repr__(self):
-        return format("<RDFscript NAME: <%s%s> >" % (self.prefix, self.localname))
+        return format("[NAME: %s.%s]" % (self.prefix, self.localname))
 
     @property
     def prefix(self):
@@ -66,7 +66,7 @@ class Uri(Node):
 
     def __init__(self, uri, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._uri = uri
 
     def __eq__(self, other):
@@ -74,7 +74,7 @@ class Uri(Node):
                 self.uri == other.uri)
 
     def __repr__(self):
-        return format("<RDFscript URI: %s>" % self._uri)
+        return format("[URI: %s]" % self._uri)
 
     @property
     def uri(self):
@@ -88,7 +88,7 @@ class Value(Node):
 
     def __init__(self, python_literal, location):
 
-        super().__init__(location)
+        Node.__init__(self, location)
         self._python_val = python_literal
 
     def __eq__(self, other):
@@ -96,7 +96,7 @@ class Value(Node):
                 self.as_pythonval() == other.as_pythonval())
 
     def __repr__(self):
-        return format("<RDFscript VALUE: %s>" % self.as_pythonval())
+        return format("[VALUE: %s]" % self.as_pythonval())
 
     def as_pythonval(self):
 
@@ -106,34 +106,14 @@ class Value(Node):
 
         return rdflib.Literal(self._python_val)
 
-class Parameter:
-    """Env's abstraction of a RDF BNode for a template parameter."""
+class Self(Node):
 
-    def __init__(self, parameter_name):
+    def __init__(self, location):
 
-        self._param_name = parameter_name
-        self._binding    = rdflib.BNode()
-
-    @property
-    def name(self):
-        return self._param_name
-
-    @property
-    def binding(self):
-        return self._binding
+        Node.__init__(self, location)
 
     def __eq__(self, other):
-        return (isinstance(other, Parameter) and
-                self.name == other.name)
+        return isinstance(other, Self)
 
     def __repr__(self):
-        return format("<RDFscript PARAMETER: %s>" % self.name)
-
-    def as_rdfbnode(self):
-        return self._binding
-
-    def isBound(self):
-        return not isinstance(self._binding, rdflib.BNode)
-
-    def bind(self, binding):
-        self._binding = binding
+        return format("[SELF]")

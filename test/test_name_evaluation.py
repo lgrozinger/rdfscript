@@ -40,10 +40,22 @@ class RuntimeIdentifierTest(unittest.TestCase):
         self.assertEqual(env.interpret(forms), env.resolve_name(None, 'UnboundSymbol'))
 
 
+    def test_evaluate_self(self):
+
+        script = "self"
+
+        forms = self.parser.parse(script)
+
+        env = Env()
+
+        expected_value = env._default_ns['']
+
+        self.assertEqual(env.interpret(forms), expected_value)
+
     def test_evaluate_localname_bound(self):
 
-        script = (f"X=\"value\"\n"
-                  f"X")
+        script = ("X=\"value\"\n" +
+                  "X")
 
         forms = self.parser.parse(script)
 
@@ -55,8 +67,8 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
     def test_resolve_qname(self):
 
-        script = (f"@prefix p <http://eg.org/>\n"
-                  f"p.UnboundSymbol")
+        script = ("@prefix p <http://eg.org/>\n" +
+                  "p.UnboundSymbol")
 
         forms = self.parser.parse(script)
 
@@ -71,8 +83,8 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
     def test_evaluate_qname_not_bound(self):
 
-        script = (f"@prefix p <http://eg.org/>\n"
-                  f"p.UnboundSymbol")
+        script = ("@prefix p <http://eg.org/>\n" +
+                  "p.UnboundSymbol")
 
         forms  = self.parser.parse(script)
 
@@ -83,9 +95,9 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
     def test_evaluate_qname_bound(self):
 
-        script = (f"@prefix p <http://eg.org/>\n"
-                  f"p.X=\"value\"\n"
-                  f"p.X")
+        script = ("@prefix p <http://eg.org/>\n" +
+                  "p.X=\"value\"\n" +
+                  "p.X")
 
         forms = self.parser.parse(script)
 
