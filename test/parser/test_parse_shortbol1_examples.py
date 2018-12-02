@@ -9,9 +9,9 @@ from rdfscript.pragma import (PrefixPragma,
                               DefaultPrefixPragma,
                               ImportPragma)
 
-from rdfscript.templating import (Template,
-                                  Assignment,
-                                  Expansion)
+from rdfscript.templating import Assignment
+from rdfscript.template import (Template,
+                                Expansion)
 
 class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
@@ -19,12 +19,12 @@ class ParseShortBOL1ExamplesTest(unittest.TestCase):
         self.parser = RDFScriptParser(debug=True)
 
         ## types of toplevel AST node
-        self.expansion_type = type(Expansion(None, None, [], None, None))
+        self.expansion_type = type(Expansion(None, None, [], [], None))
         self.prefix_type = type(PrefixPragma(None, None, None))
         self.import_type = type(ImportPragma(None, None))
         self.defaultprefix_type = type(DefaultPrefixPragma(None, None))
         self.assignment_type = type(Assignment(None, None, None))
-        self.template_type = type(Template(None, [], None, None, None))
+        self.template_type = type(Template(None, [], [], None, None))
 
     def tearDown(self):
         None

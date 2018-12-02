@@ -5,9 +5,9 @@ import rdflib
 
 from rdfscript.env import Env
 from rdfscript.core import (Name, Value, Uri)
-from rdfscript.templating import (Template,
-                                  Parameter,
-                                  Property)
+from rdfscript.template import (Template,
+                                Parameter,
+                                Property)
 
 from rdfscript.evaluate import evaluate
 from rdfscript.error import PrefixError

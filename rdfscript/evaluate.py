@@ -1,5 +1,6 @@
 import rdflib
 import logging
+import pdb
 
 from .core import (Uri,
                    Value,
@@ -11,11 +12,11 @@ from .pragma import (PrefixPragma,
                      ImportPragma,
                      ExtensionPragma)
 
-from .templating import (Assignment,
-                         Template,
-                         Property,
-                         Argument,
-                         Expansion)
+from .templating import Assignment
+from .template import (Template,
+                       Property,
+                       Argument,
+                       Expansion)
 
 from .error import (UnknownConstruct,
                     PrefixError,
@@ -88,14 +89,13 @@ def evaluate_value(value, env):
 def evaluate_template(template, env):
 
     template.parameterise()
-    template.prefixify(env.default_prefix)
-    template_uri = env.resolve_name(template.name.prefix, template.name.localname)
-    env.assign_template(template_uri, template)
+    template.de_name(env)
+    env.assign_template(template.name.as_uriref(), template)
 
 def evaluate_expansion(expansion, env):
 
-    expansion.prefixify(env.default_prefix)
-    raw_triples = expansion.as_triples(env)
+    expansion.de_name(env)
+    raw_triples = expansion.replace_self(expansion.as_triples(env))
 
     evaluated_triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
                           for (s, p, o) in raw_triples]

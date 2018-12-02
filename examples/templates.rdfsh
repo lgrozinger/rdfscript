@@ -3,12 +3,12 @@
 
 # templates define common patterns of triples you can use to save typing
 
-SimpleTemplate =>
+SimpleTemplate() =>
   property = "value"
 
 # you can expand the template to add its triples to the RDF graph
 
-expand : SimpleTemplate
+expand : SimpleTemplate()
 
 # templates can take parameters
 
@@ -24,7 +24,7 @@ arguments : ParamTemplate(1, 2)
 
 SpecialisedTemplate(x) => ParamTemplate(x, 2)
 
-specialised : SpecialisedTemplate(3, 2)
+specialised : SpecialisedTemplate(3)
 
 # expansions can add their own triples
 

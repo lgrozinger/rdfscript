@@ -44,6 +44,29 @@ class TemplateClassTest(unittest.TestCase):
                                  None,
                                  None)
 
+        self.simple_template = Template(Name(None, 'T', None),
+                                 [Name(None, 'a', None),
+                                  Name(None, 'b', None)],
+                                 [Property(Name(None, 'a', None),
+                                           Name(None, 'value', None),
+                                           None),
+                                  Property(Name(None, 'predicate', None),
+                                           Name(None, 'b', None),
+                                           None)],
+                                 None,
+                                 None)
+
+        self.specialised = Template(Name(None, 'S', None),
+                                    [Name(None, 'x', None)],
+                                    [],
+                                    Expansion(Name(None, 'S', None),
+                                              Name(None, 'T', None),
+                                              [Name(None, 'x', None),
+                                               Value(1, None)],
+                                              [],
+                                              None),
+                                    None)
+
     def tearDown(self):
         None
 
@@ -84,14 +107,13 @@ class TemplateClassTest(unittest.TestCase):
 
         self.assertEqual(len(self.template.body), 3)
 
+    @unittest.skip("Bind params not in use.")
     def test_bind_params(self):
 
         self.template.parameterise()
 
         args = [Argument(Value(42, None), 0, None),
                 Argument(Uri('http://arg.org/', None), 1, None)]
-
-        self.template.bind(args)
 
         self.assertEqual(self.template.name, Name(None, 'T', None))
 
@@ -127,15 +149,15 @@ class TemplateClassTest(unittest.TestCase):
         self.assertEqual(self.template.name, Name(None, 'T', None))
 
         self.assertEqual(self.template.parameters, [Parameter('a', 0, None),
-                                               Parameter('b', 1, None)])
+                                                    Parameter('b', 1, None)])
 
         self.assertEqual(self.template.body[0], Property(Parameter('a', 0, None),
-                                                     Name(None, 'value', None),
-                                                     None))
+                                                         Name(None, 'value', None),
+                                                         None))
 
         self.assertEqual(self.template.body[1], Property(Name(None, 'predicate', None),
-                                                    Parameter('b', 1, None),
-                                                    None))
+                                                         Parameter('b', 1, None),
+                                                         None))
 
         self.assertEqual(self.template.body[2].name, Name(None, 'expansion', None))
 
@@ -144,10 +166,18 @@ class TemplateClassTest(unittest.TestCase):
         self.assertEqual(self.template.body[2].value.template, Parameter('a', 0, None))
 
         self.assertEqual(self.template.body[2].value.args, [Argument(Parameter('b', 1, None),
-                                                                0,
-                                                                None)])
+                                                                     0,
+                                                                     None)])
 
         self.assertEqual(self.template.body[2].value.body, [])
 
         self.assertEqual(len(self.template.body), 3)
+
+    def test_derived_forward_parameters(self):
+
+        self.template.parameterise()
+        self.template.de_name(self.env)
+        self.specialised.parameterise()
+
+        self.assertEqual(self.specialised.base.args[0], Argument(Parameter('x', 0, None), 0, None))
 

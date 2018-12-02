@@ -15,10 +15,10 @@ from .pragma import (PrefixPragma,
                      ImportPragma,
                      ExtensionPragma)
 
-from .templating import (Assignment,
-                         Template,
-                         Expansion,
-                         Property)
+from .templating import Assignment
+from .template import (Template,
+                       Expansion,
+                       Property)
 
 from .error import RDFScriptSyntax
 
@@ -70,8 +70,8 @@ def p_extension_args(p):
 def p_template_with_specialisation(p):
     '''template : identifier '(' exprlist ')' RARROW anon_expansion'''
     anon = p[6]
-    base = Expansion(anon.template, p[1], anon.args, anon.body, anon.location)
-    p[0] = Template(p[1], p[3], [], base, location(p))
+    base = Expansion(p[1], anon.template, anon.args, [], anon.location)
+    p[0] = Template(p[1], p[3], anon.body, base, location(p))
 
 def p_base_template(p):
     '''template : identifier '(' exprlist ')' RARROW indentedinstancebody'''
@@ -85,11 +85,11 @@ def p_expansion(p):
 
 def p_named_expansion(p):
     '''named_expansion : identifier ':' identifier '(' exprlist ')' indentedinstancebody'''
-    p[0] = Expansion(p[3], p[1], p[5], p[7], location(p))
+    p[0] = Expansion(p[1], p[3], p[5], p[7], location(p))
 
 def p_anon_expansion(p):
     '''anon_expansion : identifier '(' exprlist ')' indentedinstancebody'''
-    p[0] = Expansion(p[1], None, p[3], p[5], location(p))
+    p[0] = Expansion(None, p[1], p[3], p[5], location(p))
 
 
 # def p_triple(p):

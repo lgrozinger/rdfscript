@@ -84,3 +84,12 @@ class ExtensionPragma(Node):
     @property
     def args(self):
         return self._args
+
+    def parameterise(self, parameters):
+        for param in parameters:
+            if self.name == param.name:
+                self._name = param
+
+            self._args = [param if arg == param.name
+                          else arg
+                          for arg in self.args]

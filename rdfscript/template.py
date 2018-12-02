@@ -64,17 +64,6 @@ class Template(Node):
         for extension in self._extensions:
             extension.parameterise(self.parameters)
 
-    def bind(self, args):
-
-        for statement in self.body:
-            try:
-                statement.bind(args)
-            except AttributeError:
-                pass
-
-        if self.base:
-            self.base.bind(args)
-
     def de_name(self, env):
         self._name = self.name.as_uri(env)
         for statement in self.body:
@@ -89,16 +78,6 @@ class Template(Node):
     def check_param(self, param):
         if not isinstance(param, Name):
             raise UnexpectedType(Name, param, self.location)
-
-    def prefixify(self, prefix):
-
-        self._name.prefixify(prefix)
-        if self._base:
-            self._base.prefixify(prefix)
-
-        for expr in self._body:
-            if not isinstance(expr, ExtensionPragma):
-                expr.prefixify(prefix)
 
     def as_uri(self, env):
         return self._name.as_uri(env)
@@ -119,33 +98,28 @@ class Template(Node):
     def as_triples(self, env):
 
         if self._base:
-            triples = [self.replace_names(triple) for triple in self._base.as_triples(env)]
+            triples = self._base.as_triples(env)
+            triples = self.replace_name(triples)
         else:
             triples = []
 
         for expr in self._body:
             if isinstance(expr, Property):
-                triples.append((self._name.as_uri(env), expr.name, expr.value))
+                triples.append((self.name, expr.name, expr.value))
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
-            elif isinstance(expr, ExtensionPragma):
-                self._extensions.append(expr)
 
-        return parameterise_triples(triples, self._parameters)
+        return triples
 
-    def replace_names(self, triple):
-        (s, p, o) = triple
-        return (self.replace_name(s),
-                self.replace_name(p),
-                self.replace_name(o))
+    def replace_name(self, triples):
+        renamed_triples = []
+        for (s, p, o) in triples:
+            if s == self._base.name:
+                s = self._name
+            renamed_triples.append((s, p, o))
 
-    def replace_name(self, victim):
-        if isinstance(victim, Name) and victim == self._base.name:
-            return self._name
-        else:
-            return victim
-
+        return renamed_triples
 
 class Expansion(Node):
 
@@ -199,9 +173,7 @@ class Expansion(Node):
         return self._body
 
     def get_extensions(self, env):
-        p = self.template.prefix
-        l = self.template.localname
-        template = env.lookup_template(env.resolve_name(p, l))
+        template = env.lookup_template(self.template.as_uriref())
         return template.get_extensions(env) + self._extensions
 
     def parameterise(self, parameters):
@@ -241,6 +213,20 @@ class Expansion(Node):
                           else myarg
                           for myarg in self.args]
 
+    def bind_params(self, triples):
+        bound_triples = []
+        for (s, p, o) in triples:
+            for arg in self._args:
+                if isinstance(s, Parameter) and s.position == arg.position:
+                    s = arg.value
+                if isinstance(p, Parameter) and p.position == arg.position:
+                    p = arg.value
+                if isinstance(o, Parameter) and o.position == arg.position:
+                    o = arg.value
+            bound_triples.append((s, p, o))
+
+        return bound_triples
+
     def de_name(self, env):
         if isinstance(self.name, Name):
             self._name = self.name.as_uri(env)
@@ -260,53 +246,49 @@ class Expansion(Node):
                 pass
 
     def as_triples(self, env):
-        p = self.template.prefix
-        l = self.template.localname
-        template = env.lookup_template(env.resolve_name(p, l))
+        template = env.lookup_template(self.template.as_uriref())
         if not template:
             raise TemplateNotFound(self._template, self._location)
         elif not isinstance(template, Template):
             raise UnexpectedType(Template, template, self._location)
 
-        triples = [self.sub_args(triple) for triple in template.as_triples(env)]
+        triples = template.as_triples(env)
+        triples = self.bind_params(triples)
 
         for expr in self._body:
             if isinstance(expr, Property):
-                triples.append((self._name, expr.name, expr.value))
+                triples.append((self.name, expr.name, expr.value))
             elif isinstance(expr, Expansion):
                 for triple in expr.as_triples(env):
                     triples.append(triple)
             elif isinstance(expr, ExtensionPragma):
                 self._extensions.append(expr)
 
-        triples = [self.replace_names(triple, env) for triple in triples]
+        triples = self.replace_name(triples)
 
         return triples
 
-    def replace_names(self, triple, env):
-        (s, p, o) = triple
-        return (self.replace_name(s, env),
-                self.replace_name(p, env),
-                self.replace_name(o, env))
+    def replace_name(self, triples):
+        renamed_triples = []
+        for (s, p, o) in triples:
+            if s == self._template:
+                s = self._name
+            renamed_triples.append((s, p, o))
 
-    def replace_name(self, victim, env):
-        if isinstance(victim, Uri) and victim == self._template.as_uri(env):
-            return self._name.as_uri(env)
-        elif isinstance(victim, Self):
-            return self._name.as_uri(env)
-        else:
-            return victim
+        return renamed_triples
 
-    def sub_args(self, triple):
-        (s, p, o) = triple
-        for arg in self._args:
-            if isinstance(s, Parameter) and s.position == arg.position:
-                s = arg.value
-            if isinstance(p, Parameter) and p.position == arg.position:
-                p = arg.value
-            if isinstance(o, Parameter) and o.position == arg.position:
-                o = arg.value
-        return (s, p, o)
+    def replace_self(self, triples):
+        renamed_triples = []
+        for (s, p, o) in triples:
+            if isinstance(s, Self):
+                s = self._name
+            if isinstance(p, Self):
+                p = self._name
+            if isinstance(o, Self):
+                o = self._name
+            renamed_triples.append((s, p, o))
+
+        return renamed_triples
 
 class Parameter(Node):
 
@@ -426,25 +408,3 @@ class Property(Node):
             self.value.de_name(env)
         except AttributeError:
             pass
-
-    def prefixify(self, prefix):
-        if isinstance(self._name, Name):
-            self._name.prefixify(prefix)
-
-        if isinstance(self._value, Name) or isinstance(self._value, Expansion):
-            self._value.prefixify(prefix)
-
-def parameterise_triples(triples, parameters):
-    parameterised = []
-    for (s, p, o) in triples:
-        for param in parameters:
-            if s == param.as_name():
-                s = param
-            if p == param.as_name():
-                p = param
-            if o == param.as_name():
-                o = param
-
-        parameterised.append((s, p, o))
-
-    return parameterised

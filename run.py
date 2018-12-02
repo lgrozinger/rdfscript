@@ -9,7 +9,7 @@ from rdfscript.env import Env
 from rdfscript.SBOL2Serialize import serialize_sboll2
 
 def parse_from_file(filepath,
-                    serializer='turtle',
+                    serializer='nt',
                     optpaths=[],
                     out=None,
                     extensions=[]):
@@ -32,7 +32,7 @@ def parse_from_file(filepath,
         with open(out, 'w') as o:
             o.write(str(env))
 
-def rdf_repl(serializer='turtle',
+def rdf_repl(serializer='nt',
              out=None,
              optpaths=[],
              extensions=[]):
@@ -66,8 +66,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="RDFScript interpreter and REPL.")
 
-    parser.add_argument('-s', '--serializer', default='turtle',
-                        choices=['rdfxml', 'n3', 'turtle', 'sbolxml'],
+    parser.add_argument('-s', '--serializer', default='nt',
+                        choices=['rdfxml', 'n3', 'turtle', 'sbolxml', 'nt'],
                         help="The format into which the graph is serialised")
     parser.add_argument('-p', '--path',
                         help="Additions to the path in which to search for imports",

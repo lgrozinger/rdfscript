@@ -5,7 +5,7 @@ import logging
 
 from .evaluate import evaluate
 from .error import RDFScriptError, FailToImport
-
+from .template import Template
 from .rdfscriptparser import RDFScriptParser
 
 from .importer import Importer
