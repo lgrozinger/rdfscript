@@ -56,7 +56,7 @@ class ImportPragma(Node):
                 self.target == other.target)
 
     def __repr__(self):
-        return format("IMPORT DIRECTIVE: %s)" % self.target)
+        return format("IMPORT DIRECTIVE: %s" % self.target)
 
     @property
     def target(self):
@@ -75,7 +75,7 @@ class ExtensionPragma(Node):
                 self.args == other.args)
 
     def __repr__(self):
-        return format("EXT DIRECTIVE: %s)" % self.name)
+        return format("EXT DIRECTIVE: %s" % self.name)
 
     @property
     def name(self):
@@ -84,3 +84,12 @@ class ExtensionPragma(Node):
     @property
     def args(self):
         return self._args
+
+    def parameterise(self, parameters):
+        for param in parameters:
+            if self.name == param.name:
+                self._name = param
+
+            self._args = [param if arg == param.name
+                          else arg
+                          for arg in self.args]

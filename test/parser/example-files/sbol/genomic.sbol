@@ -10,10 +10,10 @@ iupac.RNA = <http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html>
 iupac.Protein = <http://www.chem.qmul.ac.uk/iupac/AminoAcid/>
 opensmiles.SMILES = <http://www.opensmiles.org/opensmiles.html>
 
-iupac.DNA : SequenceEncoding
-iupac.RNA : SequenceEncoding
-iupac.Protein : SequenceEncoding
-opensmiles.SMILES : SequenceEncoding
+iupac.DNA : SequenceEncoding()
+iupac.RNA : SequenceEncoding()
+iupac.Protein : SequenceEncoding()
+opensmiles.SMILES : SequenceEncoding()
 
 # ComponentDefinition type
 sbol_cdType.DNA = biopax.DnaRegion
@@ -22,13 +22,13 @@ sbol_cdType.Protein = biopax.Protein
 sbol_cdType.SmallMolecule = biopax.SmallMolecule
 sbol_cdType.Complex = biopax.Complex
 
-biopax.DnaRegion     : ComponentDefinitionType
-biopax.RnaRegion     : ComponentDefinitionType
-biopax.Protein       : ComponentDefinitionType
-biopax.SmallMolecule : ComponentDefinitionType
-biopax.Complex       : ComponentDefinitionType
+biopax.DnaRegion     : ComponentDefinitionType()
+biopax.RnaRegion     : ComponentDefinitionType()
+biopax.Protein       : ComponentDefinitionType()
+biopax.SmallMolecule : ComponentDefinitionType()
+biopax.Complex       : ComponentDefinitionType()
 
-biopax.PhysicalEntity : owl.Class
+biopax.PhysicalEntity : owl.Class()
   owl.subClassOf = ComponentDefinitionType
 
 # ComponentDefinition role
@@ -44,99 +44,99 @@ sbol_cdRole.mRNA           = <http://identifiers.org/so/SO:0000234>
 sbol_cdRole.Effector       = <http://identifiers.org/chebi/CHEBI:35224>
 
 # Listing these individually isn't a long-term solution!
-<http://identifiers.org/so/SO:0000167> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000139> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000316> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000141> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000704> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000057> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000280> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/so/SO:0000234> : <http://identifiers.org/so/SO:0000000>
-<http://identifiers.org/chebi/CHEBI:35224> : ComponentDefinitionRole
+<http://identifiers.org/so/SO:0000167> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000139> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000316> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000141> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000704> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000057> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000280> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/so/SO:0000234> : <http://identifiers.org/so/SO:0000000>()
+<http://identifiers.org/chebi/CHEBI:35224> : ComponentDefinitionRole()
 
-<http://identifiers.org/so/SO:0000000> : owl.Class
+<http://identifiers.org/so/SO:0000000> : owl.Class()
   dc.description = "A sequence_feature with an extent greater than zero."
   owl.subClassOf = ComponentDefinitionRole
 
-chebi._52206 : owl.Class
+chebi._52206 : owl.Class()
   dc.description = "A biological role played by the molecular entity or part thereof within a biochemical context."
   owl.subClassOf = ComponentDefinitionRole
 
 
 # Templates
 
-DnaSequence(x) => Sequence
+DnaSequence(x) => Sequence()
   encoding = iupac.DNA
   elements = x
 
-RnaSequence(x) => Sequence
+RnaSequence(x) => Sequence()
   encoding = iupac.DNA
   elements = x
 
-ProteinSequence(x) => Sequence
+ProteinSequence(x) => Sequence()
   encoding = iupac.Protein
   elements = x
 
-ChemicalStructure(x) => Sequence
+ChemicalStructure(x) => Sequence()
   encoding = opensmiles.SMILES
 
 # DNA/RNA/Protein
 
-DnaComponent => ComponentDefinition
+DnaComponent() => ComponentDefinition()
    type = sbol_cdType.DNA
 
-Dna => ComponentDefinition
+Dna() => ComponentDefinition()
    type = sbol_cdType.DNA
 
-RnaComponent => ComponentDefinition
+RnaComponent() => ComponentDefinition()
    type = sbol_cdType.RNA
 
-Rna => ComponentDefinition
+Rna() => ComponentDefinition()
    type = sbol_cdType.RNA
 
-ProteinComponent => ComponentDefinition
+ProteinComponent() => ComponentDefinition()
   type = sbol_cdType.Protein
 
-Protein => ComponentDefinition
+Protein() => ComponentDefinition()
   type = sbol_cdType.Protein
 
-SmallMoleculeComponent => ComponentDefinition
+SmallMoleculeComponent() => ComponentDefinition()
   type = sbol_cdType.SmallMolecule
 
-SmallMolecule => ComponentDefinition
+SmallMolecule() => ComponentDefinition()
   type = sbol_cdType.SmallMolecule
 
-ComplexComponent => ComponentDefinition
+ComplexComponent() => ComponentDefinition()
   type = sbol_cdType.Complex
 
-Complex => ComponentDefinition
+Complex() => ComponentDefinition()
   type = sbol_cdType.Complex
 # Common DNA components
 
-Promoter => DnaComponent
+Promoter() => DnaComponent()
   role = sbol_cdRole.Promoter
 
-RBS => DnaComponent
+RBS() => DnaComponent()
   role = sbol_cdRole.RBS
 
-CDS => DnaComponent
+CDS() => DnaComponent()
   role = sbol_cdRole.CDS
 
-Terminator => DnaComponent
+Terminator() => DnaComponent()
   role = sbol_cdRole.Terminator
 
-Operator => DnaComponent
+Operator() => DnaComponent()
   role = sbol_cdRole.Operator
 
 # Common RNA components
 
-CDS_RNA => RnaComponent
+CDS_RNA() => RnaComponent()
   role = sbol_cdRole.CDS
 
 
 # SequenceConstraint restrictions
 
-constraint(sbj, obj, restr) => SequenceConstraint
+constraint(sbj, obj, restr) => SequenceConstraint()
   restriction = restr
   subject = sbj
   object = obj
@@ -150,30 +150,30 @@ oppositeOrientationTo(sbj, obj) => constraint(sbj, obj, oppositeOrientationTo)
 # locations
 
 # for example: at(pTetR,      1,   55, inline)
-at(cmpt, start, end, ori) => SequenceAnnotation
+at(cmpt, start, end, ori) => SequenceAnnotation()
   component = cmpt
-  location : Range
+  location : Range()
     start = start
     end = end
     orientation = ori
 
 # MapsTo infix constructors
-replacedBy(inModule, inSubModule) => MapsTo
+replacedBy(inModule, inSubModule) => MapsTo()
   refinement = useRemote
   local = inModule
   remote = inSubModule
 
-replaces(inModule, inSubModule) => MapsTo
+replaces(inModule, inSubModule) => MapsTo()
   refinement = useLocal
   local = inModule
   remote = inSubModule
 
-isIdenticalTo(inModule, inSubModule) => MapsTo
+isIdenticalTo(inModule, inSubModule) => MapsTo()
   refinement = verifyIdentical
   local = inModule
   remote = inSubModule
 
-mergedWith(inModule, inSubModule) => MapsTo
+mergedWith(inModule, inSubModule) => MapsTo()
   refinement = merge
   local = inModule
   remote = inSubModule
