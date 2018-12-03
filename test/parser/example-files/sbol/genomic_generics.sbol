@@ -2,18 +2,18 @@
 
 import <genomic.sbol>
 
-dna : DnaComponent
+dna : DnaComponent()
 
-rna : RnaComponent
+rna : RnaComponent()
 
-protein : ProteinComponent
+protein : ProteinComponent()
 
-promoter : Promoter
-rbs : RBS
-cds : CDS
-terminator : Terminator
+promoter : Promoter()
+rbs : RBS()
+cds : CDS()
+terminator : Terminator()
 
-cds_rna : CDS_RNA
+cds_rna : CDS_RNA()
 
 proteinProduction : ProteinProduction(cds, cds_rna, protein)
 

@@ -5,7 +5,7 @@ import logging
 
 from .evaluate import evaluate
 from .error import RDFScriptError, FailToImport
-
+from .template import Template
 from .rdfscriptparser import RDFScriptParser
 
 from .importer import Importer
@@ -167,6 +167,8 @@ class RuntimeGraph(object):
     def serialise(self):
         if self._serializer == 'rdfxml':
             return self._g.serialize(format='xml').decode("utf-8")
+        elif self._serializer == 'nt':
+            return self._g.serialize(format='nt').decode("utf-8")
         elif self._serializer == 'n3':
             return self._g.serialize(format='n3').decode("utf-8")
         elif self._serializer == 'turtle':
