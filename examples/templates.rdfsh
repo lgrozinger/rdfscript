@@ -37,3 +37,8 @@ moreProperties : SpecialisedTemplate(1)
 
 nestedExpand : SpecialisedTemplate("expand")
   inner = nested : SpecialisedTemplate("expand")
+
+# an expansion can expand multiple templates
+
+poly : SimpleTemplate()
+poly : SpecialisedTemplate("poly")

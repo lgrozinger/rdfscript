@@ -45,9 +45,7 @@ Extensions provide a way to execute Python code to do additional, more complex p
 
 Extensions intended as built-ins should be added to the `extensions` package. 'Third party' extensions can also be added at the command line, as long as they are in the Python PATH.
 
-Extensions are expected to supply a `run(triples, env)` method. The `run` method will be given the expansion's triples. The `env` argument gives access to the interpreter's internals.
-
-`run` should return a new list of (possibly mutated) triples. To signal a failure, `run` should return the Python object `None`, or `False`. See the `extensions` package for examples.
+The interface to the extensions system will change soon, see https://github.com/lgrozinger/rdfscript/issues/27 and https://github.com/lgrozinger/rdfscript/issues/26 .
 
 ### Language
 
