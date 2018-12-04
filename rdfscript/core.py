@@ -3,8 +3,12 @@ import rdflib
 from .error import PrefixError
 
 class Node(object):
-
+    """Language object superclass."""
     def __init__(self, location):
+        """
+        location is a Location object representing this language
+        object's position in the source code.
+        """
 
         self._location = location
 
@@ -28,13 +32,60 @@ class Node(object):
     def file(self):
         return self._location.filename
 
-class Name(Node):
+class Prefix(Node):
+    """Language object for the 'prefix' part of a Name."""
 
-    def __init__(self, prefix_string, localname_string, location):
+    def __init__(self, uri_or_string , location):
 
         Node.__init__(self, location)
-        self._prefix = prefix_string
-        self._localname = localname_string
+        self._identity = uri_or_string
+
+    def __eq__(self, other):
+        return (isinstance(other, Prefix) and
+                self._identity == other._identity)
+
+    def __repr__(self):
+        return format("%s" % self._identity)
+
+    @property
+    def identity(self):
+        return self._identity
+
+    def uri(self, env):
+        if isinstance(self._identity, Uri):
+            return self._identity
+        else:
+            return env.uri_for_prefix(self)
+
+class LocalName(Node):
+    """Language object for the local part of a Name."""
+
+    def __init__(self, uri_or_string, location):
+
+        Node.__init__(self, location)
+        self._identity = uri_or_string
+
+    def __eq__(self, other):
+        return (isinstance(other, LocalName) and
+                self._identity == other._identity)
+
+    def __repr__(self):
+        return format("%s" % self._identity)
+
+    @property
+    def identity(self):
+        return self._identity
+
+    def uri(self, env):
+        return Uri(self.identity, self.location)
+
+class Name(Node):
+
+    def __init__(self, prefix, localname, location):
+
+        Node.__init__(self, location)
+        self._prefix = prefix
+        self._localname = localname
 
     def __eq__(self, other):
         return (isinstance(other, Name) and
@@ -56,20 +107,31 @@ class Name(Node):
         if not self._prefix:
             self._prefix = prefix
 
-    def as_uri(self, env):
-        return Uri(env.resolve_name(self._prefix, self._localname).toPython(),
-                   self.location)
+    def uri(self, env):
+        return env.resolve_name(self)
 
 class Uri(Node):
-    """Env's abstraction of a URI"""
+    """Language object for a URI."""
 
-    def __init__(self, uri_string, location):
+    def __init__(self, uri, location):
+        """
+        uri can be one of:
+          - string
+          - rdflib.URIRef object
+          - rdflib.Namespace object
+          - Uri object
 
+        uri is converted to a string
+        """
         Node.__init__(self, location)
-        if isinstance(uri_string, rdflib.URIRef):
-            self._uri = uri_string.toPython()
+        if isinstance(uri, rdflib.URIRef):
+            self._uri = uri.toPython()
+        elif isinstance(uri, rdflib.Namespace):
+            self._uri = rdflib.URIRef(uri).toPython()
+        elif isinstance(uri, Uri):
+            self._uri = uri.uri
         else:
-            self._uri = uri_string
+            self._uri = uri
 
     def __eq__(self, other):
         return (isinstance(other, Uri) and
@@ -82,11 +144,8 @@ class Uri(Node):
     def uri(self):
         return self._uri
 
-    def as_uriref(self):
-        return rdflib.URIRef(self._uri)
-
 class Value(Node):
-    """Env's abstraction of a literal node in the RDF graph."""
+    """Language object for an RDF literal."""
 
     def __init__(self, python_literal, location):
 
@@ -95,18 +154,14 @@ class Value(Node):
 
     def __eq__(self, other):
         return (isinstance(other, Value) and
-                self.as_pythonval() == other.as_pythonval())
+                self.value == other.value)
 
     def __repr__(self):
         return format("[VALUE: %s]" % self.as_pythonval())
 
-    def as_pythonval(self):
-
+    @property
+    def value(self):
         return self._python_val
-
-    def as_rdfliteral(self):
-
-        return rdflib.Literal(self._python_val)
 
 class Self(Node):
 

@@ -4,7 +4,12 @@ import logging
 import rdflib
 
 from rdfscript.env import Env
-from rdfscript.core import (Name, Value, Uri)
+from rdfscript.core import (Name,
+                            Value,
+                            Uri,
+                            Prefix,
+                            LocalName)
+
 from rdfscript.template import (Template,
                                 Parameter,
                                 Property)
@@ -22,13 +27,25 @@ class EnvTest(unittest.TestCase):
 
     def test_prefix_binding(self):
 
-        prefix_uri = 'http://test.prefix.eg/'
+        prefix_uri = Uri('http://test.prefix.eg/', None)
+        prefix = Prefix('x', None)
 
-        self.env.bind_prefix('prefix', rdflib.URIRef(prefix_uri))
+        self.env.bind_prefix(prefix, prefix_uri)
 
-        resolved_name = self.env.resolve_name('prefix', 'local')
-        self.assertEqual(resolved_name, rdflib.URIRef('local', base=prefix_uri))
+        name = Name(prefix, LocalName('local', None), None)
+        resolved_uri = self.env.resolve_name(name)
+        self.assertEqual(resolved_uri, Uri('http://test.prefix.eg/local', None))
 
+    def test_get_and_set_default_prefix(self):
+
+        prefix = Prefix('x', None)
+        self.env.bind_prefix(prefix, Uri('http://eg/', None))
+        self.assertEqual(None, self.env.default_prefix)
+
+        self.env.set_default_prefix(prefix)
+        self.assertEqual(prefix, self.env.default_prefix)
+
+    @unittest.skip("Not yet refactored template")
     def test_template_binding(self):
 
         template = Template(Name(None, 'template', None),

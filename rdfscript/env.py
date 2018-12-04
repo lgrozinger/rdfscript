@@ -3,8 +3,13 @@ import sys
 import pathlib
 import logging
 
+from .core import Uri, Value
+
 from .evaluate import evaluate
-from .error import RDFScriptError, FailToImport
+from .error import (RDFScriptError,
+                    FailToImport,
+                    PrefixError)
+
 from .template import Template
 from .rdfscriptparser import RDFScriptParser
 
@@ -13,6 +18,7 @@ from .importer import Importer
 from .SBOL2Serialize import serialize_sboll2
 
 from .extensions import ExtensionManager
+from .rdf_data import RDFData
 
 class Env(object):
     def __init__(self,
@@ -26,9 +32,7 @@ class Env(object):
         self._template_table = {}
         self._extension_manager = ExtensionManager(extras=extensions)
 
-        self._rdf = RuntimeGraph(serializer=serializer)
-
-        self._default_ns = rdflib.Namespace(self._rdf.namespace)
+        self._rdf = RDFData(serializer=serializer)
         self._default_prefix = None
 
         if filename:
@@ -42,23 +46,30 @@ class Env(object):
 
     @property
     def default_prefix(self):
+        """The language object that set the default prefix."""
         return self._default_prefix
+
+    def uri_for_prefix(self, prefix):
+        """Return a Uri object for a Prefix object."""
+        try:
+            return self._rdf.uri_for_prefix(prefix.identity)
+        except PrefixError:
+            raise PrefixError(prefix, prefix.location)
 
     def add_triples(self, triples):
         for (s, p, o) in triples:
             self._rdf.add(s, p, o)
 
     def bind_prefix(self, prefix, uri):
-        return self._rdf.bind_prefix(prefix, uri)
+        return self._rdf.bind_prefix(prefix.identity, uri)
 
     def set_default_prefix(self, prefix):
 
-        ns = self._rdf.ns_for_prefix(prefix)
+        ns = self._rdf.uri_for_prefix(prefix.identity)
 
         if not ns:
-            return None
+            raise PrefixError(prefix, prefix.location)
         else:
-            self._default_ns = ns
             self._default_prefix = prefix
             return prefix
 
@@ -81,17 +92,17 @@ class Env(object):
     def get_extension(self, name):
         return self._extension_manager.get_extension(name)
 
-    def resolve_name(self, prefix, name):
+    def resolve_name(self, name):
+
+        prefix = name.prefix
+        local  = name.localname.uri(self)
 
         if not prefix:
-            ns = self._default_ns
+            ns = self._default_ns.uri(self)
         else:
-            ns = self._rdf.ns_for_prefix(prefix)
+            ns = prefix.uri(self)
 
-        if not ns:
-            return None
-        else:
-            return rdflib.URIRef(ns[name])
+        return Uri(ns.uri + local.uri, name.location)
 
     def interpret(self, forms):
         result = None
@@ -123,55 +134,3 @@ class Env(object):
 
         return [str(p) for p in self._importer.path]
 
-class RuntimeGraph(object):
-
-    def __init__(self, serializer=None):
-
-        self._g = rdflib.Graph()
-        self._serializer = serializer
-
-    @property
-    def namespace(self):
-        return self._g.identifier
-
-    def add(self, s, p, o, unique=False):
-        if unique:
-            self._g.set((s, p, o))
-        else:
-            self._g.add((s, p, o))
-
-    def bind_prefix(self, prefix, uri):
-        self._g.bind(prefix, uri)
-        return prefix
-
-    def ns_for_prefix(self, prefix):
-
-        namespaces = self._g.namespaces()
-        matching = [n for (p, n) in namespaces if p == prefix]
-
-        if len(matching) == 1:
-            return rdflib.Namespace(matching[0])
-        elif len(matching) == 0:
-            None
-
-    def prefix_for_ns(self, uri):
-
-        namespaces = self._g.namespaces()
-        matching = [p for (p, n) in namespaces if n == uri]
-
-        if len(matching) == 1:
-            return matching[0]
-        elif len(matching) == 0:
-            None
-
-    def serialise(self):
-        if self._serializer == 'rdfxml':
-            return self._g.serialize(format='xml').decode("utf-8")
-        elif self._serializer == 'nt':
-            return self._g.serialize(format='nt').decode("utf-8")
-        elif self._serializer == 'n3':
-            return self._g.serialize(format='n3').decode("utf-8")
-        elif self._serializer == 'turtle':
-            return self._g.serialize(format='turtle').decode("utf-8")
-        elif self._serializer == 'sbolxml':
-            return serialize_sboll2(self._g).decode("utf-8")

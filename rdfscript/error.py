@@ -130,4 +130,16 @@ class UnknownConstruct(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("%s cannot be evaluated.\n\n" % self.construct)
 
+class InternalError(RDFScriptError):
 
+    def __init__(self, core_object, location):
+        RDFScriptError.__init__(self, location)
+        self._object = core_object
+        self._type = 'RDFScript Internal Error'
+
+    @property
+    def object(self):
+        return self._object
+
+    def __str__(self):
+        return RDFScriptError.__str__(self) + format("%s caused an internal error.\n\n" % self.construct)
