@@ -6,7 +6,7 @@ import ply.lex as leex
 from rdfscript.rdfscriptparser import RDFScriptParser
 
 from rdfscript.pragma import PrefixPragma
-from rdfscript.core import Uri
+from rdfscript.core import Uri, Prefix
 
 
 class ParserPragmaTest(unittest.TestCase):
@@ -22,7 +22,7 @@ class ParserPragmaTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
-                         [PrefixPragma('Prefix',
+                         [PrefixPragma(Prefix('Prefix', None),
                                        Uri('http://example.eg/', None),
                                        None)])
 

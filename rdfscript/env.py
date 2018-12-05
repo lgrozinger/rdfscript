@@ -3,7 +3,7 @@ import sys
 import pathlib
 import logging
 
-from .core import Uri, Value
+from .core import Uri, Value, Prefix
 
 from .evaluate import evaluate
 from .error import (RDFScriptError,
@@ -33,7 +33,7 @@ class Env(object):
         self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RDFData(serializer=serializer)
-        self._default_prefix = None
+        self._default_prefix = Prefix(Uri(self._rdf._g.identifier.toPython(), None), None)
 
         if filename:
             paths.append(pathlib.Path(filename).parent)
@@ -57,11 +57,13 @@ class Env(object):
             raise PrefixError(prefix, prefix.location)
 
     def add_triples(self, triples):
+        """Add a triple of Uri or Value language objects to the RDF graph."""
         for (s, p, o) in triples:
             self._rdf.add(s, p, o)
 
     def bind_prefix(self, prefix, uri):
-        return self._rdf.bind_prefix(prefix.identity, uri)
+        self._rdf.bind_prefix(prefix.identity, uri)
+        return prefix
 
     def set_default_prefix(self, prefix):
 
@@ -73,20 +75,24 @@ class Env(object):
             self._default_prefix = prefix
             return prefix
 
-    def assign(self, uriref, value):
+    def assign(self, uri, value):
 
+        uriref = self._rdf.to_rdf(uri)
         self._symbol_table[uriref] = value
 
-    def lookup(self, uriref):
+    def lookup(self, uri):
 
+        uriref = self._rdf.to_rdf(uri)
         return self._symbol_table.get(uriref, None)
 
-    def assign_template(self, uriref, template):
+    def assign_template(self, uri, template):
 
+        uriref = self._rdf.to_rdf(uri)
         self._template_table[uriref] = template
 
-    def lookup_template(self, uriref):
+    def lookup_template(self, uri):
 
+        uriref = self._rdf.to_rdf(uri)
         return self._template_table.get(uriref, None)
 
     def get_extension(self, name):
@@ -98,7 +104,7 @@ class Env(object):
         local  = name.localname.uri(self)
 
         if not prefix:
-            ns = self._default_ns.uri(self)
+            ns = self._default_prefix.uri(self)
         else:
             ns = prefix.uri(self)
 

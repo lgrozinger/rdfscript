@@ -8,7 +8,9 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.core import (Name,
                             Uri,
-                            Value)
+                            Value,
+                            LocalName,
+                            Prefix)
 from rdfscript.evaluate import evaluate
 
 class RuntimeIdentifierTest(unittest.TestCase):
@@ -19,91 +21,131 @@ class RuntimeIdentifierTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    def test_env_resolve_localname(self):
+    def test_localname_unbound(self):
         forms = self.parser.parse("UnboundSymbol")
 
         env = Env()
+        uri = env.resolve_name(Name(None, LocalName('UnboundSymbol', None), None))
 
-        ## going into the internals of Env
-        uri = rdflib.Namespace(env._default_ns)['UnboundSymbol']
+        self.assertEqual(evaluate(forms[0], env), uri)
 
-        self.assertEqual(forms, [Name(None, 'UnboundSymbol', None)])
-        self.assertEqual(env.resolve_name(forms[0].prefix,
-                                          forms[0].localname),
-                         uri)
-
-    def test_evaluate_localname_not_bound(self):
-        forms  = self.parser.parse("UnboundSymbol")
+    def test_self(self):
+        forms = self.parser.parse("self")
 
         env = Env()
+        expected_value = env.default_prefix.uri(env)
 
-        self.assertEqual(env.interpret(forms), env.resolve_name(None, 'UnboundSymbol'))
+        self.assertEqual(evaluate(forms[0], env), expected_value)
 
-
-    def test_evaluate_self(self):
-
-        script = "self"
-
-        forms = self.parser.parse(script)
-
-        env = Env()
-
-        expected_value = env._default_ns['']
-
-        self.assertEqual(env.interpret(forms), expected_value)
-
-    def test_evaluate_localname_bound(self):
+    def test_localname_bound(self):
 
         script = ("X=\"value\"\n" +
                   "X")
-
         forms = self.parser.parse(script)
 
         env = Env()
+        expected_value = Value("value", None)
 
-        expected_value = rdflib.term.Literal("value")
+        self.assertEqual(evaluate(forms[0], env), expected_value)
+        self.assertEqual(evaluate(forms[1], env), expected_value)
 
-        self.assertEqual(env.interpret(forms), expected_value)
-
-    def test_resolve_qname(self):
+    def test_qname_symbol_symbol_unbound(self):
 
         script = ("@prefix p <http://eg.org/>\n" +
                   "p.UnboundSymbol")
-
         forms = self.parser.parse(script)
 
         env = Env()
+        uri = Uri('http://eg.org/UnboundSymbol', None)
 
-        uri = rdflib.URIRef('http://eg.org/UnboundSymbol')
+        self.assertEqual(evaluate(forms[0], env), Prefix('p', None))
+        self.assertEqual(evaluate(forms[1], env), uri)
 
-        env.interpret(forms)
-
-        self.assertEqual(env.resolve_name(forms[1].prefix, forms[1].localname),
-                         uri)
-
-    def test_evaluate_qname_not_bound(self):
+    def test_qname_symbol_uri_unbound(self):
 
         script = ("@prefix p <http://eg.org/>\n" +
-                  "p.UnboundSymbol")
-
-        forms  = self.parser.parse(script)
+                  "p.<UnboundSymbol>")
+        forms = self.parser.parse(script)
 
         env = Env()
+        uri = Uri('http://eg.org/UnboundSymbol', None)
 
-        self.assertEqual(env.interpret(forms), env.resolve_name('p', 'UnboundSymbol'))
+        self.assertEqual(evaluate(forms[0], env), Prefix('p', None))
+        self.assertEqual(evaluate(forms[1], env), uri)
 
+    def test_qname_uri_uri_unbound(self):
 
-    def test_evaluate_qname_bound(self):
+        script = ("<http://eg.org/>.<UnboundSymbol>")
+        forms = self.parser.parse(script)
+
+        env = Env()
+        uri = Uri('http://eg.org/UnboundSymbol', None)
+
+        self.assertEqual(evaluate(forms[0], env), uri)
+
+    def test_qname_uri_symbol_unbound(self):
+
+        script = ("<http://eg.org/>.UnboundSymbol")
+        forms = self.parser.parse(script)
+
+        env = Env()
+        uri = Uri('http://eg.org/UnboundSymbol', None)
+
+        self.assertEqual(evaluate(forms[0], env), uri)
+
+    def test_qname_symbol_symbol_bound(self):
 
         script = ("@prefix p <http://eg.org/>\n" +
                   "p.X=\"value\"\n" +
                   "p.X")
-
         forms = self.parser.parse(script)
 
         env = Env()
+        expected_value = Value("value", None)
 
-        expected_value = rdflib.term.Literal("value")
+        self.assertEqual(evaluate(forms[0], env), Prefix('p', None))
+        self.assertEqual(evaluate(forms[1], env), Value('value', None))
+        self.assertEqual(evaluate(forms[2], env), Value('value', None))
 
-        self.assertEqual(env.interpret(forms), expected_value)
+    def test_qname_symbol_uri_bound(self):
+
+        script = ("@prefix p <http://eg.org/>\n" +
+                  "p.X=\"value\"\n" +
+                  "p.<X>")
+        forms = self.parser.parse(script)
+
+        env = Env()
+        expected_value = Value("value", None)
+
+        self.assertEqual(evaluate(forms[0], env), Prefix('p', None))
+        self.assertEqual(evaluate(forms[1], env), Value('value', None))
+        self.assertEqual(evaluate(forms[2], env), Value('value', None))
+
+    def test_qname_uri_uri_bound(self):
+
+        script = ("@prefix p <http://eg.org/>\n" +
+                  "p.X=\"value\"\n" +
+                  "<http://eg.org/>.<X>")
+        forms = self.parser.parse(script)
+
+        env = Env()
+        expected_value = Value("value", None)
+
+        self.assertEqual(evaluate(forms[0], env), Prefix('p', None))
+        self.assertEqual(evaluate(forms[1], env), Value('value', None))
+        self.assertEqual(evaluate(forms[2], env), Value('value', None))
+
+    def test_qname_uri_symbol_bound(self):
+
+        script = ("@prefix p <http://eg.org/>\n" +
+                  "p.X=\"value\"\n" +
+                  "<http://eg.org/>.X")
+        forms = self.parser.parse(script)
+
+        env = Env()
+        expected_value = Value("value", None)
+
+        self.assertEqual(evaluate(forms[0], env), Prefix('p', None))
+        self.assertEqual(evaluate(forms[1], env), Value('value', None))
+        self.assertEqual(evaluate(forms[2], env), Value('value', None))
 

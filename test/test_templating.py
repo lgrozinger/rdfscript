@@ -9,7 +9,8 @@ from rdfscript.env import Env
 from rdfscript.core import (Name,
                             Uri,
                             Value,
-                            Self)
+                            Self,
+                            Prefix)
 
 from rdfscript.template import (Template,
                                 Parameter,
@@ -18,6 +19,7 @@ from rdfscript.template import (Template,
                                 Argument)
 
 from rdfscript.evaluate import evaluate
+import test.test_helper as test
 
 class TemplatingTest(unittest.TestCase):
 
@@ -26,45 +28,45 @@ class TemplatingTest(unittest.TestCase):
         self.parser = RDFScriptParser()
         self.maxDiff = None
 
-        self.templateA = Template(Name(None, 'A', None),
-                                  [Name(None, 'x', None),
-                                   Name(None, 'y', None)],
-                                  [Property(Name(None, 'x', None),
+        self.templateA = Template(test.name('A'),
+                                  [test.name('x'),
+                                   test.name('y')],
+                                  [Property(test.name('x'),
                                             Value(42, None),
                                             None),
                                    Property(Uri('http://example.eg/predicate', None),
-                                            Name(None, 'y', None),
+                                            test.name('y'),
                                             None)],
                                   None,
                                   None)
 
-        self.templateB = Template(Name(None, 'B', None),
+        self.templateB = Template(test.name('B'),
                                   [],
-                                  [Property(Name(None, 'x', None),
-                                                      Name('p', 'y', None),
+                                  [Property(test.name('x'),
+                                                      test.name('y', p='p'),
                                                       None),
-                                             Property(Name(None, 'z', None),
+                                             Property(test.name('z'),
                                                       Value("STRING", None),
                                                       None)],
-                                  Expansion(Name(None, 'B', None),
-                                            Name(None, 'A', None),
-                                            [Name(None, 'x', None),
+                                  Expansion(test.name('B'),
+                                            test.name('A'),
+                                            [test.name('x'),
                                              Value("VALUE", None)],
                                             [],
                                             None),
                                   None)
 
-        self.templateC = Template(Name(None, 'C', None),
-                                  [Name(None, 'x', None)],
-                                  [Property(Name(None, 'x', None),
-                                                      Name('p', 'y', None),
+        self.templateC = Template(test.name('C'),
+                                  [test.name('x')],
+                                  [Property(test.name('x'),
+                                                      test.name('y', p='p'),
                                                       None),
-                                             Property(Name(None, 'z', None),
+                                             Property(test.name('z'),
                                                       Value("STRING", None),
                                                       None)],
-                                  Expansion(Name(None, 'C', None),
-                                            Name(None, 'A', None),
-                                            [Name(None, 'x', None),
+                                  Expansion(test.name('C'),
+                                            test.name('A'),
+                                            [test.name('x'),
                                              Value("VALUE", None)],
                                             [],
                                             None),
@@ -75,52 +77,52 @@ class TemplatingTest(unittest.TestCase):
 
     def test_parameterise_expansion(self):
 
-        template = Template(Name(None, 'A', None),
-                            [Name(None, 'a', None),
-                             Name(None, 'b', None),
-                             Name(None, 'c', None)],
-                            [Property(Name(None, 'a', None),
+        template = Template(test.name('A'),
+                            [test.name('a'),
+                             test.name('b'),
+                             test.name('c')],
+                            [Property(test.name('a'),
                                       Value(1, None),
                                       None),
-                             Property(Name(None, 'x', None),
-                                      Name(None, 'b', None),
+                             Property(test.name('x'),
+                                      test.name('b'),
                                       None),
-                             Property(Name(None, 'c', None),
-                                      Name(None, 'a', None),
+                             Property(test.name('c'),
+                                      test.name('a'),
                                       None)],
                             None,
                             None)
 
-        expansion = Expansion(Name(None, 'E', None),
-                              Name(None, 'T', None),
-                              [Name(None, 'x', None),
-                               Name(None, 'y', None),
-                               Name(None, 'z', None)],
-                              [Property(Name(None, 'y', None),
+        expansion = Expansion(test.name('E'),
+                              test.name('T'),
+                              [test.name('x'),
+                               test.name('y'),
+                               test.name('z')],
+                              [Property(test.name('y'),
                                       Value(1, None),
                                       None),
-                               Property(Name(None, 'x', None),
-                                        Name(None, 'b', None),
+                               Property(test.name('x'),
+                                        test.name('b'),
                                         None),
-                               Property(Name(None, 'z', None),
-                                        Name(None, 'a', None),
+                               Property(test.name('z'),
+                                        test.name('a'),
                                         None)],
                               None)
 
         expansion.parameterise([Parameter('x', 0, None), Parameter('a', 1, None)])
 
-        parameterised = Expansion(Name(None, 'E', None),
-                                  Name(None, 'T', None),
+        parameterised = Expansion(test.name('E'),
+                                  test.name('T'),
                                   [Parameter('x', 0, None),
-                                   Name(None, 'y', None),
-                                   Name(None, 'z', None)],
-                                  [Property(Name(None, 'y', None),
+                                   test.name('y'),
+                                   test.name('z')],
+                                  [Property(test.name('y'),
                                             Value(1, None),
                                             None),
                                    Property(Parameter('x', 0, None),
-                                            Name(None, 'b', None),
+                                            test.name('b'),
                                             None),
-                                   Property(Name(None, 'z', None),
+                                   Property(test.name('z'),
                                             Parameter('a', 1, None),
                                             None)],
                                   None)
@@ -130,10 +132,10 @@ class TemplatingTest(unittest.TestCase):
 
     def test_template_as_triples(self):
 
-        template_triples = [(Name(None, 'A', None).as_uri(self.env),
+        template_triples = [(test.name('A').uri(self.env),
                              Parameter('x', 1, None),
                              Value(42, None)),
-                            (Name(None, 'A', None).as_uri(self.env),
+                            (test.name('A').uri(self.env),
                              Uri('http://example.eg/predicate', None),
                              Parameter('y', 0, None))]
 
@@ -143,38 +145,38 @@ class TemplatingTest(unittest.TestCase):
 
     def test_derived_template_as_triples(self):
 
-        self.env.bind_prefix('p', rdflib.URIRef('http://eg.test/'))
+        self.env.bind_prefix(Prefix('p', None), Uri('http://eg.test/', None))
         self.templateA.parameterise()
         self.templateA.de_name(self.env)
         self.templateC.parameterise()
         self.templateC.de_name(self.env)
 
-        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
-        self.env.assign_template(self.env.resolve_name(None, 'C'), self.templateC)
+        self.env.assign_template(self.env.resolve_name(test.name('A')), self.templateA)
+        self.env.assign_template(self.env.resolve_name(test.name('C')), self.templateC)
 
-        template_triples = [(Name(None, 'C', None).as_uri(self.env),
+        template_triples = [(test.name('C').uri(self.env),
                              Parameter('x', 1, None),
                              Value(42, None)),
-                            (Name(None, 'C', None).as_uri(self.env),
+                            (test.name('C').uri(self.env),
                              Uri('http://example.eg/predicate', None),
                              Value("VALUE", None)),
-                            (Name(None, 'C', None).as_uri(self.env),
+                            (test.name('C').uri(self.env),
                              Parameter('x', 0, None),
-                             Name('p', 'y', None).as_uri(self.env)),
-                            (Name(None, 'C', None).as_uri(self.env),
-                             Name(None, 'z', None).as_uri(self.env),
+                             test.name('y', p='p').uri(self.env)),
+                            (test.name('C').uri(self.env),
+                             test.name('z').uri(self.env),
                              Value("STRING", None))]
 
-        self.assertEqual(self.env.lookup_template(self.env.resolve_name(None, 'C')).as_triples(self.env), template_triples)
+        self.assertEqual(self.env.lookup_template(self.env.resolve_name(test.name('C'))).as_triples(self.env), template_triples)
 
     def test_expansion_as_triples(self):
 
         self.templateA.parameterise()
         self.templateA.de_name(self.env)
-        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
+        self.env.assign_template(self.env.resolve_name(test.name('A')), self.templateA)
 
-        expansion = Expansion(Name(None, 'E', None),
-                              Name(None, 'A', None),
+        expansion = Expansion(test.name('E'),
+                              test.name('A'),
                               [Uri('http://uri.org/x', None),
                                Value(True, None)],
                               [],
@@ -182,10 +184,10 @@ class TemplatingTest(unittest.TestCase):
 
         expansion.de_name(self.env)
 
-        expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
+        expansion_triples = [(test.name('E').uri(self.env),
                               Uri('http://uri.org/x', None),
                               Value(42, None)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                             (test.name('E').uri(self.env),
                               Uri('http://example.eg/predicate', None),
                               Value(True, None))]
 
@@ -193,77 +195,77 @@ class TemplatingTest(unittest.TestCase):
 
     def test_double_expansion_as_triples(self):
 
-        self.env.bind_prefix('p', rdflib.URIRef('http://eg.test/'))
+        self.env.bind_prefix(Prefix('p', None), Uri('http://eg.test/', None))
         self.templateA.parameterise()
         self.templateA.de_name(self.env)
         self.templateC.parameterise()
         self.templateC.de_name(self.env)
 
-        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
-        self.env.assign_template(self.env.resolve_name(None, 'C'), self.templateC)
+        self.env.assign_template(self.env.resolve_name(test.name('A')), self.templateA)
+        self.env.assign_template(self.env.resolve_name(test.name('C')), self.templateC)
 
-        expansion = Expansion(Name(None, 'E', None),
-                              Name(None, 'C', None),
+        expansion = Expansion(test.name('E'),
+                              test.name('C'),
                               [Uri('http://uri.org/x', None)],
                               [],
                               None)
-        
+
         expansion.de_name(self.env)
 
-        expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
+        expansion_triples = [(test.name('E').uri(self.env),
                               Uri('http://uri.org/x', None),
                               Value(42, None)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                             (test.name('E').uri(self.env),
                               Uri('http://example.eg/predicate', None),
                               Value("VALUE", None)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                             (test.name('E').uri(self.env),
                               Uri('http://uri.org/x', None),
-                              Name('p', 'y', None).as_uri(self.env)),
-                             (Name(None, 'E', None).as_uri(self.env),
-                              Name(None, 'z', None).as_uri(self.env),
+                              test.name('y', p='p').uri(self.env)),
+                             (test.name('E').uri(self.env),
+                              test.name('z').uri(self.env),
                               Value("STRING", None))]
 
         self.assertEqual(expansion_triples, expansion.as_triples(self.env))
 
     def test_default_prefixed_template(self):
 
-        self.env.bind_prefix('eg', rdflib.URIRef('http://eg.org/'))
-        self.env.set_default_prefix('eg')
+        self.env.bind_prefix(Prefix('eg', None), Uri('http://eg.org/', None))
+        self.env.set_default_prefix(Prefix('eg', None))
 
         self.templateA.parameterise()
         self.templateA.de_name(self.env)
-        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
+        self.env.assign_template(self.env.resolve_name(test.name('A')), self.templateA)
 
-        template_triples = [(Name('eg', 'A', None).as_uri(self.env),
+        template_triples = [(test.name('A', p='eg').uri(self.env),
                              Parameter('x', 1, None),
                              Value(42, None)),
-                            (Name('eg', 'A', None).as_uri(self.env),
+                            (test.name('A', p='eg').uri(self.env),
                              Uri('http://example.eg/predicate', None),
                              Parameter('y', 0, None))]
 
         self.assertEqual(template_triples,
-                         self.env.lookup_template(self.env.resolve_name('eg', 'A')).as_triples(self.env))
+                         self.env.lookup_template(self.env.resolve_name(test.name('A', p='eg'))).as_triples(self.env))
 
     def test_default_prefixed_template_expansion(self):
-            self.env.bind_prefix('eg', rdflib.URIRef('http://eg.org/'))
-            self.env.set_default_prefix('eg')
+            self.env.bind_prefix(Prefix('eg', None), Uri('http://eg.org/', None))
+            self.env.set_default_prefix(Prefix('eg', None))
 
             self.templateA.parameterise()
             self.templateA.de_name(self.env)
-            self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
+            self.env.assign_template(self.env.resolve_name(test.name('A')), self.templateA)
 
-            expansion = Expansion(Name(None, 'E', None),
-                                  Name('eg', 'A', None),
+            expansion = Expansion(test.name('E'),
+                                  test.name('A', p='eg'),
                                   [Uri('http://uri.org/x', None),
                                    Value(True, None)],
                                   [],
                                   None)
 
             expansion.de_name(self.env)
-            expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
+            expansion_triples = [(test.name('E').uri(self.env),
                                   Uri('http://uri.org/x', None),
                                   Value(42, None)),
-                                 (Name(None, 'E', None).as_uri(self.env),
+                                 (test.name('E').uri(self.env),
                                   Uri('http://example.eg/predicate', None),
                                   Value(True, None))]
 
@@ -272,10 +274,10 @@ class TemplatingTest(unittest.TestCase):
     def test_self_in_expansion(self):
         self.templateA.parameterise()
         self.templateA.de_name(self.env)
-        self.env.assign_template(self.env.resolve_name(None, 'A'), self.templateA)
+        self.env.assign_template(self.env.resolve_name(test.name('A')), self.templateA)
 
-        expansion = Expansion(Name(None, 'E', None),
-                              Name(None, 'A', None),
+        expansion = Expansion(test.name('E'),
+                              test.name('A'),
                               [Uri('http://uri.org/x', None),
                                Value(True, None)],
                               [Property(Uri('http://me.org/myself', None),
@@ -283,27 +285,27 @@ class TemplatingTest(unittest.TestCase):
                                         None)],
                               None)
 
-        expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
+        expansion_triples = [(test.name('E').uri(self.env),
                               Uri('http://uri.org/x', None),
                               Value(42, None)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                             (test.name('E').uri(self.env),
                               Uri('http://example.eg/predicate', None),
                               Value(True, None)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                             (test.name('E').uri(self.env),
                               Uri('http://me.org/myself', None),
-                              Name(None, 'E', None).as_uri(self.env))]
+                              test.name('E').uri(self.env))]
 
         expansion.de_name(self.env)
         self.assertEqual(expansion_triples, expansion.replace_self(expansion.as_triples(self.env)))
 
     def test_self_in_template(self):
-        templateA = Template(Name(None, 'A', None),
+        templateA = Template(test.name('A'),
                                   [],
                                   [],
-                                  Expansion(Name(None, 'A', None),
-                                            Name(None, 'B', None),
+                                  Expansion(test.name('A'),
+                                            test.name('B'),
                                             [],
-                                            [Property(Name(None, 'x', None),
+                                            [Property(test.name('x'),
                                                       Value(42, None),
                                                       None),
                                              Property(Uri('http://example.eg/predicate', None),
@@ -312,9 +314,9 @@ class TemplatingTest(unittest.TestCase):
                                             None),
                              None)
 
-        templateB = Template(Name(None, 'B', None),
+        templateB = Template(test.name('B'),
                                   [],
-                                  [Property(Name(None, 'x', None),
+                                  [Property(test.name('x'),
                                             Self(None),
                                             None)],
                                   None,
@@ -323,11 +325,11 @@ class TemplatingTest(unittest.TestCase):
         templateB.parameterise()
         templateA.de_name(self.env)
         templateB.de_name(self.env)
-        self.env.assign_template(self.env.resolve_name(None, 'A'), templateA)
-        self.env.assign_template(self.env.resolve_name(None, 'B'), templateB)
+        self.env.assign_template(self.env.resolve_name(test.name('A')), templateA)
+        self.env.assign_template(self.env.resolve_name(test.name('B')), templateB)
 
-        expansion = Expansion(Name(None, 'E', None),
-                              Name(None, 'A', None),
+        expansion = Expansion(test.name('E'),
+                              test.name('A'),
                               [Uri('http://uri.org/x', None),
                                Value(True, None)],
                               [Property(Uri('http://me.org/myself', None),
@@ -337,17 +339,17 @@ class TemplatingTest(unittest.TestCase):
 
         expansion.de_name(self.env)
 
-        expansion_triples = [(Name(None, 'E', None).as_uri(self.env),
-                              Name(None, 'x', None).as_uri(self.env),
-                              Name(None, 'E', None).as_uri(self.env)),
-                             (Name(None, 'E', None).as_uri(self.env),
-                              Name(None, 'x', None).as_uri(self.env),
+        expansion_triples = [(test.name('E').uri(self.env),
+                              test.name('x').uri(self.env),
+                              test.name('E').uri(self.env)),
+                             (test.name('E').uri(self.env),
+                              test.name('x').uri(self.env),
                               Value(42, None)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                             (test.name('E').uri(self.env),
                               Uri('http://example.eg/predicate', None),
-                              Name(None, 'E', None).as_uri(self.env)),
-                             (Name(None, 'E', None).as_uri(self.env),
+                              test.name('E').uri(self.env)),
+                             (test.name('E').uri(self.env),
                               Uri('http://me.org/myself', None),
-                              Name(None, 'E', None).as_uri(self.env))]
+                              test.name('E').uri(self.env))]
 
         self.assertEqual(expansion_triples, expansion.replace_self(expansion.as_triples(self.env)))

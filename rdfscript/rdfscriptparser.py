@@ -8,7 +8,9 @@ from .reader import tokens
 from .core import (Uri,
                    Name,
                    Value,
-                   Self)
+                   Self,
+                   Prefix,
+                   LocalName)
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
@@ -48,7 +50,8 @@ def p_assignment(p):
 ## pragma
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL expr'''
-    p[0] = PrefixPragma(p[2], p[3], location(p))
+    l = location(p)
+    p[0] = PrefixPragma(Prefix(p[2], l), p[3], l)
 
 def p_defaultprefix_pragma(p):
     '''pragma : DEFAULTPREFIX SYMBOL'''
@@ -157,19 +160,23 @@ def p_emptylist(p):
 
 ## names
 def p_identifier(p):
-    '''identifier : qname
-                  | localname
+    '''identifier : name
                   | uri
                   | self'''
     p[0] = p[1]
 
-def p_qname(p):
-    '''qname : SYMBOL '.' SYMBOL'''
-    p[0] = Name(p[1], p[3], location(p))
+def p_full_name(p):
+    '''name : SYMBOL '.' SYMBOL
+             | uri '.' SYMBOL
+             | uri '.' uri
+             | SYMBOL '.' uri'''
+    l = location(p)
+    p[0] = Name(Prefix(p[1], l), LocalName(p[3], l), l)
 
 def p_localname(p):
-    '''localname : SYMBOL'''
-    p[0] = Name(None, p[1], location(p))
+    '''name : SYMBOL'''
+    l = location(p)
+    p[0] = Name(None, LocalName(p[1], l), l)
 
 def p_self(p):
     '''self : SELF'''
@@ -189,7 +196,7 @@ def p_literal(p):
 
 ## SYNTAX ERROR
 def p_error(p):
-    if p == None:
+    if not p:
         pass
     else:
         location = Location(Position(p.lineno, p.lexpos), p.lexer.filename)

@@ -118,7 +118,7 @@ def t_WS(t):
     pass
 
 def t_error(t):
-    print("Could no scan token '%s' at line %d" % (t.value[0], t.lexer.lineno))
+    print("Could not scan token '%s' at line %d" % (t.value[0], t.lexer.lineno))
     t.lexer.skip(1)
 
 def check_for_complete_dedent(t):

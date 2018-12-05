@@ -5,6 +5,7 @@ import pdb
 from .core import (Uri,
                    Value,
                    Name,
+                   LocalName,
                    Self)
 
 from .pragma import (PrefixPragma,
@@ -30,21 +31,19 @@ def evaluate(node, env):
 
 def evaluate_uri(uri, env):
 
-    return uri.as_uriref()
+    return uri
 
 def evaluate_name(name, env):
 
-    resolved_name = env.resolve_name(name.prefix, name.localname)
+    resolved_uri = env.resolve_name(name)
 
-    lookup = env.lookup(resolved_name)
+    lookup = env.lookup(resolved_uri)
 
-    return lookup or resolved_name
+    return lookup or resolved_uri
 
 def evaluate_assignment(assignment, env):
 
-    uri   = env.resolve_name(assignment.name.prefix,
-                             assignment.name.localname)
-
+    uri = env.resolve_name(assignment.name)
     value = evaluate(assignment.value, env)
 
     env.assign(uri, value)
@@ -53,8 +52,7 @@ def evaluate_assignment(assignment, env):
 
 def evaluate_prefixpragma(pragma, env):
 
-    uri = pragma.uri
-    return env.bind_prefix(pragma.prefix, evaluate(uri, env))
+    return env.bind_prefix(pragma.prefix, evaluate(pragma.uri, env))
 
 def evaluate_defaultprefixpragma(pragma, env):
 
@@ -80,11 +78,14 @@ def evaluate_extensionpragma(pragma, env):
 
 def evaluate_self(myself, env):
 
-    return evaluate_name(Name(None, '', myself.location), env)
+    return evaluate_name(Name(None,
+                              LocalName('', myself.location),
+                              myself.location),
+                         env)
 
 def evaluate_value(value, env):
 
-    return value.as_rdfliteral()
+    return value
 
 def evaluate_template(template, env):
 

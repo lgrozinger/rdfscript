@@ -1,7 +1,12 @@
 import rdflib
 import pdb
 
-from .core import Node, Name, Uri, Self
+from .core import (Node,
+                   Name,
+                   Uri,
+                   Self,
+                   LocalName,
+                   Prefix)
 from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
@@ -16,7 +21,7 @@ class Template(Node):
         self._parameters = []
         for param in parameters:
             self.check_param(param)
-            self._parameters.append(Parameter(param.localname,
+            self._parameters.append(Parameter(param.localname.identity,
                                               parameters.index(param),
                                               location))
 
@@ -65,7 +70,7 @@ class Template(Node):
             extension.parameterise(self.parameters)
 
     def de_name(self, env):
-        self._name = self.name.as_uri(env)
+        self._name = self.name.uri(env)
         for statement in self.body:
             try:
                 statement.de_name(env)
@@ -80,7 +85,7 @@ class Template(Node):
             raise UnexpectedType(Name, param, self.location)
 
     def as_uri(self, env):
-        return self._name.as_uri(env)
+        return self._name.uri(env)
 
     def __eq__(self, other):
         return (isinstance(other, Template) and
@@ -173,7 +178,7 @@ class Expansion(Node):
         return self._body
 
     def get_extensions(self, env):
-        template = env.lookup_template(self.template.as_uriref())
+        template = env.lookup_template(self.template.uri(env))
         return template.get_extensions(env) + self._extensions
 
     def parameterise(self, parameters):
@@ -229,12 +234,12 @@ class Expansion(Node):
 
     def de_name(self, env):
         if isinstance(self.name, Name):
-            self._name = self.name.as_uri(env)
+            self._name = self.name.uri(env)
 
         if isinstance(self.template, Name):
-            self._template = self.template.as_uri(env)
+            self._template = self.template.uri(env)
 
-        self._args = [Argument(arg.value.as_uri(env), arg.position, arg.location)
+        self._args = [Argument(arg.value.uri(env), arg.position, arg.location)
                       if isinstance(arg.value, Name)
                       else arg
                       for arg in self.args]
@@ -246,7 +251,7 @@ class Expansion(Node):
                 pass
 
     def as_triples(self, env):
-        template = env.lookup_template(self.template.as_uriref())
+        template = env.lookup_template(self.template)
         if not template:
             raise TemplateNotFound(self._template, self._location)
         elif not isinstance(template, Template):
@@ -314,7 +319,7 @@ class Parameter(Node):
         return format("<RDFscript PARAM: %s>" % self.name)
 
     def as_name(self):
-        return Name(None, self._param_name, None)
+        return Name(None, LocalName(self._param_name, None), None)
 
 class Argument(Node):
 
@@ -399,10 +404,10 @@ class Property(Node):
 
     def de_name(self, env):
         if isinstance(self.name, Name):
-            self._name = self.name.as_uri(env)
+            self._name = self.name.uri(env)
 
         if isinstance(self.value, Name):
-            self._value = self.value.as_uri(env)
+            self._value = self.value.uri(env)
 
         try:
             self.value.de_name(env)

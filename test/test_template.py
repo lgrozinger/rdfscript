@@ -8,7 +8,9 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.core import (Name,
                             Value,
-                            Uri)
+                            Uri,
+                            Prefix,
+                            LocalName)
 
 from rdfscript.template import (Template,
                                 Expansion,
@@ -16,7 +18,7 @@ from rdfscript.template import (Template,
                                 Argument,
                                 Property)
 from rdfscript.pragma import ExtensionPragma
-
+import test.test_helper as test
 
 class TemplateClassTest(unittest.TestCase):
 
@@ -24,44 +26,40 @@ class TemplateClassTest(unittest.TestCase):
         self.env = Env()
         self.parser = RDFScriptParser()
         self.maxDiff = None
+        self.env.bind_prefix(Prefix('otherprefix', None), Uri('http://otherprefix/', None))
 
-        self.template = Template(Name(None, 'T', None),
-                                 [Name(None, 'a', None),
-                                  Name(None, 'b', None)],
-                                 [Property(Name(None, 'a', None),
-                                           Name(None, 'value', None),
+        self.template = Template(test.name('T'),
+                                 [test.name('a'),
+                                  test.name('b')],
+                                 [test.property(test.name('a'), test.name('value')),
+                                  test.property(test.name('predicate'), test.name('b')),
+                                  test.property(test.name('expansion'),
+                                                Expansion(test.name('exp', p='otherprefix'),
+                                                          test.name('a'),
+                                                          [test.name('b')],
+                                                          [],
+                                                     None))],
+                                 None,
+                                 None)
+
+        self.simple_template = Template(test.name('T'),
+                                 [test.name('a'),
+                                  test.name('b')],
+                                 [Property(test.name('a'),
+                                           test.name('value'),
                                            None),
-                                  Property(Name(None, 'predicate', None),
-                                           Name(None, 'b', None),
-                                           None),
-                                  Property(Name(None, 'expansion', None),
-                                           Expansion(Name('otherprefix', 'exp', None),
-                                                     Name(None, 'a', None),
-                                                     [Name(None, 'b', None)],
-                                                     [],
-                                                     None),
+                                  Property(test.name('predicate'),
+                                           test.name('b'),
                                            None)],
                                  None,
                                  None)
 
-        self.simple_template = Template(Name(None, 'T', None),
-                                 [Name(None, 'a', None),
-                                  Name(None, 'b', None)],
-                                 [Property(Name(None, 'a', None),
-                                           Name(None, 'value', None),
-                                           None),
-                                  Property(Name(None, 'predicate', None),
-                                           Name(None, 'b', None),
-                                           None)],
-                                 None,
-                                 None)
-
-        self.specialised = Template(Name(None, 'S', None),
-                                    [Name(None, 'x', None)],
+        self.specialised = Template(test.name('S'),
+                                    [test.name('x')],
                                     [],
-                                    Expansion(Name(None, 'S', None),
-                                              Name(None, 'T', None),
-                                              [Name(None, 'x', None),
+                                    Expansion(test.name('S'),
+                                              test.name('T'),
+                                              [test.name('x'),
                                                Value(1, None)],
                                               [],
                                               None),
@@ -74,9 +72,8 @@ class TemplateClassTest(unittest.TestCase):
 
         self.template.parameterise()
 
-        self.env.bind_prefix('test_template', rdflib.URIRef('http://test_template/'))
-        self.env.set_default_prefix('test_template')
-        self.env.bind_prefix('otherprefix', rdflib.URIRef('http://otherprefix/'))
+        self.env.bind_prefix(Prefix('test_template', None), Uri('http://test_template/', None))
+        self.env.set_default_prefix(Prefix('test_template', None))
 
         self.template.de_name(self.env)
 
@@ -115,22 +112,22 @@ class TemplateClassTest(unittest.TestCase):
         args = [Argument(Value(42, None), 0, None),
                 Argument(Uri('http://arg.org/', None), 1, None)]
 
-        self.assertEqual(self.template.name, Name(None, 'T', None))
+        self.assertEqual(self.template.name, test.name('T'))
 
         self.assertEqual(self.template.parameters, [Parameter('a', 0, None),
                                                Parameter('b', 1, None)])
 
         self.assertEqual(self.template.body[0], Property(Value(42, None),
-                                                    Name(None, 'value', None),
-                                                    None))
+                                                         test.name('value'),
+                                                         None))
 
-        self.assertEqual(self.template.body[1], Property(Name(None, 'predicate', None),
+        self.assertEqual(self.template.body[1], Property(test.name('predicate'),
                                                     Uri('http://arg.org/', None),
                                                     None))
 
-        self.assertEqual(self.template.body[2].name, Name(None, 'expansion', None))
+        self.assertEqual(self.template.body[2].name, test.name('expansion'))
 
-        self.assertEqual(self.template.body[2].value.name, Name('otherprefix', 'exp', None))
+        self.assertEqual(self.template.body[2].value.name, test.name('exp', p='otherprefix'))
 
         self.assertEqual(self.template.body[2].value.template, Value(42, None))
 
@@ -146,22 +143,22 @@ class TemplateClassTest(unittest.TestCase):
 
         self.template.parameterise()
 
-        self.assertEqual(self.template.name, Name(None, 'T', None))
+        self.assertEqual(self.template.name, test.name('T'))
 
         self.assertEqual(self.template.parameters, [Parameter('a', 0, None),
                                                     Parameter('b', 1, None)])
 
         self.assertEqual(self.template.body[0], Property(Parameter('a', 0, None),
-                                                         Name(None, 'value', None),
+                                                         test.name('value'),
                                                          None))
 
-        self.assertEqual(self.template.body[1], Property(Name(None, 'predicate', None),
+        self.assertEqual(self.template.body[1], Property(test.name('predicate'),
                                                          Parameter('b', 1, None),
                                                          None))
 
-        self.assertEqual(self.template.body[2].name, Name(None, 'expansion', None))
+        self.assertEqual(self.template.body[2].name, test.name('expansion'))
 
-        self.assertEqual(self.template.body[2].value.name, Name('otherprefix', 'exp', None))
+        self.assertEqual(self.template.body[2].value.name, test.name('exp', p='otherprefix'))
 
         self.assertEqual(self.template.body[2].value.template, Parameter('a', 0, None))
 
