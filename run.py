@@ -50,7 +50,11 @@ def rdf_repl(serializer='nt',
 
     while True:
         try:
-            prompt = env.default_prefix or 'RDF'
+            if env.default_prefix_set:
+                prompt = env.default_prefix.string
+            else:
+                prompt = 'RDF'
+
             if sys.version_info >= (3, 0):
                 s = input(prompt + '  > ')
             else:

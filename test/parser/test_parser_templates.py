@@ -13,7 +13,9 @@ from rdfscript.template import (Template,
                                 Parameter,
                                 Property)
 
-class ParserTopLevelTest(unittest.TestCase):
+import test.test_helper as test
+
+class ParserTemplateTest(unittest.TestCase):
 
     def setUp(self):
         self.parser = RDFScriptParser()
@@ -23,22 +25,13 @@ class ParserTopLevelTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    def test_assignment(self):
-        script = 'Identifier = "hello"'
-        forms  = self.parser.parse(script)
-
-        self.assertEqual(forms,
-                         [Assignment(Name(None, 'Identifier', None),
-                                     Value("hello", None),
-                                     None)])
-
     def test_template_noargs_nobase(self):
         script = 'DNASequence() =>\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(Name(None, 'DNASequence', None),
+        expected_template = Template(test.name('DNASequence'),
                                      [],
-                                     [Property(Name(None, 'encoding', None),
+                                     [Property(test.name('encoding'),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
                                      None,
@@ -52,9 +45,9 @@ class ParserTopLevelTest(unittest.TestCase):
         script = 'DNASequence(x) =>\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(Name(None, 'DNASequence', None),
-                                     [Name(None, 'x', None)],
-                                     [Property(Name(None, 'encoding', None),
+        expected_template = Template(test.name('DNASequence'),
+                                     [test.name('x')],
+                                     [Property(test.name('encoding'),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
                                      None,
@@ -67,11 +60,11 @@ class ParserTopLevelTest(unittest.TestCase):
         script = 'DNASequence(x, y, z) =>\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(Name(None, 'DNASequence', None),
-                                     [Name(None, 'x', None),
-                                      Name(None, 'y', None),
-                                      Name(None, 'z', None)],
-                                     [Property(Name(None, 'encoding', None),
+        expected_template = Template(test.name('DNASequence'),
+                                     [ test.name('x'),
+                                       test.name('y'),
+                                       test.name('z')],
+                                     [Property(test.name('encoding'),
                                                Uri('SBOL:IUPACDNA', None),
                                                None)],
                                      None,
@@ -84,14 +77,14 @@ class ParserTopLevelTest(unittest.TestCase):
         script = 'B(x) =>\n  x = 42\nA(x) => B(x)\n  encoding = <SBOL:IUPACDNA>'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(Name(None, 'A', None),
-                                     [Name(None, 'x', None)],
-                                     [Property(Name(None, 'encoding', None),
+        expected_template = Template(test.name('A'),
+                                     [test.name('x')],
+                                     [Property(test.name('encoding'),
                                                          Uri('SBOL:IUPACDNA', None),
                                                          None)],
-                                     Expansion(Name(None, 'A', None),
-                                               Name(None, 'B', None),
-                                               [Name(None, 'x', None)],
+                                     Expansion(test.name('A'),
+                                               test.name('B'),
+                                               [test.name('x')],
                                                [],
                                                None),
                                      None)

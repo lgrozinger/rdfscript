@@ -26,7 +26,10 @@ class Importer:
 
         for d in self._dirs:
             try:
-                return (d / filepath).with_suffix('.rdfsh').read_text()
+                path = (d / filepath).with_suffix('.rdfsh')
+                data = path.read_text()
+                self.add_path(path.parent)
+                return data
             except FileNotFoundError:
                 pass
 
@@ -39,6 +42,9 @@ class Importer:
 
         try:
             absolute = self.to_absolute(pathlib.Path(filepath))
-            return absolute.with_suffix(self.extension).read_text()
+            path = absolute.with_suffix(self.extension)
+            data = path.read_text()
+            self.add_path(path.parent)
+            return data
         except FileNotFoundError:
             return None

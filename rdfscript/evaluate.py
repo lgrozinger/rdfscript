@@ -91,7 +91,7 @@ def evaluate_template(template, env):
 
     template.parameterise()
     template.de_name(env)
-    env.assign_template(template.name.as_uriref(), template)
+    env.assign_template(template.name, template)
 
 def evaluate_expansion(expansion, env):
 

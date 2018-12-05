@@ -34,6 +34,7 @@ class Env(object):
 
         self._rdf = RDFData(serializer=serializer)
         self._default_prefix = Prefix(Uri(self._rdf._g.identifier.toPython(), None), None)
+        self._prefix_set_by_user = False
 
         if filename:
             paths.append(pathlib.Path(filename).parent)
@@ -48,6 +49,10 @@ class Env(object):
     def default_prefix(self):
         """The language object that set the default prefix."""
         return self._default_prefix
+
+    @property
+    def default_prefix_set(self):
+        return self._prefix_set_by_user
 
     def uri_for_prefix(self, prefix):
         """Return a Uri object for a Prefix object."""
@@ -73,6 +78,7 @@ class Env(object):
             raise PrefixError(prefix, prefix.location)
         else:
             self._default_prefix = prefix
+            self._prefix_set_by_user = True
             return prefix
 
     def assign(self, uri, value):
@@ -123,17 +129,15 @@ class Env(object):
 
     def eval_import(self, uri):
 
-        filename = uri.toPython()
+        filename = uri.uri
         parser = RDFScriptParser(filename=filename)
 
-        self._importer.add_path(pathlib.Path(filename).parent)
         import_text = self._importer.import_file(filename)
         if not import_text:
             return False
         else:
-            self.interpret(parser.parse(self._importer.import_file(filename)))
+            self.interpret(parser.parse(import_text))
 
-        self._importer.remove_path(pathlib.Path(filename).parent)
         return True
 
     def get_current_path(self):

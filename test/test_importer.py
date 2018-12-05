@@ -64,7 +64,7 @@ class ImporterTest(unittest.TestCase):
         try:
             result = parser.parse(script)
             env.interpret(result)
-        except Exception as e:
+        except FileNotFoundError as e:
             self.fail(e)
 
         self.assertEqual(len(result), 5)

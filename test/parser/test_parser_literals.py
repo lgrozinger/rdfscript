@@ -18,8 +18,8 @@ class ParserLiteralTest(unittest.TestCase):
     def test_parser_literal_boolean(self):
         forms  = self.parser.parse('true false')
 
-        self.assertEqual(forms, [Value('true', None),
-                                 Value('false', None)])
+        self.assertEqual(forms, [Value(True, None),
+                                 Value(False, None)])
 
     def test_parser_literal_double(self):
         forms  = self.parser.parse('0.12345')

@@ -55,7 +55,8 @@ def p_pragma_prefix(p):
 
 def p_defaultprefix_pragma(p):
     '''pragma : DEFAULTPREFIX SYMBOL'''
-    p[0] = DefaultPrefixPragma(p[2], location(p))
+    l = location(p)
+    p[0] = DefaultPrefixPragma(Prefix(p[2], l) , l)
 
 def p_pragma_import(p):
     '''pragma : IMPORT identifier'''
@@ -190,9 +191,15 @@ def p_uri(p):
 def p_literal(p):
     '''literal : INTEGER
                | STRING
-               | DOUBLE
-               | BOOLEAN'''
+               | DOUBLE'''
     p[0] = Value(p[1], location(p))
+
+def p_literal_boolean(p):
+    '''literal : BOOLEAN'''
+    if p[1] == 'true':
+        p[0] = Value(True, location(p))
+    else:
+        p[0] = Value(False, location(p))
 
 ## SYNTAX ERROR
 def p_error(p):

@@ -178,7 +178,7 @@ class Expansion(Node):
         return self._body
 
     def get_extensions(self, env):
-        template = env.lookup_template(self.template.uri(env))
+        template = env.lookup_template(self.template)
         return template.get_extensions(env) + self._extensions
 
     def parameterise(self, parameters):

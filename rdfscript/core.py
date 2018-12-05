@@ -57,6 +57,14 @@ class Prefix(Node):
         else:
             return env.uri_for_prefix(self)
 
+    @property
+    def string(self):
+        if isinstance(self._identity, Uri):
+            return self._identity.uri
+        else:
+            return self._identity
+
+
 class LocalName(Node):
     """Language object for the local part of a Name."""
 
@@ -78,6 +86,13 @@ class LocalName(Node):
 
     def uri(self, env):
         return Uri(self.identity, self.location)
+
+    @property
+    def string(self):
+        if isinstance(self._identity, Uri):
+            return self._identity.uri
+        else:
+            return self._identity
 
 class Name(Node):
 
@@ -157,7 +172,7 @@ class Value(Node):
                 self.value == other.value)
 
     def __repr__(self):
-        return format("[VALUE: %s]" % self.as_pythonval())
+        return format("[VALUE: %s]" % self.value)
 
     @property
     def value(self):
