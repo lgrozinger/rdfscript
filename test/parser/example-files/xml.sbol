@@ -1,6 +1,0 @@
-// xml terminology
-<xmlns:xml> : Namespace("http://www.w3.org/XML/1998/namespace")
-
-import <./xml/base.sbol>
-import <./xml/id.sbol>
-import <./xml/lang.sbol>

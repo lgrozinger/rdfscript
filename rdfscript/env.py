@@ -83,23 +83,21 @@ class Env(object):
 
     def assign(self, uri, value):
 
-        uriref = self._rdf.to_rdf(uri)
-        self._symbol_table[uriref] = value
+        self._symbol_table[uri] = value
 
     def lookup(self, uri):
 
-        uriref = self._rdf.to_rdf(uri)
-        return self._symbol_table.get(uriref, None)
+        return self._symbol_table.get(uri, None)
 
     def assign_template(self, uri, template):
 
-        uriref = self._rdf.to_rdf(uri)
-        self._template_table[uriref] = template
+        #uriref = self._rdf.to_rdf(uri)
+        self._template_table[uri] = template
 
     def lookup_template(self, uri):
 
-        uriref = self._rdf.to_rdf(uri)
-        return self._template_table.get(uriref, None)
+        #uriref = self._rdf.to_rdf(uri)
+        return self._template_table.get(uri, None)
 
     def get_extension(self, name):
         return self._extension_manager.get_extension(name)

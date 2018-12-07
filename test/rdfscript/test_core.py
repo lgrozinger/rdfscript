@@ -55,3 +55,13 @@ class CoreTest(unittest.TestCase):
         value = Value(12345, None)
         self.assertEqual(value.value, 12345)
 
+    def test_uri_extend(self):
+
+        uri = Uri('http://test.uri/first', None)
+        uri.extend(Uri('second', None))
+        self.assertEqual(uri, Uri('http://test.uri/first#second', None))
+
+        uri = Uri('http://test.uri/first', None)
+        uri.extend(Uri('second', None), delimiter='/')
+        self.assertEqual(uri, Uri('http://test.uri/first/second', None))
+

@@ -155,9 +155,15 @@ class Uri(Node):
     def __repr__(self):
         return format("[URI: %s]" % self._uri)
 
+    def __hash__(self):
+        return self.uri.__hash__()
+
     @property
     def uri(self):
         return self._uri
+
+    def extend(self, other, delimiter='#'):
+        self._uri = self.uri + delimiter + other.uri
 
 class Value(Node):
     """Language object for an RDF literal."""
@@ -173,6 +179,9 @@ class Value(Node):
 
     def __repr__(self):
         return format("[VALUE: %s]" % self.value)
+
+    def __hash__(self):
+        return self._python_val.__hash__()
 
     @property
     def value(self):

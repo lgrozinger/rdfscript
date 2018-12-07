@@ -1,20 +1,29 @@
 import rdflib
+from .error import ExtensionError
 
 class AtLeastOne:
 
     def __init__(self, property_uri):
         self._prop = property_uri
 
-    def run(self, triples, env):
+    def run(self, triplepack):
 
-        results = [p for (s, p, o) in triples if p == self._prop]
-        if len(results) > 0:
-            return triples
-        else:
-            return None
+        for subject in triplepack.subjects:
+            if not triplepack.has(subject, self._prop):
+                raise CardinalityError(self._prop, 'at least 1', 'none')
 
-    @property
-    def failure_message(self):
-        return ("EXTENSION FAILED:\n" + 
-                format("Reason: At least one value for property %s" % self._prop) +
-                " was expected.\nNone were found.")
+        return triplepack
+
+class CardinalityError(ExtensionError):
+
+    def __init__(self, predicate, expected, actual):
+        ExtensionError.__init__(self)
+        self._type = 'Cardinality restriction violation'
+        self._predicate = predicate
+        self._expected = expected
+        self._actual = actual
+
+    def __str__(self):
+        return (ExtensionError.__str__(self) +
+                format(" Expected %s value(s) for %s, but actually got %s\n"
+                       % (self._expected, self._predicate, self._actual)))

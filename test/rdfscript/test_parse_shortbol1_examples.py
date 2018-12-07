@@ -13,6 +13,7 @@ from rdfscript.templating import Assignment
 from rdfscript.template import (Template,
                                 Expansion)
 
+@unittest.skip("ShortBOL2 syntax has diverged from ShortBOL1.")
 class ParseShortBOL1ExamplesTest(unittest.TestCase):
 
     def setUp(self):
