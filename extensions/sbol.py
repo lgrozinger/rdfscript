@@ -1,47 +1,30 @@
 import re
-import pdb
+import rdflib
 
 from .logic import And
 from .error import ExtensionError
+from rdfscript.core import Uri, Value
 
-class SBOL2:
+_sbolns = Uri('http://sbols.org/v2#', None)
+_toplevels = set([Uri(_sbolns.uri + tl, None) for tl
+                  in ['Sequence',
+                      'ComponentDefinition',
+                      'ModuleDefinition',
+                      'Model',
+                      'Collection',
+                      'GenericTopLevel',
+                      'Attachment',
+                      'Activity',
+                      'Agent',
+                      'Plan',
+                      'Implementation',
+                      'CombinatorialDerivation']])
 
-    def __init__(self):
+_sbol_pId =  Uri(_sbolns.uri + 'persistentIdentity', None)
+_sbol_dId =  Uri(_sbolns.uri + 'displayId', None)
+_sbol_version =  Uri(_sbolns.uri + 'version', None)
+_rdf_type = Uri(rdflib.RDF.type, None)
 
-        self._sbolns = Uri('http://sbols.org/v2#', None)
-        self._toplevels = [Uri(self._sbolns.uri + tl, None) for tl
-                           in ['Sequence',
-                               'ComponentDefinition',
-                               'ModuleDefinition',
-                               'Model',
-                               'Collection',
-                               'GenericTopLevel',
-                               'Attachment',
-                               'Activity',
-                               'Agent',
-                               'Plan',
-                               'Implementation',
-                               'CombinatorialDerivation']]
-
-    @property
-    def namespace(self):
-        return self._sbolns
-
-    @property
-    def persistentIdUri(self):
-        return Uri(self.namespace.uri + 'persistentIdentity', None)
-
-    @property
-    def displayIdUri(self):
-        return Uri(self.namespace.uri + 'displayId', None)
-
-    @property
-    def versionUri(self):
-        return Uri(self.namespace.uri + 'version', None)
-
-    def is_toplevel(self, possible_toplevel):
-        return (isinstance(possible_toplevel, Uri) and
-                possible_toplevel in self._toplevels)
 
 class SbolIdentity:
 
@@ -50,117 +33,114 @@ class SbolIdentity:
 
     def run(self, triplepack):
 
-        subjects = triplepack.subjects
-        return And([SBOLCompliant(s) for s in subjects]).run(triplepack)
+        return And(*[SBOLCompliant(s) for s in triplepack.subjects]).run(triplepack)
 
 class SBOLCompliant:
 
     def __init__(self, for_subject):
-        self._sbol = SBOL2()
         self._subject = for_subject
 
-    @property
-    def sbol(self):
-        return self._sbol
-
-    class SBOLComplianceError(ExtensionError):
-
-        def __init__(self, helpful_message):
-            self._type = 'SBOL2 Compliant URI error'
-            self._helpful_message = helpful_message
-
-        def __str__(self):
-            return ExtensionError.__str__(self) + format(" %s\n" % self._helpful_message)
 
     def run(self, triplepack):
 
-        if triplepack.has(self._subject, self.sbol.persistentIdUri):
-            persistentId = triplepack.value((self._subject, self.sbol.persistentIdUri, None))
+        subpack = triplepack.sub_pack(self._subject)
+        if SBOLcheckTopLevel(subpack):
+            SBOLCompliantTopLevel(self._subject).run(triplepack)
         else:
-            triplepack.set((self._subject,
-                            self.sbol.persistentIdUri,
-                            self.compute_persistentId(self._subject)))
+            SBOLCompliantChild(self._subject).run(triplepack)
 
-        displayId = triplepack.value((self._subject, self.sbol.persistentIdUri, None))
+        return triplepack
 
-        if not triplepack.has_unique(self._subject, self.sbol.persistentIdUri):
-            message = format("The SBOL2 object %s has been given more than 1 persistentIdentity."
-                             % self._subject)
-            raise SBOLComplianceError(message)
-
-        if not triplepack.has_unique(self._subject, self.sbol.displayIdUri):
-            message = format("The SBOL2 object %s has been given more than 1 displayId."
-                             % self._subject)
-            raise SBOLComplianceError(message)
-
-        dId = re.split('#|/|:', persistentId.value)[-1]
-        if dId == displayId.value:
-                return triples
-            else:
-                triples.remove(persistentId[0])
-                return self.run(triples, env)
-
-        if len(persistentId) > 1:
-            triples.remove(persistentId[0])
-            return self.run(triples, env)
-        elif len(persistentId) == 1:
-            (s, p, o) = persistentId[0]
-            dId = re.split('#|/|:', o.toPython())[-1]
-            if dId == displayId:
-                return triples
-            else:
-                triples.remove(persistentId[0])
-                return self.run(triples, env)
-        else:
-            sbol_type = [o for (s, p, o) in triples if p == rdflib.RDF.type and s == self._subject]
-            if len(sbol_type) == 1:
-                return triples + [(self._subject, self.sbol.persistentIdUri, self.compute_persistentId(triples))]
-            else:
-                self._failure_message = "SBOL objects must have exactly one type"
-                return None
-
-    def compute_persistentId(self, triplepack, subject):
-        ## TODO: check for top level, compute persistentId accordingly
-        if not triplepack.has_unique(subject, Uri(rdflib.RDF.type, None)):
-            raise self.
-        sbol_type = triplepack.value(subject, Uri(rdflib.RDF.type, None))
-        sbol_type = [o for (s, p, o) in triples if p == rdflib.RDF.type and s == self._subject][0]
-
-        if self.sbol.is_toplevel(sbol_type):
-            return self._subject
-        else:
-            parent = [s for (s, p, o) in triples if o == self._subject][0]
-            dId    = [o for (s, p, o) in triples if p == self.sbol.displayIdUri][0]
-            return rdflib.Namespace(parent)['#' + dId.toPython()]
-
-class SBOLDisplayId:
+class SBOLCompliantTopLevel:
 
     def __init__(self, for_subject):
-        self._sbol = SBOL2()
         self._subject = for_subject
 
-    @property
-    def sbol(self):
-        return self._sbol
 
-    def run(self, triples, env):
+    def run(self, triplepack):
 
-        displayId = [(s, p, o)
-                     for (s, p, o)
-                     in triples
-                     if (p == self.sbol.displayIdUri and
-                         s == self._subject)]
+        subpack = triplepack.sub_pack(self._subject)
+        if not SBOLcheckIdentity(subpack):
+            message = format("SBOL objects with versions must include their version in their name.")
+            raise SBOLComplianceError(message)
 
-        if len(displayId) > 1:
-            triples.remove(displayId[0])
-            return self.run(triples, env)
-        elif len(displayId) == 1:
-            return triples
+        if not SBOLdId(subpack):
+            dId = self._subject.split()[-1]
+            triplepack.set(self._subject, _sbol_dId, Value(dId, None))
+            subpack.set(self._subject, _sbol_dId, Value(dId, None))
+
+        pId = Uri(self._subject.uri, None)
+        triplepack.set(self._subject, _sbol_pId, pId)
+
+class SBOLCompliantChild:
+
+    def __init__(self, for_subject):
+        self._subject = for_subject
+
+
+    def run(self, triplepack):
+
+        subpack = triplepack.sub_pack(self._subject)
+        parent = SBOLParent(triplepack, self._subject)
+        if parent:
+            if not triplepack.has(parent, _sbol_pId):
+                SBOLCompliant(parent).run(triplepack)
+
+            if triplepack.has(parent, _sbol_version):
+                triplepack.set(self._subject,
+                               _sbol_version,
+                               triplepack.value(self._subject, _sbol_version))
+
+            if not SBOLdId(subpack):
+                dId = self._subject.split()[-1]
+                triplepack.set(self._subject, _sbol_dId, Value(dId, None))
+
+            parentpid = triplepack.value(parent, _sbol_pId)
+            pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value, None)
+            triplepack.set(self._subject, _sbol_pId, pId)
         else:
-            triples.append((self._subject, self.sbol.displayIdUri, self.compute_displayId()))
-            return triples
+            pass
 
-    def compute_displayId(self):
+class SBOLComplianceError(ExtensionError):
 
-        dId = re.split('#|/|:', self._subject.toPython())[-1]
-        return rdflib.Literal(dId)
+    def __init__(self, helpful_message):
+        self._type = 'SBOL2 Compliant URI error'
+        self._helpful_message = helpful_message
+
+    def __str__(self):
+        return ExtensionError.__str__(self) + format(" %s\n" % self._helpful_message)
+
+def SBOLversion(triplepack):
+    return triplepack.value(_sbol_version)
+
+def SBOLpId(triplepack):
+    return triplepack.value(_sbol_pId)
+
+def SBOLdId(triplepack):
+    return triplepack.value(_sbol_dId)
+
+def SBOLcheckIdentity(triplepack):
+    identity = triplepack.subjects.pop()
+    if SBOLversion(triplepack):
+        return identity.split()[-1] == triplepack.value(_sbol_version).value
+    else:
+        return True
+
+def SBOLParent(triplepack, child):
+    with_child_as_object = triplepack.search((None, None, child))
+    possible_parents = set([s for (s, p, o) in with_child_as_object])
+    if len(possible_parents) > 1:
+        message = format("The SBOL object %s should only have one parent object."
+                         % child)
+        raise SBOLComplianceError(message)
+    else:
+        return possible_parents.pop()
+
+def SBOLcheckTopLevel(triplepack):
+    sbol_type = triplepack.value(_rdf_type)
+    if sbol_type is not None:
+        return sbol_type in _toplevels
+    else:
+        offender = triplepack.subjects[0]
+        message = format("%s does not have a rdf.type." % offender)
+        raise SBOLComplianceError(message)

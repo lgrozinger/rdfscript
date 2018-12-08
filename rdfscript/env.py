@@ -15,8 +15,6 @@ from .rdfscriptparser import RDFScriptParser
 
 from .importer import Importer
 
-from .SBOL2Serialize import serialize_sboll2
-
 from .extensions import ExtensionManager
 from .rdf_data import RDFData
 

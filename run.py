@@ -7,7 +7,6 @@ import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
-from rdfscript.SBOL2Serialize import serialize_sboll2
 
 def parse_from_file(filepath,
                     serializer='nt',

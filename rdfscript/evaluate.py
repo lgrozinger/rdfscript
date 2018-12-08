@@ -25,6 +25,8 @@ from .error import (UnknownConstruct,
                     NoSuchExtension,
                     ExtensionFailure)
 
+from extensions.triples import TriplePack
+
 def evaluate(node, env):
 
     return _handler_index.get(type(node), unknown_node)(node, env)
@@ -102,18 +104,12 @@ def evaluate_expansion(expansion, env):
                           for (s, p, o) in raw_triples]
 
     final_triples = evaluated_triples
+    pack = TriplePack(final_triples, env._symbol_table, env._template_table)
     for extension in expansion.get_extensions(env):
         e = evaluate(extension, env)
-        result = e.run(final_triples, env)
-        if not result:
-            if e.failure_message:
-                raise ExtensionFailure(e.failure_message, expansion.location)
-            else:
-                raise ExtensionFailure(None, expansion.location)
-        else:
-            final_triples = result
+        e.run(pack)
 
-    env.add_triples(final_triples)
+    env.add_triples(pack.triples)
 
     return evaluate(expansion.name, env)
 

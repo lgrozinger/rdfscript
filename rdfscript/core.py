@@ -1,4 +1,5 @@
 import rdflib
+import re
 
 from .error import PrefixError
 
@@ -164,6 +165,9 @@ class Uri(Node):
 
     def extend(self, other, delimiter='#'):
         self._uri = self.uri + delimiter + other.uri
+
+    def split(self):
+        return re.split('#|/|:', self.uri)
 
 class Value(Node):
     """Language object for an RDF literal."""

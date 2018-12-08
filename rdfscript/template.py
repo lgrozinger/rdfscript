@@ -70,7 +70,7 @@ class Template(Node):
             extension.parameterise(self.parameters)
 
     def de_name(self, env):
-        self._name = self.name.uri(env)
+        self._name = env.lookup(self.name.uri(env)) or self.name.uri(env)
         for statement in self.body:
             try:
                 statement.de_name(env)
@@ -234,12 +234,14 @@ class Expansion(Node):
 
     def de_name(self, env):
         if isinstance(self.name, Name):
-            self._name = self.name.uri(env)
+            self._name = env.lookup(self.name.uri(env)) or self.name.uri(env)
 
         if isinstance(self.template, Name):
-            self._template = self.template.uri(env)
+            self._template = env.lookup(self.template.uri(env)) or self.template.uri(env)
 
-        self._args = [Argument(arg.value.uri(env), arg.position, arg.location)
+        self._args = [Argument(env.lookup(arg.value.uri(env)) or arg.value.uri(env),
+                               arg.position,
+                               arg.location)
                       if isinstance(arg.value, Name)
                       else arg
                       for arg in self.args]
@@ -404,10 +406,10 @@ class Property(Node):
 
     def de_name(self, env):
         if isinstance(self.name, Name):
-            self._name = self.name.uri(env)
+            self._name = env.lookup(self.name.uri(env)) or self.name.uri(env)
 
         if isinstance(self.value, Name):
-            self._value = self.value.uri(env)
+            self._value = env.lookup(self.value.uri(env)) or self.value.uri(env)
 
         try:
             self.value.de_name(env)

@@ -1,6 +1,7 @@
 import rdflib
 from .core import Uri, Value
 from .error import InternalError, PrefixError
+from pysbolgraph.SBOL2Serialize import serialize_sboll2
 
 class RDFData(object):
     """

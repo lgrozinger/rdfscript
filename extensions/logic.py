@@ -2,8 +2,8 @@ from .error import ExtensionError
 
 class And:
 
-    def __init__(self, sub_exts):
-        self._sub_exts = [ext for ext in sub_exts]
+    def __init__(self, *sub_exts):
+        self._sub_exts = sub_exts
 
     def run(self, triplepack):
         for ext in self._sub_exts:
@@ -13,7 +13,7 @@ class And:
 
 class Or:
 
-    def __init__(self, sub_exts):
+    def __init__(self, *sub_exts):
         self._sub_exts = sub_exts
 
     def run(self, triplepack):

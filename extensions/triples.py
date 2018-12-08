@@ -55,15 +55,39 @@ class TriplePack(object):
 
         return [t for t in self.triples if matcher(t)]
 
-    def has(self, owner, what):
+    def has(self, *args):
+        owner = None
+
+        if len(args) == 2:
+            owner = args[0]
+            what  = args[1]
+        else:
+            what = args[0]
+
         results = self.search((owner, what, None))
         return len(results) > 0
 
-    def has_unique(self, owner, what):
+    def has_unique(self, *args):
+        owner = None
+
+        if len(args) == 2:
+            owner = args[0]
+            what  = args[1]
+        else:
+            what = args[0]
+
         results = self.search((owner, what, None))
         return len(results) == 1
 
-    def value(self, owner, what):
+    def value(self, *args):
+        owner = None
+
+        if len(args) == 2:
+            owner = args[0]
+            what  = args[1]
+        else:
+            what = args[0]
+
         values = [o for (s, p, o) in self.search((owner, what, None))]
         if len(values) == 0:
             return None
@@ -77,16 +101,29 @@ class TriplePack(object):
         self.triples.append(triple)
         return triple
 
-    def set(self, owner, what, value):
+    def set(self, *args):
         # check types are Uri and Value TODO
+        owner = None
+        if len(args) == 3:
+            owner = args[0]
+            what = args[1]
+            value = args[2]
+        else:
+            what = args[0]
+            value = args[1]
+
         if self.has(owner, what):
             triples = self.search((owner, what, None))
             for triple in triples:
                 self.triples.remove(triple)
-            self.add((owner, what, value))
-            return (owner, what, value)
-        else:
-            return None
+
+        self.add((owner, what, value))
+        return (owner, what, value)
+
+    def sub_pack(self, owner):
+        return TriplePack(self.search((owner, None, None)),
+                          self.bindings,
+                          self.templates)
 
     def lookup(self, uri):
         return self._bindings.get(uri, None)

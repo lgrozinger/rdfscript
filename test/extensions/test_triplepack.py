@@ -255,4 +255,4 @@ class TriplePackTest(unittest.TestCase):
         self.assertEqual(self.pack.value(test.name('e').uri(self.env), Value(1, None)), Value('set', None))
 
         self.pack.set(test.name('e').uri(self.env), Value('fake', None), Value('set', None))
-        self.assertFalse(self.pack.has(test.name('e').uri(self.env), Value('fake', None)))
+        self.assertTrue(self.pack.has(test.name('e').uri(self.env), Value('fake', None)))

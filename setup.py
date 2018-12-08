@@ -15,5 +15,5 @@ setup(name='rdfscript',
 
       py_modules=['run'],
 
-      install_requires=['rdflib', 'lxml', 'requests', 'ply', 'pathlib']
+      install_requires=['rdflib', 'lxml', 'requests', 'ply', 'pathlib', 'pysbolgraph']
 )

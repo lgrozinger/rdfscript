@@ -60,7 +60,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
         true = AtLeastOne(Uri('http://example.eg/predicate', None))
 
-        conjunction = And([true, true])
+        conjunction = And(true, true)
 
         triples = list(self.pack.triples)
 
@@ -73,7 +73,7 @@ class LogicExtensionsTest(unittest.TestCase):
         true = AtLeastOne(Uri('http://example.eg/predicate', None))
         false = AtLeastOne(Uri('http://test.eg/#notthere', None))
 
-        conjunction = And([true, false])
+        conjunction = And(true, false)
 
         triples = list(self.pack.triples)
 
@@ -87,7 +87,7 @@ class LogicExtensionsTest(unittest.TestCase):
         true = AtLeastOne(Uri('http://example.eg/predicate', None))
         false = AtLeastOne(Uri('http://test.eg/#notthere', None))
 
-        conjunction = And([false, true])
+        conjunction = And(false, true)
 
         triples = list(self.pack.triples)
 
@@ -100,7 +100,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
         false = AtLeastOne(Uri('http://test.eg/#notthere', None))
 
-        conjunction = And([false, false])
+        conjunction = And(false, false)
 
         triples = list(self.pack.triples)
 
@@ -113,7 +113,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
         true = AtLeastOne(Uri('http://example.eg/predicate', None))
 
-        conjunction = Or([true, true])
+        conjunction = Or(true, true)
 
         triples = list(self.pack.triples)
 
@@ -126,7 +126,7 @@ class LogicExtensionsTest(unittest.TestCase):
         true = AtLeastOne(Uri('http://example.eg/predicate', None))
         false = AtLeastOne(Uri('http://test.eg/#notthere', None))
 
-        conjunction = Or([true, false])
+        conjunction = Or(true, false)
 
         triples = list(self.pack.triples)
 
@@ -139,7 +139,7 @@ class LogicExtensionsTest(unittest.TestCase):
         true = AtLeastOne(Uri('http://example.eg/predicate', None))
         false = AtLeastOne(Uri('http://test.eg/#notthere', None))
 
-        conjunction = Or([false, true])
+        conjunction = Or(false, true)
 
         triples = list(self.pack.triples)
 
@@ -151,7 +151,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
         false = AtLeastOne(Uri('http://test.eg/#notthere', None))
 
-        conjunction = Or([false, false])
+        conjunction = Or(false, false)
 
         triples = list(self.pack.triples)
 
