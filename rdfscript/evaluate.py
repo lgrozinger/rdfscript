@@ -95,6 +95,8 @@ def evaluate_template(template, env):
     template.de_name(env)
     env.assign_template(template.name, template)
 
+    return template.name
+
 def evaluate_expansion(expansion, env):
 
     expansion.de_name(env)
