@@ -6,7 +6,8 @@ from rdfscript.core import (Uri,
                             Value,
                             Name,
                             Prefix,
-                            LocalName)
+                            LocalName,
+                            Self)
 
 from rdfscript.env import Env
 
@@ -64,4 +65,12 @@ class CoreTest(unittest.TestCase):
         uri = Uri('http://test.uri/first', None)
         uri.extend(Uri('second', None), delimiter='/')
         self.assertEqual(uri, Uri('http://test.uri/first/second', None))
+
+    def test_self(self):
+
+        me = Self(None)
+        self.assertEqual(me.uri(self.env), Uri(self.env._rdf._g.identifier.toPython(), None))
+
+        me = Self(None, localname=LocalName('myself', None))
+        self.assertEqual(me.uri(self.env), Uri(self.env._rdf._g.identifier.toPython() + 'myself', None))
 

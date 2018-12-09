@@ -6,7 +6,8 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.core import (Uri,
                             Name,
                             Prefix,
-                            LocalName)
+                            LocalName,
+                            Self)
 
 class ParserIdentifierTest(unittest.TestCase):
 
@@ -49,6 +50,16 @@ class ParserIdentifierTest(unittest.TestCase):
         self.assertEqual(forms, [Name(Prefix(Uri('http://prefix/', None), None),
                                       LocalName('LocalName', None),
                                       None)])
+
+    def test_qname_self_symbol(self):
+        script = 'self.LocalName'
+        forms = self.parser.parse(script)
+        self.assertEqual(forms, [Self(None, localname=LocalName('LocalName', None))])
+
+    def test_qname_self_uri(self):
+        script = 'self.<localname>'
+        forms = self.parser.parse(script)
+        self.assertEqual(forms, [Self(None, localname=LocalName(Uri('LocalName', None), None))])
 
     def test_localname(self):
         script = 'localName'

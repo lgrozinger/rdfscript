@@ -183,6 +183,16 @@ def p_self(p):
     '''self : SELF'''
     p[0] = Self(location(p))
 
+def p_self_full_name(p):
+    '''self : SELF '.' SYMBOL'''
+    l = location(p)
+    p[0] = Self(l, localname=LocalName(p[3], l))
+
+def p_self_full_uri(p):
+    '''self : SELF '.' uri'''
+    l = location(p)
+    p[0] = Self(l, localname=LocalName(p[3], l))
+
 def p_uri(p):
     '''uri : URI'''
     p[0] = Uri(p[1], location(p))

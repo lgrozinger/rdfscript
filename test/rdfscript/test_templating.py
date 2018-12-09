@@ -10,7 +10,8 @@ from rdfscript.core import (Name,
                             Uri,
                             Value,
                             Self,
-                            Prefix)
+                            Prefix,
+                            LocalName)
 
 from rdfscript.template import (Template,
                                 Parameter,
@@ -282,6 +283,9 @@ class TemplatingTest(unittest.TestCase):
                                Value(True, None)],
                               [Property(Uri('http://me.org/myself', None),
                                         Self(None),
+                                        None),
+                               Property(Uri('http://me.org/child', None),
+                                        Self(None, localname=LocalName('child', None)),
                                         None)],
                               None)
 
@@ -293,10 +297,13 @@ class TemplatingTest(unittest.TestCase):
                               Value(True, None)),
                              (test.name('E').uri(self.env),
                               Uri('http://me.org/myself', None),
-                              test.name('E').uri(self.env))]
+                              test.name('E').uri(self.env)),
+                             (test.name('E').uri(self.env),
+                              Uri('http://me.org/child', None),
+                              Uri(test.name('E').uri(self.env).uri + 'child', None))]
 
         expansion.de_name(self.env)
-        self.assertEqual(expansion_triples, expansion.replace_self(expansion.as_triples(self.env)))
+        self.assertEqual(expansion_triples, expansion.replace_self(expansion.as_triples(self.env), self.env))
 
     def test_self_in_template(self):
         templateA = Template(test.name('A'),
@@ -318,6 +325,9 @@ class TemplatingTest(unittest.TestCase):
                                   [],
                                   [Property(test.name('x'),
                                             Self(None),
+                                            None),
+                                   Property(test.name('child'),
+                                            Self(None, localname=LocalName('child', None)),
                                             None)],
                                   None,
                                   None)
@@ -343,6 +353,9 @@ class TemplatingTest(unittest.TestCase):
                               test.name('x').uri(self.env),
                               test.name('E').uri(self.env)),
                              (test.name('E').uri(self.env),
+                              test.name('child').uri(self.env),
+                              Uri(test.name('E').uri(self.env).uri + 'child', None)),
+                             (test.name('E').uri(self.env),
                               test.name('x').uri(self.env),
                               Value(42, None)),
                              (test.name('E').uri(self.env),
@@ -352,4 +365,4 @@ class TemplatingTest(unittest.TestCase):
                               Uri('http://me.org/myself', None),
                               test.name('E').uri(self.env))]
 
-        self.assertEqual(expansion_triples, expansion.replace_self(expansion.as_triples(self.env)))
+        self.assertEqual(expansion_triples, expansion.replace_self(expansion.as_triples(self.env), self.env))

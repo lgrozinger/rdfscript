@@ -100,7 +100,7 @@ def evaluate_template(template, env):
 def evaluate_expansion(expansion, env):
 
     expansion.de_name(env)
-    raw_triples = expansion.replace_self(expansion.as_triples(env))
+    raw_triples = expansion.replace_self(expansion.as_triples(env), env)
 
     evaluated_triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
                           for (s, p, o) in raw_triples]

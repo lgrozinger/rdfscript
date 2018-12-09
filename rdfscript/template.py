@@ -284,15 +284,21 @@ class Expansion(Node):
 
         return renamed_triples
 
-    def replace_self(self, triples):
+    def replace_self(self, triples, env):
         renamed_triples = []
         for (s, p, o) in triples:
             if isinstance(s, Self):
-                s = self._name
+                s = Name(Prefix(self._name, self.location),
+                         s.localname,
+                         self.location).uri(env)
             if isinstance(p, Self):
-                p = self._name
+                p = Name(Prefix(self._name, self.location),
+                         p.localname,
+                         self.location).uri(env)
             if isinstance(o, Self):
-                o = self._name
+                o = Name(Prefix(self._name, self.location),
+                         o.localname,
+                         self.location).uri(env)
             renamed_triples.append((s, p, o))
 
         return renamed_triples

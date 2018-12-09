@@ -192,12 +192,20 @@ class Value(Node):
 
 class Self(Node):
 
-    def __init__(self, location):
+    def __init__(self, location, localname=None):
 
         Node.__init__(self, location)
+        self._localname = localname or LocalName('', location)
 
     def __eq__(self, other):
         return isinstance(other, Self)
 
     def __repr__(self):
         return format("[SELF]")
+
+    @property
+    def localname(self):
+        return self._localname
+
+    def uri(self, env):
+        return Name(None, self.localname, self.location).uri(env)
