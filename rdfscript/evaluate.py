@@ -113,7 +113,7 @@ def evaluate_expansion(expansion, env):
 
     env.add_triples(pack.triples)
 
-    return evaluate(expansion.name, env)
+    return expansion.name
 
 def evaluate_argument(argument, env):
 

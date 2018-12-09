@@ -94,6 +94,7 @@ class SBOLCompliantChild:
             if not SBOLdId(subpack):
                 dId = self._subject.split()[-1]
                 triplepack.set(self._subject, _sbol_dId, Value(dId, None))
+                subpack.set(self._subject, _sbol_dId, Value(dId, None))
 
             parentpid = triplepack.value(parent, _sbol_pId)
             pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value, None)
@@ -133,14 +134,13 @@ def SBOLParent(triplepack, child):
         message = format("The SBOL object %s should only have one parent object."
                          % child)
         raise SBOLComplianceError(message)
-    else:
+    elif len(possible_parents) == 1:
         return possible_parents.pop()
+    else:
+        message = format("The SBOL object %s does not have a parent object."
+                         % child)
+        raise SBOLComplianceError(message)
 
 def SBOLcheckTopLevel(triplepack):
-    sbol_type = triplepack.value(_rdf_type)
-    if sbol_type is not None:
-        return sbol_type in _toplevels
-    else:
-        offender = triplepack.subjects[0]
-        message = format("%s does not have a rdf.type." % offender)
-        raise SBOLComplianceError(message)
+    _type = triplepack.value(_rdf_type)
+    return _type in _toplevels

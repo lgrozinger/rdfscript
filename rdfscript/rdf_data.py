@@ -2,6 +2,7 @@ import rdflib
 from .core import Uri, Value
 from .error import InternalError, PrefixError
 from pysbolgraph.SBOL2Serialize import serialize_sboll2
+from pysbolgraph.SBOL2Graph import SBOL2Graph
 
 class RDFData(object):
     """
@@ -85,4 +86,6 @@ class RDFData(object):
         elif self._serializer == 'turtle':
             return self._g.serialize(format='turtle').decode("utf-8")
         elif self._serializer == 'sbolxml':
-            return serialize_sboll2(self._g).decode("utf-8")
+            pysbolG = SBOL2Graph()
+            pysbolG.g = self._g
+            return serialize_sboll2(pysbolG).decode("utf-8")

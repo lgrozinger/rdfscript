@@ -10,7 +10,6 @@ class Node(object):
         location is a Location object representing this language
         object's position in the source code.
         """
-
         self._location = location
 
     @property
