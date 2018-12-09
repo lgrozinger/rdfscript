@@ -37,6 +37,17 @@ class RuntimeIdentifierTest(unittest.TestCase):
 
         self.assertEqual(evaluate(forms[0], env), expected_value)
 
+    def test_self_prefix(self):
+        forms = self.parser.parse("self.me")
+
+        env = Env()
+        expected_value = Uri(env.default_prefix.uri(env).uri + 'me', None)
+
+        self.assertEqual(evaluate(forms[0], env), expected_value)
+
+        forms = self.parser.parse("self.<me>")
+        self.assertEqual(evaluate(forms[0], env), expected_value)
+
     def test_localname_bound(self):
 
         script = ("X=\"value\"\n" +

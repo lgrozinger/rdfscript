@@ -80,10 +80,7 @@ def evaluate_extensionpragma(pragma, env):
 
 def evaluate_self(myself, env):
 
-    return evaluate_name(Name(None,
-                              LocalName('', myself.location),
-                              myself.location),
-                         env)
+    return myself.uri(env)
 
 def evaluate_value(value, env):
 
