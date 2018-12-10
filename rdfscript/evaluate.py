@@ -37,15 +37,11 @@ def evaluate_uri(uri, env):
 
 def evaluate_name(name, env):
 
-    resolved_uri = env.resolve_name(name)
-
-    lookup = env.lookup(resolved_uri)
-
-    return lookup or resolved_uri
+    return env.lookup(name.uri(env)) or name.uri(env)
 
 def evaluate_assignment(assignment, env):
 
-    uri = env.resolve_name(assignment.name)
+    uri = assignment.name.uri(env)
     value = evaluate(assignment.value, env)
 
     env.assign(uri, value)
@@ -80,7 +76,7 @@ def evaluate_extensionpragma(pragma, env):
 
 def evaluate_self(myself, env):
 
-    return myself.uri(env)
+    return env.lookup(myself.uri(env)) or myself.uri(env)
 
 def evaluate_value(value, env):
 

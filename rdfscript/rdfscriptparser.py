@@ -162,8 +162,7 @@ def p_emptylist(p):
 ## names
 def p_identifier(p):
     '''identifier : name
-                  | uri
-                  | self'''
+                  | uri'''
     p[0] = p[1]
 
 def p_full_name(p):
@@ -178,6 +177,10 @@ def p_localname(p):
     '''name : SYMBOL'''
     l = location(p)
     p[0] = Name(None, LocalName(p[1], l), l)
+
+def p_name_self(p):
+    '''name : self'''
+    p[0] = p[1]
 
 def p_self(p):
     '''self : SELF'''

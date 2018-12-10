@@ -5,7 +5,7 @@ import ply.lex as leex
 import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
-from rdfscript.core import Value, Uri
+from rdfscript.core import Value, Uri, LocalName, Self
 from rdfscript.templating import Assignment
 
 import test.test_helper as test
@@ -127,5 +127,13 @@ class ParserTopLevelTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms, [Assignment(Uri('http://uri.org/', None),
+                                            test.name('Name'),
+                                            None)])
+
+    def test_assignment_self_name(self):
+        script = 'self.v = Name'
+        forms  = self.parser.parse(script)
+
+        self.assertEqual(forms, [Assignment(Self(None, localname=LocalName('v', None)),
                                             test.name('Name'),
                                             None)])

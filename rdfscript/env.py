@@ -16,6 +16,7 @@ from .rdfscriptparser import RDFScriptParser
 from .importer import Importer
 
 from .extensions import ExtensionManager
+from extensions.error import ExtensionError
 from .rdf_data import RDFData
 
 class Env(object):
@@ -119,6 +120,8 @@ class Env(object):
             try:
                 result = evaluate(form, self)
             except RDFScriptError as e:
+                logging.error(str(e))
+            except ExtensionError as e:
                 logging.error(str(e))
 
         return result

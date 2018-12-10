@@ -160,3 +160,16 @@ class RuntimeIdentifierTest(unittest.TestCase):
         self.assertEqual(evaluate(forms[1], env), Value('value', None))
         self.assertEqual(evaluate(forms[2], env), Value('value', None))
 
+    def test_self_symbol_bound(self):
+
+        script = ("self.v = \"value\"\n" +
+                  "self.v\n" +
+                  "v")
+        forms = self.parser.parse(script)
+
+        env = Env()
+
+        self.assertEqual(evaluate(forms[0], env), Value('value', None))
+        self.assertEqual(evaluate(forms[1], env), Value('value', None))
+        self.assertEqual(evaluate(forms[2], env), Value('value', None))
+
