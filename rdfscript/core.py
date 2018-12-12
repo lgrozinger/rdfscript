@@ -32,68 +32,6 @@ class Node(object):
     def file(self):
         return self._location.filename
 
-class Prefix(Node):
-    """Language object for the 'prefix' part of a Name."""
-
-    def __init__(self, uri_or_string , location):
-
-        Node.__init__(self, location)
-        self._identity = uri_or_string
-
-    def __eq__(self, other):
-        return (isinstance(other, Prefix) and
-                self._identity == other._identity)
-
-    def __repr__(self):
-        return format("%s" % self._identity)
-
-    @property
-    def identity(self):
-        return self._identity
-
-    def uri(self, env):
-        if isinstance(self._identity, Uri):
-            return self._identity
-        else:
-            return env.uri_for_prefix(self)
-
-    @property
-    def string(self):
-        if isinstance(self._identity, Uri):
-            return self._identity.uri
-        else:
-            return self._identity
-
-
-class LocalName(Node):
-    """Language object for the local part of a Name."""
-
-    def __init__(self, uri_or_string, location):
-
-        Node.__init__(self, location)
-        self._identity = uri_or_string
-
-    def __eq__(self, other):
-        return (isinstance(other, LocalName) and
-                self._identity == other._identity)
-
-    def __repr__(self):
-        return format("%s" % self._identity)
-
-    @property
-    def identity(self):
-        return self._identity
-
-    def uri(self, env):
-        return Uri(self.identity, self.location)
-
-    @property
-    def string(self):
-        if isinstance(self._identity, Uri):
-            return self._identity.uri
-        else:
-            return self._identity
-
 class Name(Node):
 
     def __init__(self, *names, location=None):
@@ -165,7 +103,7 @@ class Uri(Node):
 class Value(Node):
     """Language object for an RDF literal."""
 
-    def __init__(self, python_literal, location):
+    def __init__(self, python_literal, location=None):
 
         Node.__init__(self, location)
         self._python_val = python_literal

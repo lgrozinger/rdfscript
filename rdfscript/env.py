@@ -3,7 +3,7 @@ import sys
 import pathlib
 import logging
 
-from .core import Uri, Value, Prefix
+from .core import Uri, Value
 
 from .evaluate import evaluate
 from .error import (RDFScriptError,
