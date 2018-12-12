@@ -24,20 +24,6 @@ class ReaderSpecialsTest(unittest.TestCase):
         self.assertEqual(second_token.value, 'false')
         self.assertEqual(second_token.type, 'BOOLEAN')
 
-    def test_literal_colon(self):
-        self.reader.input(':')
-        token = self.reader.token()
-
-        self.assertEqual(token.value, ':')
-        self.assertEqual(token.type, ':')
-
-    def test_literal_semicolon(self):
-        self.reader.input(';')
-        token = self.reader.token()
-
-        self.assertEqual(token.value, ';')
-        self.assertEqual(token.type, ';')
-
     def test_literal_lparen(self):
         self.reader.input('(')
         token = self.reader.token()

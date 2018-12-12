@@ -9,7 +9,7 @@ class ReaderSymbolTest(unittest.TestCase):
         self.reader = leex.lex(module=reader)
         self.reader.at_line_start = True
         self.reader.indent_stack = [0]
-        
+
     def tearDown(self):
         None
 
@@ -48,13 +48,50 @@ class ReaderSymbolTest(unittest.TestCase):
         self.assertEqual(token.value, '=')
         self.assertEqual(token.type, '=')
 
-    def test_symbol_mixture(self):
-        self.reader.input('+s=-+14gmkGG7')
-        token = self.reader.token()
+    def test_symbol_forward_slash(self):
+        self.reader.input('symbol/end /end end/')
 
-        self.assertEqual(token.value, '+s')
+        token = self.reader.token()
+        self.assertEqual(token.value, 'symbol/end')
         self.assertEqual(token.type, 'SYMBOL')
 
+        token = self.reader.token()
+        self.assertEqual(token.value, '/end')
+        self.assertEqual(token.type, 'SYMBOL')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, 'end/')
+        self.assertEqual(token.type, 'SYMBOL')
+
+    def test_symbol_hash(self):
+        self.reader.input('start#end #start end#')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, 'start#end')
+        self.assertEqual(token.type, 'SYMBOL')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, '#start')
+        self.assertEqual(token.type, 'SYMBOL')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, 'end#')
+        self.assertEqual(token.type, 'SYMBOL')
+
+    def test_symbol_colon(self):
+        self.reader.input('start:end :end start:')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, 'start:end')
+        self.assertEqual(token.type, 'SYMBOL')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, ':end')
+        self.assertEqual(token.type, 'SYMBOL')
+
+        token = self.reader.token()
+        self.assertEqual(token.value, 'start:')
+        self.assertEqual(token.type, 'SYMBOL')
 
 if __name__ == '__main__':
     unittest.main()

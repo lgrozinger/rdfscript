@@ -44,7 +44,7 @@ def p_form_types(p):
 
 ## assignment
 def p_assignment(p):
-    '''assignment : identifier '=' expr'''
+    '''assignment : name '=' expr'''
     p[0] = Assignment(p[1], p[3], location(p))
 
 ## pragma
@@ -59,7 +59,7 @@ def p_defaultprefix_pragma(p):
     p[0] = DefaultPrefixPragma(Prefix(p[2], l) , l)
 
 def p_pragma_import(p):
-    '''pragma : IMPORT identifier'''
+    '''pragma : IMPORT name'''
     p[0] = ImportPragma(p[2], location(p))
 
 def p_extension_no_args(p):
@@ -72,13 +72,13 @@ def p_extension_args(p):
 
 ## expansions and templates
 def p_template_with_specialisation(p):
-    '''template : identifier '(' exprlist ')' RARROW anon_expansion'''
+    '''template : name '(' exprlist ')' FROM anon_expansion'''
     anon = p[6]
     base = Expansion(p[1], anon.template, anon.args, [], anon.location)
     p[0] = Template(p[1], p[3], anon.body, base, location(p))
 
 def p_base_template(p):
-    '''template : identifier '(' exprlist ')' RARROW indentedinstancebody'''
+    '''template : name '(' exprlist ')' FROM indentedinstancebody'''
 
     p[0] = Template(p[1], p[3], p[6], None, location(p))
 
@@ -88,25 +88,25 @@ def p_expansion(p):
     p[0] = p[1]
 
 def p_named_expansion(p):
-    '''named_expansion : identifier ':' identifier '(' exprlist ')' indentedinstancebody'''
+    '''named_expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
     p[0] = Expansion(p[1], p[3], p[5], p[7], location(p))
 
 def p_anon_expansion(p):
-    '''anon_expansion : identifier '(' exprlist ')' indentedinstancebody'''
+    '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
     p[0] = Expansion(None, p[1], p[3], p[5], location(p))
 
 
 # def p_triple(p):
-#     '''triple : identifier identifier expr'''
+#     '''triple : name name expr'''
 #     p[0] = TripleObject(p[1], p[2], p[3], location(p))
 
 def p_expr(p):
-    '''expr : identifier
+    '''expr : name
             | literal'''
     p[0] = p[1]
 
 def p_indentedinstancebody(p):
-    '''indentedinstancebody : INDENT instancebody DEDENT'''
+    '''indentedinstancebody : '(' instancebody ')' '''
     p[0] = p[2]
 
 def p_empty_indentedinstancebody(p):
@@ -133,8 +133,8 @@ def p_bodystatement(p):
     p[0] = p[1]
 
 def p_property(p):
-    '''property : identifier '=' expr
-                | identifier '=' expansion'''
+    '''property : name '=' expr
+                | name '=' expansion'''
     p[0] = Property(p[1], p[3], location(p))
 
 ## lists
@@ -160,45 +160,32 @@ def p_emptylist(p):
     p[0] = []
 
 ## names
+def p_dotted_name(p):
+    '''name : dotted_list'''
+    l = location(p)
+    p[0] = Name(*p[1], location=l)
+
+def p_dotted_list_1(p):
+    '''dotted_list : identifier'''
+    p[0] = [p[1]]
+
+def p_dotted_list_n(p):
+    '''dotted_list : identifier '.' dotted_list'''
+    p[0] = [p[1]] + p[3]
+
 def p_identifier(p):
-    '''identifier : name
-                  | uri'''
-    p[0] = p[1]
-
-def p_full_name(p):
-    '''name : SYMBOL '.' SYMBOL
-             | uri '.' SYMBOL
-             | uri '.' uri
-             | SYMBOL '.' uri'''
-    l = location(p)
-    p[0] = Name(Prefix(p[1], l), LocalName(p[3], l), l)
-
-def p_localname(p):
-    '''name : SYMBOL'''
-    l = location(p)
-    p[0] = Name(None, LocalName(p[1], l), l)
-
-def p_name_self(p):
-    '''name : self'''
+    '''identifier : SYMBOL
+                  | uri
+                  | self'''
     p[0] = p[1]
 
 def p_self(p):
     '''self : SELF'''
     p[0] = Self(location(p))
 
-def p_self_full_name(p):
-    '''self : SELF '.' SYMBOL'''
-    l = location(p)
-    p[0] = Self(l, localname=LocalName(p[3], l))
-
-def p_self_full_uri(p):
-    '''self : SELF '.' uri'''
-    l = location(p)
-    p[0] = Self(l, localname=LocalName(p[3], l))
-
 def p_uri(p):
     '''uri : URI'''
-    p[0] = Uri(p[1], location(p))
+    p[0] = Uri(p[1], location=location(p))
 
 ## literal objects
 def p_literal(p):

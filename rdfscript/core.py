@@ -96,27 +96,21 @@ class LocalName(Node):
 
 class Name(Node):
 
-    def __init__(self, prefix, localname, location):
+    def __init__(self, *names, location=None):
 
         Node.__init__(self, location)
-        self._prefix = prefix
-        self._localname = localname
+        self._names = list(names)
 
     def __eq__(self, other):
         return (isinstance(other, Name) and
-                self.prefix == other.prefix and
-                self.localname == other.localname)
+                self.names == other.names)
 
     def __repr__(self):
-        return format("[NAME: %s.%s]" % (self.prefix, self.localname))
+        return format("[NAME: %s]" % (self.names))
 
     @property
-    def prefix(self):
-        return self._prefix
-
-    @property
-    def localname(self):
-        return self._localname
+    def names(self):
+        return self._names
 
     def prefixify(self, prefix):
         if not self._prefix:
@@ -128,7 +122,7 @@ class Name(Node):
 class Uri(Node):
     """Language object for a URI."""
 
-    def __init__(self, uri, location):
+    def __init__(self, uri, location=None):
         """
         uri can be one of:
           - string
@@ -192,20 +186,14 @@ class Value(Node):
 
 class Self(Node):
 
-    def __init__(self, location, localname=None):
-
+    def __init__(self, location=None):
         Node.__init__(self, location)
-        self._localname = localname or LocalName('', location)
 
     def __eq__(self, other):
         return isinstance(other, Self)
 
     def __repr__(self):
         return format("[SELF]")
-
-    @property
-    def localname(self):
-        return self._localname
 
     def uri(self, env):
         return Name(None, self.localname, self.location).uri(env)
