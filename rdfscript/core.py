@@ -133,6 +133,9 @@ class Value(Node):
     def value(self):
         return self._python_val
 
+    def evaluate(self, context):
+        return self.value
+
 class Self(Node):
 
     def __init__(self, location=None):
@@ -143,3 +146,6 @@ class Self(Node):
 
     def __repr__(self):
         return format("[SELF]")
+
+    def evaluate(self, context):
+        return context.self_uri
