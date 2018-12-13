@@ -3,7 +3,7 @@ import unittest
 from rdfscript.core import Value
 
 class TestCoreValue(unittest.TestCase):
-    
+
     def test_value_string(self):
 
         value = Value("string")

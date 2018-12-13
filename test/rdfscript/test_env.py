@@ -39,6 +39,16 @@ class EnvTest(unittest.TestCase):
         self.env.set_default_prefix(prefix)
         self.assertEqual(prefix, self.env.default_prefix)
 
+    def test_self_uri_init(self):
+
+        self.assertEqual(self.env.self_uri, Uri(self.env._rdf._g.identifier.toPython()))
+
+    def test_self_uri_set(self):
+
+        uri = Uri('setselfuri')
+        self.env.self_uri = uri
+        self.assertEqual(self.env.self_uri, uri)
+
     def test_assignment(self):
 
         uri = Uri('http://test.variable/#x')

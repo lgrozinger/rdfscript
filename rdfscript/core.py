@@ -50,12 +50,23 @@ class Name(Node):
     def names(self):
         return self._names
 
-    def prefixify(self, prefix):
-        if not self._prefix:
-            self._prefix = prefix
+    # def prefixify(self, prefix):
+    #     if not self._prefix:
+    #         self._prefix = prefix
 
-    def uri(self, env):
-        return env.resolve_name(self)
+    def evaluate(self, context):
+        uri = Uri('')
+        for name in self.names:
+            if isinstance(name, Self):
+                uri.extend(context.self_uri, delimiter='')
+            elif isinstance(name, Uri):
+                uri.extend(name, delimiter='')
+            elif isinstance(name, str):
+                uri.extend(Uri(name), delimiter='')
+
+            uri = context.lookup(uri) or uri
+
+        return uri
 
 class Uri(Node):
     """Language object for a URI."""
@@ -65,7 +76,6 @@ class Uri(Node):
         uri can be one of:
           - string
           - rdflib.URIRef object
-          - rdflib.Namespace object
           - Uri object
 
         uri is converted to a string
@@ -73,8 +83,6 @@ class Uri(Node):
         Node.__init__(self, location)
         if isinstance(uri, rdflib.URIRef):
             self._uri = uri.toPython()
-        elif isinstance(uri, rdflib.Namespace):
-            self._uri = rdflib.URIRef(uri).toPython()
         elif isinstance(uri, Uri):
             self._uri = uri.uri
         else:
@@ -99,6 +107,9 @@ class Uri(Node):
 
     def split(self):
         return re.split('#|/|:', self.uri)
+
+    def evaluate(self, context):
+        return self
 
 class Value(Node):
     """Language object for an RDF literal."""
@@ -132,6 +143,3 @@ class Self(Node):
 
     def __repr__(self):
         return format("[SELF]")
-
-    def uri(self, env):
-        return Name(None, self.localname, self.location).uri(env)

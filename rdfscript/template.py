@@ -4,9 +4,7 @@ import pdb
 from .core import (Node,
                    Name,
                    Uri,
-                   Self,
-                   LocalName,
-                   Prefix)
+                   Self)
 from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)

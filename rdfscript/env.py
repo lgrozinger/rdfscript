@@ -5,7 +5,6 @@ import logging
 
 from .core import Uri, Value
 
-from .evaluate import evaluate
 from .error import (RDFScriptError,
                     FailToImport,
                     PrefixError)
@@ -32,7 +31,8 @@ class Env(object):
         self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RDFData(serializer=serializer)
-        self._default_prefix = Prefix(Uri(self._rdf._g.identifier.toPython(), None), None)
+        self._default_prefix = Uri(self._rdf._g.identifier.toPython())
+        self._self = self._default_prefix
         self._prefix_set_by_user = False
 
         if filename:
@@ -44,6 +44,14 @@ class Env(object):
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
 
+    @property
+    def self_uri(self):
+        return self._self
+
+    @self_uri.setter
+    def self_uri(self, uri):
+        self._self = uri
+        
     @property
     def default_prefix(self):
         """The language object that set the default prefix."""
@@ -100,18 +108,6 @@ class Env(object):
 
     def get_extension(self, name):
         return self._extension_manager.get_extension(name)
-
-    def resolve_name(self, name):
-
-        prefix = name.prefix
-        local  = name.localname.uri(self)
-
-        if not prefix:
-            ns = self._default_prefix.uri(self)
-        else:
-            ns = prefix.uri(self)
-
-        return Uri(ns.uri + local.uri, name.location)
 
     def interpret(self, forms):
         result = None

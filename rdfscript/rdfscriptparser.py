@@ -8,9 +8,7 @@ from .reader import tokens
 from .core import (Uri,
                    Name,
                    Value,
-                   Self,
-                   Prefix,
-                   LocalName)
+                   Self)
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
