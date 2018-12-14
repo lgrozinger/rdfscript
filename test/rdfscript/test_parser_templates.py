@@ -6,14 +6,12 @@ import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
-from rdfscript.core import Name, Value, Uri
-from rdfscript.templating import Assignment
+from rdfscript.core import Name, Value, Uri, Assignment
 from rdfscript.template import (Template,
-                                Expansion,
                                 Parameter,
                                 Property)
 
-import test.test_helper as test
+from rdfscript.expansion import Expansion
 
 class ParserTemplateTest(unittest.TestCase):
 
@@ -26,69 +24,107 @@ class ParserTemplateTest(unittest.TestCase):
         None
 
     def test_template_noargs_nobase(self):
-        script = 'DNASequence() =>\n  encoding = <SBOL:IUPACDNA>'
+        script = 'DNASequence()(encoding = <SBOL:IUPACDNA>)'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(test.name('DNASequence'),
+        expected_template = Template(Name('DNASequence'),
                                      [],
-                                     [Property(test.name('encoding'),
-                                               Uri('SBOL:IUPACDNA', None),
-                                               None)],
-                                     None,
+                                     [Property(Name('encoding'),
+                                               Name(Uri('SBOL:IUPACDNA')))],
                                      None)
 
+        self.assertEqual(forms, [expected_template])
 
+    def test_empty_template_noargs_nobase(self):
+        script = 'DNASequence()'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name('DNASequence'),
+                                     [],
+                                     [],
+                                     None)
+
+        self.assertEqual(forms, [expected_template])
+
+    def test_empty_template_noargs(self):
+        script = 'DNASequence() from Other()'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name('DNASequence'),
+                                     [],
+                                     [],
+                                     Expansion(Name('DNASequence'),
+                                               Name('Other'),
+                                               [],
+                                               []))
+
+        self.assertEqual(forms, [expected_template])
+
+    def test_empty_template_args(self):
+        script = 'DNASequence(x, y, z) from Other(x)'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name('DNASequence'),
+                                     [Name('x'), Name('y'), Name('z')],
+                                     [],
+                                     Expansion(Name('DNASequence'),
+                                               Name('Other'),
+                                               [Name('x')],
+                                               []))
+
+        self.assertEqual(forms, [expected_template])
+
+    def test_empty_template_args_nobase(self):
+        script = 'DNASequence(x, y, z)'
+        forms  = self.parser.parse(script)
+
+        expected_template = Template(Name('DNASequence'),
+                                     [Name('x'), Name('y'), Name('z')],
+                                     [],
+                                     None)
         self.assertEqual(forms, [expected_template])
 
 
     def test_template_onearg_nobase(self):
-        script = 'DNASequence(x) =>\n  encoding = <SBOL:IUPACDNA>'
+        script = 'DNASequence(x)(encoding = <SBOL:IUPACDNA>)'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(test.name('DNASequence'),
-                                     [test.name('x')],
-                                     [Property(test.name('encoding'),
-                                               Uri('SBOL:IUPACDNA', None),
-                                               None)],
-                                     None,
+        expected_template = Template(Name('DNASequence'),
+                                     [Name('x')],
+                                     [Property(Name('encoding'),
+                                               Name(Uri('SBOL:IUPACDNA')))],
                                      None)
 
 
         self.assertEqual(forms, [expected_template])
 
     def test_template_multiargs_nobase(self):
-        script = 'DNASequence(x, y, z) =>\n  encoding = <SBOL:IUPACDNA>'
+        script = 'DNASequence(x, y, z)(encoding = <SBOL:IUPACDNA>)'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(test.name('DNASequence'),
-                                     [ test.name('x'),
-                                       test.name('y'),
-                                       test.name('z')],
-                                     [Property(test.name('encoding'),
-                                               Uri('SBOL:IUPACDNA', None),
-                                               None)],
-                                     None,
+        expected_template = Template(Name('DNASequence'),
+                                     [Name('x'),
+                                      Name('y'),
+                                      Name('z')],
+                                     [Property(Name('encoding'),
+                                               Name(Uri('SBOL:IUPACDNA')))],
                                      None)
 
 
         self.assertEqual(forms, [expected_template])
 
     def test_template_onearg_base(self):
-        script = 'B(x) =>\n  x = 42\nA(x) => B(x)\n  encoding = <SBOL:IUPACDNA>'
+        script = 'B(x)(x = 42)\nA(x) from B(x)(encoding = <SBOL:IUPACDNA>)'
         forms  = self.parser.parse(script)
 
-        expected_template = Template(test.name('A'),
-                                     [test.name('x')],
-                                     [Property(test.name('encoding'),
-                                                         Uri('SBOL:IUPACDNA', None),
-                                                         None)],
-                                     Expansion(test.name('A'),
-                                               test.name('B'),
-                                               [test.name('x')],
-                                               [],
-                                               None),
-                                     None)
-
+        expected_template = Template(Name('A'),
+                                     [Name('x')],
+                                     [Property(Name('encoding'),
+                                               Name(Uri('SBOL:IUPACDNA')))],
+                                     Expansion(Name('A'),
+                                               Name('B'),
+                                               [Name('x')],
+                                               []))
 
         self.assertEqual([forms[1]], [expected_template])
 

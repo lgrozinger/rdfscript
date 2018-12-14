@@ -8,17 +8,19 @@ from .reader import tokens
 from .core import (Uri,
                    Name,
                    Value,
-                   Self)
+                   Self,
+                   Assignment)
 
 from .pragma import (PrefixPragma,
                      DefaultPrefixPragma,
                      ImportPragma,
                      ExtensionPragma)
 
-from .templating import Assignment
 from .template import (Template,
-                       Expansion,
                        Property)
+
+from .expansion import (Expansion,
+                        Argument)
 
 from .error import RDFScriptSyntax
 
@@ -76,9 +78,9 @@ def p_template_with_specialisation(p):
     p[0] = Template(p[1], p[3], anon.body, base, location(p))
 
 def p_base_template(p):
-    '''template : name '(' exprlist ')' FROM indentedinstancebody'''
+    '''template : name '(' exprlist ')' indentedinstancebody'''
 
-    p[0] = Template(p[1], p[3], p[6], None, location(p))
+    p[0] = Template(p[1], p[3], p[5], None, location(p))
 
 def p_expansion(p):
     '''expansion : named_expansion

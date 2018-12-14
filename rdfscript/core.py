@@ -4,7 +4,7 @@ import re
 from .error import PrefixError
 
 class Node(object):
-    """Language object superclass."""
+    """Language object."""
     def __init__(self, location):
         """
         location is a Location object representing this language
@@ -58,13 +58,15 @@ class Name(Node):
         uri = Uri('')
         for name in self.names:
             if isinstance(name, Self):
-                uri.extend(context.self_uri, delimiter='')
+                uri.extend(context.current_self, delimiter='')
             elif isinstance(name, Uri):
                 uri.extend(name, delimiter='')
             elif isinstance(name, str):
                 uri.extend(Uri(name), delimiter='')
 
-            uri = context.lookup(uri) or uri
+            lookup = context.lookup(uri)
+            if lookup is not None:
+                uri = lookup
 
         return uri
 
@@ -148,4 +150,39 @@ class Self(Node):
         return format("[SELF]")
 
     def evaluate(self, context):
-        return context.self_uri
+        return context.current_self
+
+class Assignment(Node):
+
+    def __init__(self, name, value, location=None):
+
+        Node.__init__(self, location)
+        self._name  = name
+        self._value = value
+
+    def __eq__(self, other):
+        return (isinstance(other, Assignment) and
+                self.name == other.name and
+                self.value == other.value)
+
+    def __repr__(self):
+        return format("[ASSIGN: %s = %s]" %
+                      (self.name, self.value))
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        return self._value
+
+    def evaluate(self, context):
+        uri = self.name.evaluate(context)
+        if not isinstance(uri, Uri):
+            raise UnexpectedType(Uri, type(uri), self.location)
+
+        value = self.value.evaluate(context)
+
+        context.assign(uri, value)
+        return value

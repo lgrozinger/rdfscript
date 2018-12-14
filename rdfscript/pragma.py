@@ -46,7 +46,7 @@ class DefaultPrefixPragma(Node):
 
 class ImportPragma(Node):
 
-    def __init__(self, target, location):
+    def __init__(self, target, location=None):
         Node.__init__(self, location)
 
         self._target =  target
@@ -56,7 +56,7 @@ class ImportPragma(Node):
                 self.target == other.target)
 
     def __repr__(self):
-        return format("IMPORT DIRECTIVE: %s" % self.target)
+        return format("[IMPORT DIRECTIVE: %s]" % self.target)
 
     @property
     def target(self):
@@ -64,7 +64,7 @@ class ImportPragma(Node):
 
 class ExtensionPragma(Node):
 
-    def __init__(self, name, args, location):
+    def __init__(self, name, args, location=None):
         Node.__init__(self, location)
         self._name = name
         self._args = args
