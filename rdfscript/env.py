@@ -45,13 +45,13 @@ class Env(object):
         return format("%s" % self._rdf.serialise())
 
     @property
-    def self_uri(self):
+    def current_self(self):
         return self._self
 
-    @self_uri.setter
-    def self_uri(self, uri):
+    @current_self.setter
+    def current_self(self, uri):
         self._self = uri
-        
+
     @property
     def default_prefix(self):
         """The language object that set the default prefix."""

@@ -3,6 +3,7 @@ import logging
 
 import rdflib
 
+from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.core import (Name,
                             Value,
@@ -12,6 +13,7 @@ class EnvTest(unittest.TestCase):
 
     def setUp(self):
         self.env = Env()
+        self.parser = RDFScriptParser()
 
     def tearDown(self):
         None
@@ -41,7 +43,7 @@ class EnvTest(unittest.TestCase):
 
     def test_self_uri_init(self):
 
-        self.assertEqual(self.env.self_uri, Uri(self.env._rdf._g.identifier.toPython()))
+        self.assertEqual(self.env.current_self, Uri(self.env._rdf._g.identifier.toPython()))
 
     def test_self_uri_set(self):
 
@@ -66,18 +68,11 @@ class EnvTest(unittest.TestCase):
         self.env.assign(uri, value)
         self.assertEqual(self.env.lookup(uri), value)
 
-
-    @unittest.skip("Not yet refactored template")
     def test_template_binding(self):
 
-        template = Template(Name(None, 'template', None),
-                            [Name(None, 'x', None)],
-                            [Property(Name(None, 'x', None), Value(42, None), None)],
-                            None,
-                            None)
+        template = self.parser.parse('t()(x = 1 y = 2)')[0]
+        self.assertFalse(self.env.lookup_template(template.name.evaluate(self.env)))
 
-        evaluate(template, self.env)
-
-        stored_template = self.env.lookup_template(self.env.resolve_name(None, 'template'))
-
-        self.assertEqual(stored_template, template)
+        self.env.assign_template(template.name.evaluate(self.env), template.as_triples(self.env))
+        self.assertEqual(self.env.lookup_template(template.name.evaluate(self.env)),
+                         template.as_triples(self.env))

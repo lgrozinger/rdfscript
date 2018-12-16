@@ -31,7 +31,8 @@ class ParserTemplateTest(unittest.TestCase):
                                      [],
                                      [Property(Name('encoding'),
                                                Name(Uri('SBOL:IUPACDNA')))],
-                                     None)
+                                     None,
+                                     [])
 
         self.assertEqual(forms, [expected_template])
 
@@ -42,7 +43,8 @@ class ParserTemplateTest(unittest.TestCase):
         expected_template = Template(Name('DNASequence'),
                                      [],
                                      [],
-                                     None)
+                                     None,
+                                     [])
 
         self.assertEqual(forms, [expected_template])
 
@@ -53,10 +55,8 @@ class ParserTemplateTest(unittest.TestCase):
         expected_template = Template(Name('DNASequence'),
                                      [],
                                      [],
-                                     Expansion(Name('DNASequence'),
-                                               Name('Other'),
-                                               [],
-                                               []))
+                                     Name('Other'),
+                                     [])
 
         self.assertEqual(forms, [expected_template])
 
@@ -67,10 +67,8 @@ class ParserTemplateTest(unittest.TestCase):
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'), Name('y'), Name('z')],
                                      [],
-                                     Expansion(Name('DNASequence'),
-                                               Name('Other'),
-                                               [Name('x')],
-                                               []))
+                                     Name('Other'),
+                                     [Name('x')])
 
         self.assertEqual(forms, [expected_template])
 
@@ -81,7 +79,9 @@ class ParserTemplateTest(unittest.TestCase):
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'), Name('y'), Name('z')],
                                      [],
-                                     None)
+                                     None,
+                                     [])
+
         self.assertEqual(forms, [expected_template])
 
 
@@ -93,8 +93,8 @@ class ParserTemplateTest(unittest.TestCase):
                                      [Name('x')],
                                      [Property(Name('encoding'),
                                                Name(Uri('SBOL:IUPACDNA')))],
-                                     None)
-
+                                     None,
+                                     [])
 
         self.assertEqual(forms, [expected_template])
 
@@ -108,8 +108,8 @@ class ParserTemplateTest(unittest.TestCase):
                                       Name('z')],
                                      [Property(Name('encoding'),
                                                Name(Uri('SBOL:IUPACDNA')))],
-                                     None)
-
+                                     None,
+                                     [])
 
         self.assertEqual(forms, [expected_template])
 
@@ -121,10 +121,8 @@ class ParserTemplateTest(unittest.TestCase):
                                      [Name('x')],
                                      [Property(Name('encoding'),
                                                Name(Uri('SBOL:IUPACDNA')))],
-                                     Expansion(Name('A'),
-                                               Name('B'),
-                                               [Name('x')],
-                                               []))
+                                     Name('B'),
+                                     [Name('x')])
 
         self.assertEqual([forms[1]], [expected_template])
 

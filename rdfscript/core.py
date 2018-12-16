@@ -56,13 +56,18 @@ class Name(Node):
 
     def evaluate(self, context):
         uri = Uri('')
-        for name in self.names:
-            if isinstance(name, Self):
-                uri.extend(context.current_self, delimiter='')
-            elif isinstance(name, Uri):
-                uri.extend(name, delimiter='')
-            elif isinstance(name, str):
-                uri.extend(Uri(name), delimiter='')
+        for n in range(0, len(self.names)):
+            if isinstance(self.names[n], Self):
+                current_self = context.current_self
+                if isinstance(current_self, Uri):
+                    uri.extend(context.current_self, delimiter='')
+                elif isinstance(current_self, Self):
+                    rest = self.names[n:]
+                    return Name(uri, *rest)
+            elif isinstance(self.names[n], Uri):
+                uri.extend(self.names[n], delimiter='')
+            elif isinstance(self.names[n], str):
+                uri.extend(Uri(self.names[n]), delimiter='')
 
             lookup = context.lookup(uri)
             if lookup is not None:
@@ -123,6 +128,7 @@ class Value(Node):
 
     def __eq__(self, other):
         return (isinstance(other, Value) and
+                type(self.value) == type(other.value) and
                 self.value == other.value)
 
     def __repr__(self):
@@ -136,7 +142,7 @@ class Value(Node):
         return self._python_val
 
     def evaluate(self, context):
-        return self.value
+        return self
 
 class Self(Node):
 
