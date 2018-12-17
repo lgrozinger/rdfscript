@@ -3,8 +3,8 @@ import unittest
 from rdfscript.rdfscriptparser import RDFScriptParser
 
 from rdfscript.core import Name, Value, Uri
-from rdfscript.expansion import Expansion
-from rdfscript.template import Property
+from rdfscript.template import (Property,
+                                Expansion)
 
 class ParserExpansionTest(unittest.TestCase):
 
@@ -45,6 +45,18 @@ class ParserExpansionTest(unittest.TestCase):
                            [])
 
         self.assertEqual(expect, forms[0])
+
+    def test_expansion_expansion_as_arg(self):
+
+        forms = self.parser.parse('e is a a(f is a b(12345))')
+        f = self.parser.parse('f is a b(12345)')[0]
+        expect = Expansion(Name('e'),
+                           Name('a'),
+                           [f],
+                           [])
+
+        self.assertEqual(expect, forms[0])
+
 
     def test_expansion_no_args_with_body(self):
 

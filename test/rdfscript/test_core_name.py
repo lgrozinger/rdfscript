@@ -104,14 +104,14 @@ class CoreNameTest(unittest.TestCase):
     def test_name_evaluate_unbound_unresolved_self_prefix(self):
 
         name = Name(Self(), 'first')
-        self.env.current_self = Self()
+        self.env.current_self = Name(Self())
 
-        self.assertEqual(name.evaluate(self.env), Name(Uri(''), Self(), 'first'))
+        self.assertEqual(name.evaluate(self.env), Name(Self(), 'first'))
 
     def test_name_evaluate_unbound_unresolved_self_suffix(self):
 
         name = Name('first', Uri('second'), Self())
-        self.env.current_self = Self()
+        self.env.current_self = Name(Self())
 
         self.assertEqual(name.evaluate(self.env), Name(Uri('firstsecond'), Self()))
 
@@ -132,3 +132,9 @@ class CoreNameTest(unittest.TestCase):
         self.env.assign(Name('first', 'second').evaluate(self.env), value)
 
         self.assertEqual(name.evaluate(self.env), Uri('http://first.org/#second#third'))
+
+    def test_name_self_equals_self(self):
+
+        self.assertEqual(Name(Self()), Self())
+        self.assertEqual(Self(), Name(Self()))
+        self.assertNotEqual(Name(Self(), 'x'), Self())

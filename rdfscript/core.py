@@ -40,8 +40,10 @@ class Name(Node):
         self._names = list(names)
 
     def __eq__(self, other):
-        return (isinstance(other, Name) and
-                self.names == other.names)
+        return ((isinstance(other, Name) and
+                 self.names == other.names) or
+                (isinstance(other, Self) and
+                 self.names == [Self()]))
 
     def __repr__(self):
         return format("[NAME: %s]" % (self.names))
@@ -55,15 +57,18 @@ class Name(Node):
     #         self._prefix = prefix
 
     def evaluate(self, context):
-        uri = Uri('')
+        uri = Uri('', location=self.location)
         for n in range(0, len(self.names)):
             if isinstance(self.names[n], Self):
                 current_self = context.current_self
                 if isinstance(current_self, Uri):
                     uri.extend(context.current_self, delimiter='')
-                elif isinstance(current_self, Self):
+                elif isinstance(current_self, Name):
                     rest = self.names[n:]
-                    return Name(uri, *rest)
+                    if n > 0:
+                        return Name(uri, *rest, location=self.location)
+                    else:
+                        return Name(*rest, location= self.location)
             elif isinstance(self.names[n], Uri):
                 uri.extend(self.names[n], delimiter='')
             elif isinstance(self.names[n], str):
@@ -150,7 +155,9 @@ class Self(Node):
         Node.__init__(self, location)
 
     def __eq__(self, other):
-        return isinstance(other, Self)
+        return (isinstance(other, Self) or
+                (isinstance(other, Name) and
+                 other.names == [Self()]))
 
     def __repr__(self):
         return format("[SELF]")

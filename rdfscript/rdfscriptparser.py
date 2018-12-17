@@ -18,10 +18,9 @@ from .pragma import (PrefixPragma,
                      ExtensionPragma)
 
 from .template import (Template,
-                       Property)
-
-from .expansion import (Expansion,
-                        Argument)
+                       Property,
+                       Expansion,
+                       Argument)
 
 from .error import RDFScriptSyntax
 
@@ -39,7 +38,6 @@ def p_form_types(p):
     '''form : assignment
             | pragma
             | template
-            | named_expansion
             | expr'''
     p[0] = p[1]
 
@@ -81,19 +79,9 @@ def p_base_template(p):
 
     p[0] = Template(p[1], p[3], p[5], None, [], location(p))
 
-def p_expansion(p):
-    '''expansion : named_expansion
-                 | anon_expansion'''
-    p[0] = p[1]
-
-def p_named_expansion(p):
-    '''named_expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
+def p__expansion(p):
+    '''expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
     p[0] = Expansion(p[1], p[3], p[5], p[7], location(p))
-
-def p_anon_expansion(p):
-    '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
-    p[0] = Expansion(None, p[1], p[3], p[5], location(p))
-
 
 # def p_triple(p):
 #     '''triple : name name expr'''
@@ -101,7 +89,8 @@ def p_anon_expansion(p):
 
 def p_expr(p):
     '''expr : name
-            | literal'''
+            | literal
+            | expansion'''
     p[0] = p[1]
 
 def p_indentedinstancebody(p):
@@ -127,13 +116,13 @@ def p_empty_bodystatements(p):
 
 def p_bodystatement(p):
     '''bodystatement : property
-                     | named_expansion
+                     | expansion
                      | extension'''
     p[0] = p[1]
 
 def p_property(p):
-    '''property : name '=' expr
-                | name '=' expansion'''
+    '''property : name '=' expr'''
+#                | name '=' expansion'''
     p[0] = Property(p[1], p[3], location=location(p))
 
 ## lists

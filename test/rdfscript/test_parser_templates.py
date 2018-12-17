@@ -9,9 +9,8 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.core import Name, Value, Uri, Assignment
 from rdfscript.template import (Template,
                                 Parameter,
-                                Property)
-
-from rdfscript.expansion import Expansion
+                                Property,
+                                Expansion)
 
 class ParserTemplateTest(unittest.TestCase):
 
@@ -125,6 +124,90 @@ class ParserTemplateTest(unittest.TestCase):
                                      [Name('x')])
 
         self.assertEqual([forms[1]], [expected_template])
+
+    def test_expansion_in_property(self):
+        script = 'A()(x = e is a B())'
+        forms = self.parser.parse(script)
+
+        e = self.parser.parse('e is a B()')[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [Property(Name('x'), e)],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, forms[0])
+
+    def test_expansion_in_property_with_body(self):
+        script = 'A()(x = e is a B()(y = 12345))'
+        forms = self.parser.parse(script)
+
+        e = self.parser.parse('e is a B()(y = 12345)')[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [Property(Name('x'), e)],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, forms[0])
+
+    def test_expansion_in_body_with_body(self):
+        script = 'A()(e is a B()(y = 12345))'
+        forms = self.parser.parse(script)
+
+        e = self.parser.parse('e is a B()(y = 12345)')[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [e],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, forms[0])
+
+    def test_expansion_in_body(self):
+        script = 'A()(e is a B())'
+        forms = self.parser.parse(script)
+
+        e = self.parser.parse('e is a B()')[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [e],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, forms[0])
+
+    def test_expansion_in_property_with_args(self):
+        script = 'A()(x = e is a B(12345))'
+        forms = self.parser.parse(script)
+
+        e = self.parser.parse('e is a B(12345)')[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [Property(Name('x'), e)],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, forms[0])
+
+    def test_expansion_in_body_with_args(self):
+        script = 'A()(e is a B(12345))'
+        forms = self.parser.parse(script)
+
+        e = self.parser.parse('e is a B(12345)')[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [e],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, forms[0])
 
 if __name__ == '__main__':
     unittest.main()

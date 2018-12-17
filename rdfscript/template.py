@@ -1,6 +1,3 @@
-import rdflib
-import pdb
-
 from .core import (Node,
                    Name,
                    Uri,
@@ -9,7 +6,7 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
-from .expansion import Expansion, Argument
+import pdb
 
 class Template(Node):
 
@@ -102,7 +99,7 @@ class Template(Node):
         for statement in self.body:
             statement.substitute_params(self.parameters)
             old_self = env.current_self
-            env.current_self = Self()
+            env.current_self = Name(Self())
             triples += statement.as_triples(env)
             env.current_self = old_self
         return triples
@@ -176,7 +173,14 @@ class Property(Node):
 
     def as_triples(self, context):
 
-        return [(Self(), self.name.evaluate(context), self.value.evaluate(context))]
+        triples = []
+        ### both (names)??? and values can be expansions as well????
+        if isinstance(self.value, Expansion):
+            triples += self.value.as_triples(context)
+            triples += [(context.current_self, self.name.evaluate(context), self.value.name.evaluate(context))]
+            return triples
+        else:
+            return [(context.current_self, self.name.evaluate(context), self.value.evaluate(context))]
 
 def marshal(arguments, triple):
     (s, p, o) = triple
@@ -186,3 +190,113 @@ def marshal(arguments, triple):
         o = argument.marshal(o)
 
     return (s, p, o)
+
+class Expansion(Node):
+
+    def __init__(self, name, template, args, body, location=None):
+
+        super().__init__(location)
+        self._template      = template
+        self._name          = name
+        self._args          = []
+        for arg in args:
+            if isinstance(arg, Argument):
+                self._args.append(Argument(arg.value, args.index(arg), location))
+            else:
+                self._args.append(Argument(arg, args.index(arg), location))
+
+        self._extensions    = []
+        self._body          = []
+        for statement in body:
+            if isinstance(statement, ExtensionPragma):
+                self._extensions.append(statement)
+            else:
+                self._body.append(statement)
+
+    def __eq__(self, other):
+        return (isinstance(other, Expansion) and
+                self.template == other.template and
+                self.name == other.name and
+                self.args == other.args and
+                self.body == other.body)
+
+    def __repr__(self):
+        return (f"<RDFscript EXPANSION: {self.name}\n"
+                f" Based on:\n  {self.template}\n"
+                f" With Args:\n  {self.args}\n"
+                f" And body:\n  {self.body}\n")
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def template(self):
+        return self._template
+
+    @property
+    def args(self):
+        return self._args
+
+    @property
+    def body(self):
+        return self._body
+
+    def get_extensions(self, env):
+        template = env.lookup_template(self.template)
+        return template.get_extensions(env) + self._extensions
+
+    def as_triples(self, env):
+
+        try:
+            triples = env.lookup_template(self.template.evaluate(env))
+            triples = [marshal(self.args, triple) for triple in triples]
+        except KeyError:
+            raise TemplateNotFound(self.template, self.template.location)
+
+        old_self = env.current_self
+        env.current_self = self.name.evaluate(env)
+        for statement in self.body:
+            triples += statement.as_triples(env)
+
+        triples = [(s.evaluate(env), p.evaluate(env), o.evaluate(env))
+                    for (s, p, o) in triples]
+
+        env.current_self = old_self
+
+        return triples
+
+class Argument(Node):
+
+    def __init__(self, value_expr, position, location=None):
+
+        super().__init__(location)
+        self._value    = value_expr
+        self._position = position
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
+
+    @property
+    def position(self):
+        return self._position
+
+    def __eq__(self, other):
+        return (isinstance(other, Argument) and
+                self.value == other.value and
+                self.position == other.position)
+
+    def __repr__(self):
+        return format("[RDFscript ARG: %s]" % self._value)
+
+    def marshal(self, param):
+        if (isinstance(param, Parameter) and
+            param.position == self.position):
+            return self.value
+        else:
+            return param

@@ -1,8 +1,8 @@
 import unittest
 
 from rdfscript.core import Value
-from rdfscript.template import Parameter
-from rdfscript.expansion import Argument
+from rdfscript.template import (Parameter,
+                                Argument)
 
 class TestArgumentClass(unittest.TestCase):
 
