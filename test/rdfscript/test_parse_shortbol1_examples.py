@@ -1,7 +1,4 @@
 import unittest
-import logging
-import ply.yacc as yacc
-import ply.lex as leex
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
@@ -9,7 +6,7 @@ from rdfscript.pragma import (PrefixPragma,
                               DefaultPrefixPragma,
                               ImportPragma)
 
-from rdfscript.templating import Assignment
+from rdfscript.core import Assignment
 from rdfscript.template import (Template,
                                 Expansion)
 

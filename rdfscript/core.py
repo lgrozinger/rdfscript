@@ -52,10 +52,6 @@ class Name(Node):
     def names(self):
         return self._names
 
-    # def prefixify(self, prefix):
-    #     if not self._prefix:
-    #         self._prefix = prefix
-
     def evaluate(self, context):
         uri = Uri('', location=self.location)
         for n in range(0, len(self.names)):
@@ -64,7 +60,7 @@ class Name(Node):
                 if isinstance(current_self, Uri):
                     uri.extend(context.current_self, delimiter='')
                 elif isinstance(current_self, Name):
-                    rest = self.names[n:]
+                    rest = current_self.names + self.names[n + 1:]
                     if n > 0:
                         return Name(uri, *rest, location=self.location)
                     else:

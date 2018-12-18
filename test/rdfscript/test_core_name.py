@@ -138,3 +138,30 @@ class CoreNameTest(unittest.TestCase):
         self.assertEqual(Name(Self()), Self())
         self.assertEqual(Self(), Name(Self()))
         self.assertNotEqual(Name(Self(), 'x'), Self())
+
+    def test_name_self_in_context(self):
+
+        name = Name(Self(), 'name')
+        context = Uri('self')
+
+        self.env.current_self = context
+
+        self.assertEqual(name.evaluate(self.env), Uri('selfname'))
+
+    def test_name_self_in_unresolved_context(self):
+
+        name = Name(Self(), 'name')
+        context = Name(Self())
+
+        self.env.current_self = context
+
+        self.assertEqual(name.evaluate(self.env), Name(Self(), 'name'))
+
+    def test_name_self_in_unresolved_context_self_prefix(self):
+
+        name = Name(Self(), 'name')
+        context = Name(Self(), 'name')
+
+        self.env.current_self = context
+
+        self.assertEqual(name.evaluate(self.env), Name(Self(), 'name', 'name'))

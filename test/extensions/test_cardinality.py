@@ -5,14 +5,13 @@ from extensions.triples import TriplePack
 from extensions.cardinality import (AtLeastOne,
                                     CardinalityError)
 from rdfscript.core import (Uri,
-                            Value)
+                            Value,
+                            Name)
 
 from rdfscript.template import (Template,
                                 Property,
                                 Expansion)
 from rdfscript.env import Env
-
-import test.test_helper as test
 
 class CardinalityExtensionsTest(unittest.TestCase):
 
@@ -23,30 +22,25 @@ class CardinalityExtensionsTest(unittest.TestCase):
         self.env.assign(self.v_uri,
                         Value(42, None))
 
-        self.template = Template(test.name('A'),
-                                  [test.name('x'),
-                                   test.name('y')],
-                                  [Property(test.name('x'),
-                                            Value(42, None),
-                                            None),
-                                   Property(Uri('http://example.eg/predicate', None),
-                                            test.name('y'),
-                                            None)],
+        self.template = Template(Name('A'),
+                                  [Name('x'),
+                                   Name('y')],
+                                  [Property(Name('x'),
+                                            Value(42)),
+                                   Property(Uri('http://example.eg/predicate'),
+                                            Name('y'))],
                                   None,
-                                  None)
+                                  [])
 
-        self.expansion = Expansion(test.name('e'),
-                                   test.name('A'),
-                                   [Value(1, None),
-                                    Value(2, None)],
-                                   [],
-                                   None)
+        self.expansion = Expansion(Name('e'),
+                                   Name('A'),
+                                   [Value(1),
+                                    Value(2)],
+                                   [])
 
-        self.template.parameterise()
-        self.template.de_name(self.env)
-        self.env.assign_template(self.template.name, self.template)
-
-        self.expansion.de_name(self.env)
+        self.env.assign_template(self.template.name.evaluate(self.env),
+                                 self.template.as_triples(self.env))
+        
         triples = self.expansion.as_triples(self.env)
         bindings = self.env._symbol_table
         templates = self.env._template_table
@@ -58,10 +52,10 @@ class CardinalityExtensionsTest(unittest.TestCase):
         triples = list(self.pack.triples)
 
         with self.assertRaises(CardinalityError):
-            ext = AtLeastOne(Uri('http://test.eg/#notthere', None))
+            ext = AtLeastOne(Uri('http://test.eg/#notthere'))
             ext.run(self.pack)
 
-        ext = AtLeastOne(Uri('http://example.eg/predicate', None))
+        ext = AtLeastOne(Uri('http://example.eg/predicate'))
         ext.run(self.pack)
 
         self.assertEqual(triples, self.pack.triples)

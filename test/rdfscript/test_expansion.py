@@ -135,8 +135,12 @@ class TestExpansionClass(unittest.TestCase):
         self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
         self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
 
-        expect = [(Name('e').evaluate(self.env), Name('z').evaluate(self.env), Name('e').evaluate(self.env)),
-                  (Name('f').evaluate(self.env), Name('x').evaluate(self.env), Name('e').evaluate(self.env))]
+        expect = [(Name('e').evaluate(self.env),
+                   Name('z').evaluate(self.env),
+                   Name('e').evaluate(self.env)),
+                  (Name('f').evaluate(self.env),
+                   Name('x').evaluate(self.env),
+                   Name('e').evaluate(self.env))]
 
         self.assertEqual(expect, f.as_triples(self.env))
 
@@ -186,8 +190,12 @@ class TestExpansionClass(unittest.TestCase):
         self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
         self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
 
-        expect = [(Name('f', 'e').evaluate(self.env), Name('z').evaluate(self.env), Name('f', 'e').evaluate(self.env)),
-                  (Name('f').evaluate(self.env), Name('x').evaluate(self.env), Name('f', 'e').evaluate(self.env))]
+        expect = [(Name('f', 'e').evaluate(self.env),
+                   Name('z').evaluate(self.env),
+                   Name('f', 'e').evaluate(self.env)),
+                  (Name('f').evaluate(self.env),
+                   Name('x').evaluate(self.env),
+                   Name('f', 'e').evaluate(self.env))]
 
         self.assertEqual(expect, f.as_triples(self.env))
 

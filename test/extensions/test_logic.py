@@ -8,48 +8,42 @@ from extensions.error import ExtensionError
 from extensions.logic import (And,
                               Or)
 from rdfscript.core import (Uri,
-                            Value)
+                            Value,
+                            Name)
 
 from rdfscript.template import (Template,
                                 Property,
                                 Expansion)
 from rdfscript.env import Env
 
-import test.test_helper as test
-
 class LogicExtensionsTest(unittest.TestCase):
 
     def setUp(self):
         self.env = Env()
 
-        self.v_uri = Uri('http://test.triplepack/#variable', None)
+        self.v_uri = Uri('http://test.triplepack/#variable')
         self.env.assign(self.v_uri,
-                        Value(42, None))
+                        Value(42))
 
-        self.template = Template(test.name('A'),
-                                  [test.name('x'),
-                                   test.name('y')],
-                                  [Property(test.name('x'),
-                                            Value(42, None),
-                                            None),
-                                   Property(Uri('http://example.eg/predicate', None),
-                                            test.name('y'),
-                                            None)],
+        self.template = Template(Name('A'),
+                                  [Name('x'),
+                                   Name('y')],
+                                  [Property(Name('x'),
+                                            Value(42)),
+                                   Property(Uri('http://example.eg/predicate'),
+                                            Name('y'))],
                                   None,
-                                  None)
+                                  [])
 
-        self.expansion = Expansion(test.name('e'),
-                                   test.name('A'),
-                                   [Value(1, None),
-                                    Value(2, None)],
-                                   [],
-                                   None)
+        self.expansion = Expansion(Name('e'),
+                                   Name('A'),
+                                   [Value(1),
+                                    Value(2)],
+                                   [])
 
-        self.template.parameterise()
-        self.template.de_name(self.env)
-        self.env.assign_template(self.template.name, self.template)
+        self.env.assign_template(self.template.name.evaluate(self.env),
+                                 self.template.as_triples(self.env))
 
-        self.expansion.de_name(self.env)
         triples = self.expansion.as_triples(self.env)
         bindings = self.env._symbol_table
         templates = self.env._template_table
