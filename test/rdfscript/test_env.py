@@ -1,13 +1,11 @@
 import unittest
-import logging
-
-import rdflib
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.core import (Name,
                             Value,
                             Uri)
+
 
 class EnvTest(unittest.TestCase):
 
