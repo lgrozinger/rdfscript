@@ -1,13 +1,15 @@
 import unittest
 
-from rdfscript.core import Value
+from rdfscript.env import Env
+from rdfscript.core import Value, Name
 from rdfscript.template import (Parameter,
                                 Argument)
+
 
 class TestArgumentClass(unittest.TestCase):
 
     def setUp(self):
-        None
+        self.env = Env()
 
     def tearDown(self):
         None
@@ -32,3 +34,15 @@ class TestArgumentClass(unittest.TestCase):
         a = Argument(Value(1), 0)
 
         self.assertEqual(a.marshal(p), p)
+
+    def test_evaluate(self):
+
+        a = Argument(Value(1), 0)
+
+        self.assertEqual(Value(1), a.evaluate(self.env))
+
+    def test_evaluate_name(self):
+
+        a = Argument(Name('x'), 1)
+
+        self.assertEqual(Name('x').evaluate(self.env), a.evaluate(self.env))

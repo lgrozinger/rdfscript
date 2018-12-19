@@ -6,7 +6,6 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
-import pdb
 
 class Template(Node):
 
@@ -94,7 +93,13 @@ class Template(Node):
         if self.base is not None:
             triples += env.lookup_template(self.base.evaluate(env))
             self.forward_parameters()
-            triples = [marshal(self.args, triple) for triple in triples]
+
+            eval_args = [Argument(arg.value.evaluate(env),
+                                  arg.position,
+                                  location=arg.location)
+                         for arg in self.args]
+
+            triples = [marshal(eval_args, triple) for triple in triples]
 
         for statement in self.body:
             statement.substitute_params(self.parameters)
@@ -104,13 +109,14 @@ class Template(Node):
             env.current_self = old_self
         return triples
 
+
 class Parameter(Node):
 
     def __init__(self, name_string, position, location=None):
 
         super().__init__(location)
         self._param_name = name_string
-        self._position   = position
+        self._position = position
 
     @property
     def name(self):
@@ -138,6 +144,7 @@ class Parameter(Node):
 
     def evaluate(self, env):
         return self
+
 
 class Property(Node):
 
@@ -177,36 +184,36 @@ class Property(Node):
         ### both (names)??? and values can be expansions as well????
         if isinstance(self.value, Expansion):
             triples += self.value.as_triples(context)
-            triples += [(context.current_self, self.name.evaluate(context), self.value.name.evaluate(context))]
+            triples += [(context.current_self,
+                         self.name.evaluate(context),
+                         self.value.name.evaluate(context))]
             return triples
         else:
-            return [(context.current_self, self.name.evaluate(context), self.value.evaluate(context))]
+            return [(context.current_self,
+                     self.name.evaluate(context),
+                     self.value.evaluate(context))]
 
-def marshal(arguments, triple):
-    (s, p, o) = triple
-    for argument in arguments:
-        s = argument.marshal(s)
-        p = argument.marshal(p)
-        o = argument.marshal(o)
-
-    return (s, p, o)
 
 class Expansion(Node):
 
     def __init__(self, name, template, args, body, location=None):
 
         super().__init__(location)
-        self._template      = template
-        self._name          = name
-        self._args          = []
+        self._template = template
+        self._name = name
+        self._args = []
         for arg in args:
             if isinstance(arg, Argument):
-                self._args.append(Argument(arg.value, args.index(arg), location))
+                self._args.append(Argument(arg.value,
+                                           args.index(arg),
+                                           location))
             else:
-                self._args.append(Argument(arg, args.index(arg), location))
+                self._args.append(Argument(arg,
+                                           args.index(arg),
+                                           location))
 
-        self._extensions    = []
-        self._body          = []
+        self._extensions = []
+        self._body = []
         for statement in body:
             if isinstance(statement, ExtensionPragma):
                 self._extensions.append(statement)
@@ -260,18 +267,24 @@ class Expansion(Node):
             triples += statement.as_triples(env)
 
         triples = [(s.evaluate(env), p.evaluate(env), o.evaluate(env))
-                    for (s, p, o) in triples]
+                   for (s, p, o) in triples]
 
         env.current_self = old_self
 
         return triples
+
+    def evaluate(self, env):
+        env.add_triples(self.as_triples(env))
+
+        return self.name.evaluate(env)
+
 
 class Argument(Node):
 
     def __init__(self, value_expr, position, location=None):
 
         super().__init__(location)
-        self._value    = value_expr
+        self._value = value_expr
         self._position = position
 
     @property
@@ -295,8 +308,20 @@ class Argument(Node):
         return format("[RDFscript ARG: %s]" % self._value)
 
     def marshal(self, param):
-        if (isinstance(param, Parameter) and
-            param.position == self.position):
+        if isinstance(param, Parameter) and param.position == self.position:
             return self.value
         else:
             return param
+
+    def evaluate(self, context):
+        return self.value.evaluate(context)
+
+
+def marshal(arguments, triple):
+    (s, p, o) = triple
+    for argument in arguments:
+        s = argument.marshal(s)
+        p = argument.marshal(p)
+        o = argument.marshal(o)
+
+    return (s, p, o)

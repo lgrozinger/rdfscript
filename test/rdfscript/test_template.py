@@ -8,13 +8,11 @@ from rdfscript.core import (Name,
                             Value)
 
 from rdfscript.template import (Template,
-                                Property,
                                 Parameter,
                                 Argument)
 
-from rdfscript.pragma import ExtensionPragma
-
 from rdfscript.error import UnexpectedType
+
 
 class TemplateClassTest(unittest.TestCase):
 
@@ -72,7 +70,9 @@ class TemplateClassTest(unittest.TestCase):
     def test_as_triples_simple_triple(self):
 
         template = self.parser.parse('t()(x = z)')[0]
-        expect = [(Self(), Name('x').evaluate(self.env), Name('z').evaluate(self.env))]
+        expect = [(Self(),
+                   Name('x').evaluate(self.env),
+                   Name('z').evaluate(self.env))]
 
         self.assertEqual(template.as_triples(self.env), expect)
 
@@ -86,8 +86,12 @@ class TemplateClassTest(unittest.TestCase):
     def test_as_triples_multiple_properties(self):
 
         template = self.parser.parse('t()(x = y z = 12345)')[0]
-        expect = [(Self(), Name('x').evaluate(self.env), Name('y').evaluate(self.env)),
-                  (Self(), Name('z').evaluate(self.env), Value(12345))]
+        expect = [(Self(),
+                   Name('x').evaluate(self.env),
+                   Name('y').evaluate(self.env)),
+                  (Self(),
+                   Name('z').evaluate(self.env),
+                   Value(12345))]
 
         self.assertEqual(template.as_triples(self.env), expect)
 
@@ -97,7 +101,9 @@ class TemplateClassTest(unittest.TestCase):
         base = forms[0]
         specialised = forms[1]
 
-        self.env.assign_template(base.name.evaluate(self.env), base.as_triples(self.env))
+        self.env.assign_template(base.name.evaluate(self.env),
+                                 base.as_triples(self.env))
+
         expect = [(Self(), Name('x').evaluate(self.env), Value(1)),
                   (Self(), Name('y').evaluate(self.env), Value(2))]
 
@@ -105,13 +111,18 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_base_chain(self):
 
-        forms = self.parser.parse('a()(x=1) b() from a()(y=2) c() from b()(z=3)')
+        forms = self.parser.parse('a()(x=1)' +
+                                  'b() from a()(y=2)' +
+                                  'c() from b()(z=3)')
         a = forms[0]
         b = forms[1]
         c = forms[2]
 
-        self.env.assign_template(a.name.evaluate(self.env), a.as_triples(self.env))
-        self.env.assign_template(b.name.evaluate(self.env), b.as_triples(self.env))
+        self.env.assign_template(a.name.evaluate(self.env),
+                                 a.as_triples(self.env))
+        self.env.assign_template(b.name.evaluate(self.env),
+                                 b.as_triples(self.env))
+
         expect = [(Self(), Name('x').evaluate(self.env), Value(1)),
                   (Self(), Name('y').evaluate(self.env), Value(2)),
                   (Self(), Name('z').evaluate(self.env), Value(3))]
@@ -251,3 +262,23 @@ class TemplateClassTest(unittest.TestCase):
 
         self.assertEqual(expect_s, s.as_triples(self.env))
         self.assertEqual(expect_t, t.as_triples(self.env))
+
+    def test_as_triples_with_expansion_as_argument(self):
+
+        forms = self.parser.parse('r()(y=1) s(exp)(x=exp)' +
+                                  't() from s(e is a r())')
+
+        r = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.env.assign_template(r.name.evaluate(self.env),
+                                 r.as_triples(self.env))
+        self.env.assign_template(s.name.evaluate(self.env),
+                                 s.as_triples(self.env))
+
+        expect = [(Self(),
+                   Name('x').evaluate(self.env),
+                   Name('e').evaluate(self.env))]
+
+        self.assertEqual(expect, t.as_triples(self.env))
