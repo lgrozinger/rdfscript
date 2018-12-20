@@ -69,8 +69,20 @@ class EnvTest(unittest.TestCase):
     def test_template_binding(self):
 
         template = self.parser.parse('t()(x = 1 y = 2)')[0]
-        self.assertFalse(self.env.lookup_template(template.name.evaluate(self.env)))
+        uri = template.name.evaluate(self.env)
+        self.assertFalse(self.env.lookup_template(uri))
 
-        self.env.assign_template(template.name.evaluate(self.env), template.as_triples(self.env))
-        self.assertEqual(self.env.lookup_template(template.name.evaluate(self.env)),
+        self.env.assign_template(uri, template.as_triples(self.env))
+        self.assertEqual(self.env._template_table.get(uri, False),
+                         template.as_triples(self.env))
+
+    def test_template_lookup(self):
+
+        template = self.parser.parse('t()(x = 1 y = 2)')[0]
+        uri = template.name.evaluate(self.env)
+        self.assertFalse(self.env.lookup_template(uri))
+
+        self.env._template_table[uri] = template.as_triples(self.env)
+
+        self.assertEqual(self.env.lookup_template(uri),
                          template.as_triples(self.env))

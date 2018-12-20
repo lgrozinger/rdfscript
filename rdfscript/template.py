@@ -109,6 +109,12 @@ class Template(Node):
             env.current_self = old_self
         return triples
 
+    def evaluate(self, context):
+
+        triples = self.as_triples(context)
+        context.assign_template(self.name.evaluate(context), triples)
+        return self.name.evaluate(context)
+
 
 class Parameter(Node):
 

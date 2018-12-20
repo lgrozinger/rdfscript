@@ -1,6 +1,5 @@
-import rdflib
-
 from .core import Node
+
 
 class PrefixPragma(Node):
 
@@ -26,6 +25,7 @@ class PrefixPragma(Node):
     def uri(self):
         return self._uri
 
+
 class DefaultPrefixPragma(Node):
 
     def __init__(self, prefix, location):
@@ -43,6 +43,7 @@ class DefaultPrefixPragma(Node):
     @property
     def prefix(self):
         return self._prefix
+
 
 class ImportPragma(Node):
 
@@ -62,6 +63,7 @@ class ImportPragma(Node):
     def target(self):
         return self._target
 
+
 class ExtensionPragma(Node):
 
     def __init__(self, name, args, location=None):
@@ -75,7 +77,7 @@ class ExtensionPragma(Node):
                 self.args == other.args)
 
     def __repr__(self):
-        return format("EXT DIRECTIVE: %s" % self.name)
+        return format("[@extension %s(%s)" % (self.name, self.args))
 
     @property
     def name(self):

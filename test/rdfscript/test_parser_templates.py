@@ -1,16 +1,13 @@
 import unittest
 import logging
-import ply.yacc as yacc
-import ply.lex as leex
-import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
-from rdfscript.core import Name, Value, Uri, Assignment
+from rdfscript.pragma import ExtensionPragma
+from rdfscript.core import Name, Uri, Value
 from rdfscript.template import (Template,
-                                Parameter,
-                                Property,
-                                Expansion)
+                                Property)
+
 
 class ParserTemplateTest(unittest.TestCase):
 
@@ -24,7 +21,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_template_noargs_nobase(self):
         script = 'DNASequence()(encoding = <SBOL:IUPACDNA>)'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [],
@@ -37,7 +34,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_empty_template_noargs_nobase(self):
         script = 'DNASequence()'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [],
@@ -49,7 +46,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_empty_template_noargs(self):
         script = 'DNASequence() from Other()'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [],
@@ -61,7 +58,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_empty_template_args(self):
         script = 'DNASequence(x, y, z) from Other(x)'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'), Name('y'), Name('z')],
@@ -73,7 +70,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_empty_template_args_nobase(self):
         script = 'DNASequence(x, y, z)'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'), Name('y'), Name('z')],
@@ -83,10 +80,9 @@ class ParserTemplateTest(unittest.TestCase):
 
         self.assertEqual(forms, [expected_template])
 
-
     def test_template_onearg_nobase(self):
         script = 'DNASequence(x)(encoding = <SBOL:IUPACDNA>)'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [Name('x')],
@@ -99,7 +95,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_template_multiargs_nobase(self):
         script = 'DNASequence(x, y, z)(encoding = <SBOL:IUPACDNA>)'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'),
@@ -114,7 +110,7 @@ class ParserTemplateTest(unittest.TestCase):
 
     def test_template_onearg_base(self):
         script = 'B(x)(x = 42)\nA(x) from B(x)(encoding = <SBOL:IUPACDNA>)'
-        forms  = self.parser.parse(script)
+        forms = self.parser.parse(script)
 
         expected_template = Template(Name('A'),
                                      [Name('x')],
@@ -208,6 +204,53 @@ class ParserTemplateTest(unittest.TestCase):
                                      [])
 
         self.assertEqual(expected_template, forms[0])
+
+    def test_extension_in_body(self):
+        script = 'A()(@extension ExtensionName())'
+        forms = self.parser.parse(script)
+
+        a = forms[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [ExtensionPragma(Name('ExtensionName'),
+                                                      [])],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, a)
+
+    def test_extension_in_body_with_arg(self):
+        script = 'A()(@extension ExtensionName(12345))'
+        forms = self.parser.parse(script)
+
+        a = forms[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [ExtensionPragma(Name('ExtensionName'),
+                                                      [Value(12345)])],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, a)
+
+    def test_extension_in_body_with_multi_args(self):
+        script = 'A()(@extension ExtensionName(12345, 67890))'
+        forms = self.parser.parse(script)
+
+        a = forms[0]
+
+        expected_template = Template(Name('A'),
+                                     [],
+                                     [ExtensionPragma(Name('ExtensionName'),
+                                                      [Value(12345),
+                                                       Value(67890)])],
+                                     None,
+                                     [])
+
+        self.assertEqual(expected_template, a)
+
 
 if __name__ == '__main__':
     unittest.main()

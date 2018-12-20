@@ -282,3 +282,31 @@ class TemplateClassTest(unittest.TestCase):
                    Name('e').evaluate(self.env))]
 
         self.assertEqual(expect, t.as_triples(self.env))
+
+    def test_evaluate_stores_triples(self):
+
+        forms = self.parser.parse('t()(x=1 y=2)')
+        t = forms[0]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        t.evaluate(self.env)
+
+        self.assertEqual(self.env.lookup_template(t.name.evaluate(self.env)),
+                         t.as_triples(self.env))
+
+    def test_evaluate_stores_extensions(self):
+
+        forms = self.parser.parse('t()(@extension E() @extension F())')
+        t = forms[0]
+
+        t.evaluate(self.env)
+
+        None
+
+    def test_evaluate_to_template_name(self):
+
+        forms = self.parser.parse('t()(x=1 y=2)')
+        t = forms[0]
+
+        self.assertEqual(t.name.evaluate(self.env), t.evaluate(self.env))
