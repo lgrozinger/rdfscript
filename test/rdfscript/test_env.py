@@ -16,28 +16,24 @@ class EnvTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    @unittest.skip("prefix binding has changed")
     def test_prefix_binding(self):
 
-        prefix_uri = Uri('http://test.prefix.eg/', None)
-        prefix = Prefix('x', None)
+        prefix_uri = Uri('http://test.prefix.eg/')
+        prefix = 'prefix'
 
         self.env.bind_prefix(prefix, prefix_uri)
 
-        name = Name(prefix, LocalName('local', None), None)
-        resolved_uri = self.env.resolve_name(name)
-        self.assertEqual(resolved_uri, Uri('http://test.prefix.eg/local', None))
+        self.assertTrue('prefix' in [p for (p, n) in self.env._rdf._g.namespaces()])
 
-    @unittest.skip("prefix binding has changed")
     def test_get_and_set_default_prefix(self):
 
-        prefix = Prefix('x', None)
-        self.env.bind_prefix(prefix, Uri('http://eg/', None))
-        before = Uri(self.env._rdf._g.identifier.toPython(), None)
-        self.assertEqual(Prefix(before, None), self.env.default_prefix)
+        prefix = 'x'
+        self.env.bind_prefix(prefix, Uri('http://eg/'))
+        before = Uri(self.env._rdf._g.identifier.toPython())
+        self.assertEqual(before, self.env.default_prefix)
 
         self.env.set_default_prefix(prefix)
-        self.assertEqual(prefix, self.env.default_prefix)
+        self.assertEqual(Uri('http://eg/'), self.env.default_prefix)
 
     def test_self_uri_init(self):
 
@@ -86,3 +82,28 @@ class EnvTest(unittest.TestCase):
 
         self.assertEqual(self.env.lookup_template(uri),
                          template.as_triples(self.env))
+
+    def test_extension_binding(self):
+
+        t = self.parser.parse('t()(@extension E() @extension F())')[0]
+        uri = t.name.evaluate(self.env)
+        extensions = t.extensions
+
+        self.assertFalse(self.env.lookup_extensions(uri))
+
+        self.env.assign_extensions(uri, extensions)
+
+        self.assertEqual(extensions, self.env._extension_table.get(uri, None))
+
+    def test_extension_lookup(self):
+
+        t = self.parser.parse('t()(@extension E() @extension F())')[0]
+        uri = t.name.evaluate(self.env)
+        extensions = t.extensions
+
+        self.assertFalse(self.env.lookup_extensions(uri))
+
+        self.env._extension_table[uri] = extensions
+
+        self.assertEqual(extensions, self.env.lookup_extensions(uri))
+

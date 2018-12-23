@@ -18,6 +18,4 @@ otherPrefix.nothing
 
 @import <templates>
 
-@defaultPrefix myScript
-
 expand : templates.SimpleTemplate

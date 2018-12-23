@@ -52,11 +52,9 @@ class Template(Node):
     def body(self):
         return self._body
 
-    def get_extensions(self, env):
-        if self._base:
-            return self._extensions + self._base.get_extensions(env)
-        else:
-            return self._extensions
+    @property
+    def extensions(self):
+        return self._extensions
 
     def check_param(self, param):
         if not isinstance(param, Name):
@@ -112,8 +110,17 @@ class Template(Node):
     def evaluate(self, context):
 
         triples = self.as_triples(context)
-        context.assign_template(self.name.evaluate(context), triples)
-        return self.name.evaluate(context)
+        extensions = self.extensions
+        uri = self.name.evaluate(context)
+
+        context.assign_template(uri, triples)
+
+        if self.base is not None:
+            extensions += context.lookup_extensions(self.base.evaluate(context))
+
+        extensions = [ext.evaluate(context) for ext in self.extensions]
+        context.assign_extensions(uri, extensions)
+        return uri
 
 
 class Parameter(Node):

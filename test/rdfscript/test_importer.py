@@ -52,6 +52,7 @@ class ImporterTest(unittest.TestCase):
 
         self.assertEqual(len(i.path), 0)
 
+    @unittest.skip("Test files contain incompatible prefix pragmas.")
     def test_importer_test_files(self):
 
         env = Env(paths=["test/test_files/"])

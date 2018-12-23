@@ -7,6 +7,7 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 
 from rdfscript.pragma import (PrefixPragma,
                               DefaultPrefixPragma,
+                              ExtensionPragma,
                               ImportPragma)
 
 from rdfscript.core import Uri, Name
@@ -19,33 +20,26 @@ class ParserPragmaTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    @unittest.skip("Prefix pragma is dead.")
     def test_prefix_pragma_uri(self):
-        script = "@prefix Prefix <http://example.eg/>"
+        script = "@prefix Prefix = <http://example.eg/>"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
-                         [PrefixPragma(Prefix('Prefix', None),
-                                       Uri('http://example.eg/', None),
-                                       None)])
+                         [PrefixPragma('Prefix', Name(Uri('http://example.eg/')))])
 
-    @unittest.skip("Prefix pragma is dead.")
     def test_prefix_pragma_name(self):
-        script = "@prefix Prefix name"
+        script = "@prefix Prefix = name"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
-                         [PrefixPragma(Prefix('Prefix', None),
-                                       test.name('name'),
-                                       None)])
+                         [PrefixPragma('Prefix', Name('name'))])
 
-    @unittest.skip("Prefix pragma is dead.")
     def test_default_prefix_pragma(self):
-        script = "@defaultPrefix Prefix"
+        script = "@prefix Prefix"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms,
-                         [DefaultPrefixPragma(Prefix('Prefix', None), None)])
+                         [DefaultPrefixPragma('Prefix')])
 
     def test_import_pragma_uri(self):
         script = "@import <import>"
@@ -68,6 +62,11 @@ class ParserPragmaTest(unittest.TestCase):
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms, [ImportPragma(Name('this', 'target'))])
+
+    def test_extension_pragma(self):
+        forms = self.parser.parse('@extension E()')
+
+        self.assertEqual(forms, [ExtensionPragma('E', [])])
 
 if __name__ == '__main__':
     unittest.main()

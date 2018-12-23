@@ -37,6 +37,7 @@ def p_empty_forms(p):
 def p_form_types(p):
     '''form : assignment
             | pragma
+            | extension
             | template
             | expr'''
     p[0] = p[1]
@@ -48,14 +49,14 @@ def p_assignment(p):
 
 ## pragma
 def p_pragma_prefix(p):
-    '''pragma : PREFIX SYMBOL expr'''
+    '''pragma : PREFIX SYMBOL '=' expr'''
     l = location(p)
-    p[0] = PrefixPragma(Prefix(p[2], l), p[3], l)
+    p[0] = PrefixPragma(p[2], p[4], l)
 
 def p_defaultprefix_pragma(p):
-    '''pragma : DEFAULTPREFIX SYMBOL'''
+    '''pragma : PREFIX SYMBOL'''
     l = location(p)
-    p[0] = DefaultPrefixPragma(Prefix(p[2], l) , l)
+    p[0] = DefaultPrefixPragma(p[2], l)
 
 def p_pragma_import(p):
     '''pragma : IMPORT name'''

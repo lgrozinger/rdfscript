@@ -8,6 +8,9 @@ class CoreNameTest(unittest.TestCase):
 
     def setUp(self):
         self.env = Env()
+        self.env.current_self = Uri('')
+        self.env.bind_prefix('p', Uri('prefix'))
+        self.env.set_default_prefix('p')
 
     def tearDown(self):
         None
@@ -32,14 +35,14 @@ class CoreNameTest(unittest.TestCase):
     def test_name_evaluate_unbound_local(self):
 
         name = Name('first')
-        uri  = Uri('first')
+        uri  = Uri('prefixfirst')
 
         self.assertEqual(uri, name.evaluate(self.env))
 
     def test_name_evaluate_unbound_prefixed(self):
 
         name = Name('first', 'second')
-        uri  = Uri('firstsecond')
+        uri  = Uri('prefixfirstsecond')
 
         self.assertEqual(uri, name.evaluate(self.env))
 
@@ -54,7 +57,7 @@ class CoreNameTest(unittest.TestCase):
     def test_name_evaluate_unbound_chained(self):
 
         name = Name('first', 'second', 'third', 'fourth')
-        uri  = Uri('firstsecondthirdfourth')
+        uri  = Uri('prefixfirstsecondthirdfourth')
 
         self.assertEqual(uri, name.evaluate(self.env))
 
@@ -113,7 +116,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', Uri('second'), Self())
         self.env.current_self = Name(Self())
 
-        self.assertEqual(name.evaluate(self.env), Name(Uri('firstsecond'), Self()))
+        self.assertEqual(name.evaluate(self.env), Name(Uri('prefixfirstsecond'), Self()))
 
     def test_name_evaluate_bound_prefix(self):
 
@@ -165,3 +168,9 @@ class CoreNameTest(unittest.TestCase):
         self.env.current_self = context
 
         self.assertEqual(name.evaluate(self.env), Name(Self(), 'name', 'name'))
+
+    def test_uri_first_unbound(self):
+
+        name = Name(Uri('http://literal.eg/'), 'literal')
+
+        self.assertEqual(name.evaluate(self.env), Uri('http://literal.eg/literal'))

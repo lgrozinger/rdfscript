@@ -1,9 +1,11 @@
-from .core import Node
+from .core import (Node,
+                   Name,
+                   Assignment)
 
 
 class PrefixPragma(Node):
 
-    def __init__(self, prefix, uri, location):
+    def __init__(self, prefix, uri, location=None):
         Node.__init__(self, location)
 
         self._prefix = prefix
@@ -25,10 +27,16 @@ class PrefixPragma(Node):
     def uri(self):
         return self._uri
 
+    def evaluate(self, context):
+
+        Assignment(Name(self.prefix, location=self.location), self.uri).evaluate(context)
+        context.bind_prefix(self.prefix, self.uri.evaluate(context))
+        return Name(self.prefix, location=self.location)
+
 
 class DefaultPrefixPragma(Node):
 
-    def __init__(self, prefix, location):
+    def __init__(self, prefix, location=None):
         Node.__init__(self, location)
 
         self._prefix = prefix
@@ -43,6 +51,10 @@ class DefaultPrefixPragma(Node):
     @property
     def prefix(self):
         return self._prefix
+
+    def evaluate(self, context):
+        context.set_default_prefix(self.prefix)
+        return Name(self.prefix, location=self.location)
 
 
 class ImportPragma(Node):
@@ -77,7 +89,7 @@ class ExtensionPragma(Node):
                 self.args == other.args)
 
     def __repr__(self):
-        return format("[@extension %s(%s)" % (self.name, self.args))
+        return format("@extension %s(%s)" % (self.name, self.args))
 
     @property
     def name(self):
@@ -95,3 +107,8 @@ class ExtensionPragma(Node):
             self._args = [param if arg == param.name
                           else arg
                           for arg in self.args]
+
+    def evaluate(self, context):
+
+        self._args = [arg.evaluate(context) for arg in self.args]
+        return self

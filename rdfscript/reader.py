@@ -11,7 +11,6 @@ tokens = (
      "SELF",
      "FROM",
      "PREFIX",
-     "DEFAULTPREFIX",
      "EXTENSION",
      "IMPORT")
 
@@ -30,7 +29,6 @@ reserved_words = {
      '@prefix'        : 'PREFIX',
      '@import'        : 'IMPORT',
      'import'         : 'IMPORT',
-     '@defaultPrefix' : 'DEFAULTPREFIX',
      '@extension'     : 'EXTENSION',
      'self'           : 'SELF',
      'from'           : 'FROM'

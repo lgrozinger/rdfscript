@@ -28,6 +28,7 @@ class Env(object):
 
         self._symbol_table = {}
         self._template_table = {}
+        self._extension_table = {}
         self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RDFData(serializer=serializer)
@@ -64,9 +65,9 @@ class Env(object):
     def uri_for_prefix(self, prefix):
         """Return a Uri object for a Prefix object."""
         try:
-            return self._rdf.uri_for_prefix(prefix.identity)
+            return self._rdf.uri_for_prefix(prefix)
         except PrefixError:
-            raise PrefixError(prefix, prefix.location)
+            raise PrefixError(prefix, None)
 
     def add_triples(self, triples):
         """Add a triple of Uri or Value language objects to the RDF graph."""
@@ -74,37 +75,36 @@ class Env(object):
             self._rdf.add(s, p, o)
 
     def bind_prefix(self, prefix, uri):
-        self._rdf.bind_prefix(prefix.identity, uri)
+        self._rdf.bind_prefix(prefix, uri)
         return prefix
 
     def set_default_prefix(self, prefix):
-
-        ns = self._rdf.uri_for_prefix(prefix.identity)
+        ns = self._rdf.uri_for_prefix(prefix)
 
         if not ns:
-            raise PrefixError(prefix, prefix.location)
+            raise PrefixError(prefix, None)
         else:
-            self._default_prefix = prefix
+            self._default_prefix = ns
             self._prefix_set_by_user = True
             return prefix
 
     def assign(self, uri, value):
-
         self._symbol_table[uri] = value
 
     def lookup(self, uri):
-
         return self._symbol_table.get(uri, None)
 
     def assign_template(self, uri, template):
-
-        #uriref = self._rdf.to_rdf(uri)
         self._template_table[uri] = template
 
     def lookup_template(self, uri):
-
-        #uriref = self._rdf.to_rdf(uri)
         return self._template_table.get(uri, None)
+
+    def assign_extensions(self, uri, extensions):
+        self._extension_table[uri] = extensions
+
+    def lookup_extensions(self, uri):
+        return self._extension_table.get(uri, None)
 
     def get_extension(self, name):
         return self._extension_manager.get_extension(name)
@@ -114,7 +114,7 @@ class Env(object):
 
         for form in forms:
             try:
-                result = evaluate(form, self)
+                result = form.evaluate(self)
             except RDFScriptError as e:
                 logging.error(str(e))
             except ExtensionError as e:

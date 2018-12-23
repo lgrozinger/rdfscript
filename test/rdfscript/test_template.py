@@ -11,6 +11,8 @@ from rdfscript.template import (Template,
                                 Parameter,
                                 Argument)
 
+from rdfscript.pragma import ExtensionPragma
+
 from rdfscript.error import UnexpectedType
 
 
@@ -295,6 +297,14 @@ class TemplateClassTest(unittest.TestCase):
         self.assertEqual(self.env.lookup_template(t.name.evaluate(self.env)),
                          t.as_triples(self.env))
 
+    def test_init_extensions(self):
+
+        forms = self.parser.parse('t()(@extension E() @extension F())')
+        t = forms[0]
+
+        self.assertEqual(t.extensions, [ExtensionPragma('E', []), ExtensionPragma('F', [])])
+
+
     def test_evaluate_stores_extensions(self):
 
         forms = self.parser.parse('t()(@extension E() @extension F())')
@@ -302,7 +312,56 @@ class TemplateClassTest(unittest.TestCase):
 
         t.evaluate(self.env)
 
-        None
+        found = self.env.lookup_extensions(t.name.evaluate(self.env))
+
+        self.assertEqual(found, [ExtensionPragma('E', []), ExtensionPragma('F', [])])
+
+    def test_evaluate_stores_base_extensions(self):
+
+        forms = self.parser.parse('s()(@extension F()) t() from s()(@extension E())')
+        s = forms[0]
+        t = forms[1]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        found = self.env.lookup_extensions(t.name.evaluate(self.env))
+
+        self.assertEqual(found, [ExtensionPragma('E', []), ExtensionPragma('F', [])])
+
+    def test_evaluate_extension_arguments(self):
+
+        forms = self.parser.parse('t()(@extension E(12345))')
+        t = forms[0]
+
+        t.evaluate(self.env)
+
+        found = self.env.lookup_extensions(t.name.evaluate(self.env))
+
+        self.assertEqual(found, [ExtensionPragma('E', [Value(12345)])])
+
+    def test_evaluate_extension_arguments_name(self):
+
+        forms = self.parser.parse('t()(@extension E(argument))')
+        t = forms[0]
+
+        t.evaluate(self.env)
+
+        found = self.env.lookup_extensions(t.name.evaluate(self.env))
+
+        self.assertEqual(found, [ExtensionPragma('E', [Name('argument').evaluate(self.env)])])
+
+    def test_evaluate_extension_self_name(self):
+
+        forms = self.parser.parse('t()(@extension E(self.argument))')
+        t = forms[0]
+
+        self.env.current_self = Name(Self())
+        t.evaluate(self.env)
+
+        found = self.env.lookup_extensions(t.name.evaluate(self.env))
+
+        self.assertEqual(found, [ExtensionPragma('E', [Name(Self(), 'argument')])])
 
     def test_evaluate_to_template_name(self):
 
