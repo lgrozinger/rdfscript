@@ -369,3 +369,28 @@ class TemplateClassTest(unittest.TestCase):
         t = forms[0]
 
         self.assertEqual(t.name.evaluate(self.env), t.evaluate(self.env))
+
+    def test_extension_parameters(self):
+
+        forms = self.parser.parse('t(a)(@extension AtLeastOne(a))')
+        t = forms[0]
+
+        t.evaluate(self.env)
+
+        atleastone = self.env.lookup_extensions(t.name.evaluate(self.env))[0]
+        arg = t.parameters[0]
+
+        self.assertEqual(arg, atleastone.args[0])
+
+    def test_extension_parameters_multiple(self):
+
+        forms = self.parser.parse('t(a, b)(@extension AtLeastOne(a, b))')
+        t = forms[0]
+
+        t.evaluate(self.env)
+
+        atleastone = self.env.lookup_extensions(t.name.evaluate(self.env))[0]
+        args = t.parameters
+
+        self.assertEqual(args, atleastone.args)
+

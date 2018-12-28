@@ -46,7 +46,6 @@ class CoreNameTest(unittest.TestCase):
 
         self.assertEqual(uri, name.evaluate(self.env))
 
-
     def test_name_evaluate_unbound_self(self):
 
         name = Name(Self(), 'second')

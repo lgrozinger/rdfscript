@@ -1,7 +1,8 @@
 import rdflib
 import re
 
-from .error import PrefixError
+from .error import (PrefixError,
+                    UnexpectedType)
 
 class Node(object):
     """Language object."""
@@ -52,8 +53,19 @@ class Name(Node):
     def names(self):
         return self._names
 
+    def is_prefixed(self, context):
+        if len(self.names) > 1 and isinstance(self.names[0], str):
+            try:
+                return context.uri_for_prefix(self.names[0])
+            except PrefixError:
+                return False
+        else:
+            return False
+
     def evaluate(self, context):
-        uri = Uri(context.default_prefix, location=self.location)
+
+        uri = self.is_prefixed(context) or Uri(context.default_prefix, location=self.location)
+
         for n in range(0, len(self.names)):
             if isinstance(self.names[n], Self):
                 current_self = context.current_self
@@ -198,7 +210,7 @@ class Assignment(Node):
     def evaluate(self, context):
         uri = self.name.evaluate(context)
         if not isinstance(uri, Uri):
-            raise UnexpectedType(Uri, type(uri), self.location)
+            raise UnexpectedType(Uri, uri, self.location)
 
         value = self.value.evaluate(context)
 

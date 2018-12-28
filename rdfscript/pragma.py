@@ -29,7 +29,6 @@ class PrefixPragma(Node):
 
     def evaluate(self, context):
 
-        Assignment(Name(self.prefix, location=self.location), self.uri).evaluate(context)
         context.bind_prefix(self.prefix, self.uri.evaluate(context))
         return Name(self.prefix, location=self.location)
 

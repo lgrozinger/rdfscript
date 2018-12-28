@@ -166,3 +166,52 @@ class RuntimeIdentifierTest(unittest.TestCase):
         self.assertEqual(forms[0].evaluate(env), Value('value'))
         self.assertEqual(forms[1].evaluate(env), Value('value'))
         self.assertEqual(forms[2].evaluate(env), Value('value'))
+
+    def test_symbol_default_prefix(self):
+
+        script = ("@prefix p = <http://eg.org/>\n" +
+                  "@prefix p\n" +
+                  "symbol")
+
+        forms = self.parser.parse(script)
+        env = Env()
+
+        forms[0].evaluate(env)
+        forms[1].evaluate(env)
+        self.assertEqual(forms[2].evaluate(env), Uri('http://eg.org/symbol'))
+
+    def test_symbol_default_prefix_bound(self):
+
+        script = ("@prefix p = <http://eg.org/>\n" +
+                  "p.symbol = 42\n" +
+                  "@prefix p\n" +
+                  "symbol")
+
+        forms = self.parser.parse(script)
+        env = Env()
+
+        forms[0].evaluate(env)
+        forms[1].evaluate(env)
+        forms[2].evaluate(env)
+        self.assertEqual(forms[3].evaluate(env), Value(42))
+
+    def test_prefixed_symbol_default_prefix(self):
+
+        script = ("@prefix p = <http://eg.org/>\n" +
+                  "@prefix q = <http://eg2.org/>\n" +
+                  "p.symbol = 42\n" +
+                  "q.symbol = 43\n" +
+                  "@prefix p\n" +
+                  "symbol\n" +
+                  "q.symbol")
+
+        forms = self.parser.parse(script)
+        env = Env()
+
+        forms[0].evaluate(env)
+        forms[1].evaluate(env)
+        forms[2].evaluate(env)
+        forms[3].evaluate(env)
+        forms[4].evaluate(env)
+        self.assertEqual(forms[5].evaluate(env), Value(42))
+        self.assertEqual(forms[6].evaluate(env), Value(43))
