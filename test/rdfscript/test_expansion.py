@@ -5,7 +5,7 @@ from rdfscript.core import (Name,
                             Value,
                             Uri,
                             Self)
-
+from rdfscript.pragma import ExtensionPragma
 from rdfscript.env import Env
 from rdfscript.rdfscriptparser import RDFScriptParser
 
@@ -199,3 +199,14 @@ class TestExpansionClass(unittest.TestCase):
 
         self.assertEqual(expect, f.as_triples(self.env))
 
+    def test_extensions_argument_binding(self):
+
+        forms = self.parser.parse('t(a)(@extension AtLeastOne(a))' +
+                                  'e is a t("a")')
+
+        t = forms[0]
+        e = forms[1]
+
+        t.evaluate(self.env)
+        ext = ExtensionPragma('AtLeastOne', [Value("a")])
+        self.assertEqual(e.get_extensions(self.env), [ext])

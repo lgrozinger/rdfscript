@@ -176,8 +176,8 @@ class RuntimeIdentifierTest(unittest.TestCase):
         forms = self.parser.parse(script)
         env = Env()
 
-        forms[0].evaluate(env)
-        forms[1].evaluate(env)
+        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[1].evaluate(env), Name('p'))
         self.assertEqual(forms[2].evaluate(env), Uri('http://eg.org/symbol'))
 
     def test_symbol_default_prefix_bound(self):

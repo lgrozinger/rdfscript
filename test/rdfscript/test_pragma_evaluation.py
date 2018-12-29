@@ -32,9 +32,7 @@ class PragmaEvaluateTest(unittest.TestCase):
         self.assertEqual(value, Name('test'))
         prefix = Uri(self.env.default_prefix)
         prefix.extend(Uri('test'), delimiter='')
-        self.assertTrue(self.env._symbol_table.get(prefix, False))
-        self.assertEqual(Name('test').evaluate(self.env), uri)
-        self.assertEqual(self.env.lookup(prefix), uri)
+        self.assertEqual(self.env.uri_for_prefix('test'), uri)
 
     def test_prefix_pragma_uri(self):
 
@@ -45,9 +43,7 @@ class PragmaEvaluateTest(unittest.TestCase):
         self.assertEqual(value, Name('test'))
         prefix = Uri(self.env.default_prefix)
         prefix.extend(Uri('test'), delimiter='')
-        self.assertTrue(self.env._symbol_table.get(prefix, False))
-        self.assertEqual(Name('test').evaluate(self.env), uri)
-        self.assertEqual(self.env.lookup(prefix), uri)
+        self.assertEqual(self.env.uri_for_prefix('test'), uri)
 
     def test_default_prefix_pragma(self):
 

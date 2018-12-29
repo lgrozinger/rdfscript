@@ -64,7 +64,7 @@ class Name(Node):
 
     def evaluate(self, context):
 
-        uri = self.is_prefixed(context) or Uri(context.default_prefix, location=self.location)
+        uri = Uri(context.default_prefix, location=self.location)
 
         for n in range(0, len(self.names)):
             if isinstance(self.names[n], Self):
@@ -86,7 +86,10 @@ class Name(Node):
                 else:
                     uri = Uri(self.names[n])
             elif isinstance(self.names[n], str):
-                uri.extend(Uri(self.names[n]), delimiter='')
+                if n == 0 and self.is_prefixed(context):
+                    uri = self.is_prefixed(context)
+                else:
+                    uri.extend(Uri(self.names[n]), delimiter='')
 
             lookup = context.lookup(uri)
             if lookup is not None:

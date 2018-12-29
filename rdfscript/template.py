@@ -28,6 +28,7 @@ class Template(Node):
         self._body = []
         for statement in body:
             if isinstance(statement, ExtensionPragma):
+                statement.substitute_params(self._parameters)
                 self._extensions.append(statement)
             else:
                 self._body.append(statement)
@@ -263,8 +264,17 @@ class Expansion(Node):
         return self._body
 
     def get_extensions(self, env):
-        template = env.lookup_template(self.template)
-        return template.get_extensions(env) + self._extensions
+        template_uri = self.template.evaluate(env)
+
+        raw_extensions = env.lookup_extensions(template_uri)
+        processed_extensions = []
+        for ext in raw_extensions:
+            ext_args = ext.args
+            for arg in self.args:
+                ext_args = [arg.marshal(ext_arg) for ext_arg in ext_args]
+            processed_extensions += [ExtensionPragma(ext.name, ext_args)]
+
+        return processed_extensions + self._extensions
 
     def as_triples(self, env):
 

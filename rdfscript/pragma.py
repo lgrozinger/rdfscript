@@ -98,12 +98,10 @@ class ExtensionPragma(Node):
     def args(self):
         return self._args
 
-    def parameterise(self, parameters):
-        for param in parameters:
-            if self.name == param.name:
-                self._name = param
-
-            self._args = [param if arg == param.name
+    def substitute_params(self, parameters):
+        for parameter in parameters:
+            self._args = [parameter
+                          if parameter.is_substitute(arg)
                           else arg
                           for arg in self.args]
 
