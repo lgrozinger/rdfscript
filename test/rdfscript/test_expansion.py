@@ -210,3 +210,65 @@ class TestExpansionClass(unittest.TestCase):
         t.evaluate(self.env)
         ext = ExtensionPragma('AtLeastOne', [Value("a")])
         self.assertEqual(e.get_extensions(self.env), [ext])
+
+    def test_extensions_multiple_argument_binding(self):
+
+        forms = self.parser.parse('t(a, b)(@extension ext(a, b))' +
+                                  'e is a t(1, 2)')
+
+        t = forms[0]
+        e = forms[1]
+
+        t.evaluate(self.env)
+        ext = ExtensionPragma('ext', [Value(1), Value(2)])
+        self.assertEqual(e.get_extensions(self.env), [ext])
+
+    def test_extensions_mixed_argument_binding(self):
+
+        forms = self.parser.parse('t(a)(@extension ext(12345, a))' +
+                                  'e is a t(1)')
+
+        t = forms[0]
+        e = forms[1]
+
+        t.evaluate(self.env)
+        ext = ExtensionPragma('ext', [Value(12345), Value(1)])
+        self.assertEqual(e.get_extensions(self.env), [ext])
+
+    def test_extensions_from_multiple_templates(self):
+
+        forms = self.parser.parse('s(a)(@extension ext(a))' +
+                                  't(a) from s("s")(@extension ext(a))' +
+                                  'e is a t("t")')
+
+        s = forms[0]
+        t = forms[1]
+        e = forms[2]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+        exts = [ExtensionPragma('ext', [Value("t")]),
+                ExtensionPragma('ext', [Value("s")])]
+
+        self.assertEqual(e.get_extensions(self.env), exts)
+
+    def test_extensions_in_expansion(self):
+
+        forms = self.parser.parse('s(a)(@extension ext(a))' +
+                                  't(a) from s("s")(@extension ext(a))' +
+                                  'e is a t("t")(@extension ext("e"))')
+
+        s = forms[0]
+        t = forms[1]
+        e = forms[2]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        exts = [ExtensionPragma('ext', [Value("t")]),
+                ExtensionPragma('ext', [Value("s")]),
+                ExtensionPragma('ext', [Value("e")])]
+
+        self.assertEqual(e.get_extensions(self.env), exts)
+
+

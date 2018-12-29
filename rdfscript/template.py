@@ -111,13 +111,22 @@ class Template(Node):
     def evaluate(self, context):
 
         triples = self.as_triples(context)
+        for ext in self.extensions:
+            ext.substitute_params(self.parameters)
+
         extensions = self.extensions
+
         uri = self.name.evaluate(context)
 
         context.assign_template(uri, triples)
 
         if self.base is not None:
-            extensions += context.lookup_extensions(self.base.evaluate(context))
+            base_extensions = context.lookup_extensions(self.base.evaluate(context))
+            for ext in base_extensions:
+                ext_args = ext.args
+                for arg in self.args:
+                    ext_args = [arg.marshal(ext_arg) for ext_arg in ext_args]
+                extensions += [ExtensionPragma(ext.name, ext_args)]
 
         extensions = [ext.evaluate(context) for ext in self.extensions]
         context.assign_extensions(uri, extensions)
