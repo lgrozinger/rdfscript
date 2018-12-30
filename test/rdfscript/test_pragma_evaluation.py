@@ -11,6 +11,7 @@ from rdfscript.pragma import (PrefixPragma,
                               DefaultPrefixPragma,
                               ImportPragma)
 
+from extensions.cardinality import AtLeastOne
 
 class PragmaEvaluateTest(unittest.TestCase):
 
@@ -63,3 +64,13 @@ class PragmaEvaluateTest(unittest.TestCase):
         e.evaluate(self.env)
 
         self.assertEqual(e.args, [Name('arg').evaluate(self.env)])
+
+    def test_python_extension_returns_extension_object(self):
+
+        ext = self.parser.parse('@extension AtLeastOne(uri)')[0]
+
+        expected = AtLeastOne(Name('uri').evaluate(self.env))
+
+        self.assertEqual(expected._prop, ext.as_python_object(self.env)._prop)
+
+        

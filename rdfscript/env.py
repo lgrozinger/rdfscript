@@ -16,6 +16,7 @@ from .importer import Importer
 
 from .extensions import ExtensionManager
 from extensions.error import ExtensionError
+from extensions.triples import TriplePack
 from .rdf_data import RDFData
 
 class Env(object):
@@ -55,7 +56,6 @@ class Env(object):
 
     @property
     def default_prefix(self):
-        """The language object that set the default prefix."""
         return self._default_prefix
 
     @property
@@ -69,6 +69,12 @@ class Env(object):
         except PrefixError:
             raise PrefixError(prefix, None)
 
+    def prefix_for_uri(self, uri):
+        try:
+            return self._rdf.prefix_for_uri(uri)
+        except PrefixError:
+            raise PrefixError(uri, None)
+        
     def add_triples(self, triples):
         """Add a triple of Uri or Value language objects to the RDF graph."""
         for (s, p, o) in triples:
@@ -104,11 +110,19 @@ class Env(object):
         self._extension_table[uri] = extensions
 
     def lookup_extensions(self, uri):
-        return self._extension_table.get(uri, None)
+        return self._extension_table.get(uri, [])
 
     def get_extension(self, name):
         return self._extension_manager.get_extension(name)
 
+    def run_extension_on_triples(self, extension, triples):
+
+        extension_class = self.get_extension(extension.name)
+        extension_obj = extension_class(*extension.args)
+
+        pack = TriplePack(triples, self._symbol_table, self._template_table)
+        return extension_obj.run(pack).triples
+    
     def interpret(self, forms):
         result = None
 

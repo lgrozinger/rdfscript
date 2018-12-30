@@ -109,3 +109,15 @@ class ExtensionPragma(Node):
 
         self._args = [arg.evaluate(context) for arg in self.args]
         return self
+
+    def run(self, context, triples):
+
+        self.evaluate(context)
+        return context.run_extension_on_triples(self, triples)
+
+    def as_python_object(self, context):
+
+        self.evaluate(context)
+        ext_class = context.get_extension(self.name)
+        
+        return ext_class(*self.args)

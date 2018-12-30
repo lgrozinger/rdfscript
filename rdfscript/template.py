@@ -77,8 +77,8 @@ class Template(Node):
                 self._body == other.body)
 
     def __repr__(self):
-        return (f"[TEMPLATE: {self.name}({self.parameters}) from {self.base}\n"
-                f"({self.body})\n")
+        return format("[TEMPLATE: %s (%s) from %s\n(%s)\n"
+                      % (self.name, self.parameters, self.base, self.body))
 
     def forward_parameters(self):
         for arg in self.args:
@@ -128,7 +128,11 @@ class Template(Node):
                     ext_args = [arg.marshal(ext_arg) for ext_arg in ext_args]
                 extensions += [ExtensionPragma(ext.name, ext_args)]
 
-        extensions = [ext.evaluate(context) for ext in self.extensions]
+        old_self = context.current_self
+        context.current_self = Name(Self())
+        extensions = [ext.evaluate(context) for ext in extensions]
+        context.current_self = old_self
+        
         context.assign_extensions(uri, extensions)
         return uri
 
@@ -183,7 +187,7 @@ class Property(Node):
                 self.value == other.value)
 
     def __repr__(self):
-        return (f"[RDFscript PROPERTY: {self.name} = {self.value}]\n")
+        return format("%s = %s\n" % (self.name, self.value))
 
     @property
     def name(self):
@@ -251,10 +255,7 @@ class Expansion(Node):
                 self.body == other.body)
 
     def __repr__(self):
-        return (f"<RDFscript EXPANSION: {self.name}\n"
-                f" Based on:\n  {self.template}\n"
-                f" With Args:\n  {self.args}\n"
-                f" And body:\n  {self.body}\n")
+        return format("%s is a %s(%s)\n  (%s)\n" % (self.name, self.template, self.args, self.body))
 
     @property
     def name(self):
@@ -306,7 +307,16 @@ class Expansion(Node):
         return triples
 
     def evaluate(self, env):
-        env.add_triples(self.as_triples(env))
+
+        triples = self.as_triples(env)
+
+        old_self = env.current_self
+        env.current_self = self.name.evaluate(env)
+        for ext in self.get_extensions(env):
+            triples = ext.run(env, triples)
+        env.current_self = old_self
+        
+        env.add_triples(triples)
 
         return self.name.evaluate(env)
 

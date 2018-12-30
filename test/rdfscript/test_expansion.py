@@ -9,6 +9,8 @@ from rdfscript.pragma import ExtensionPragma
 from rdfscript.env import Env
 from rdfscript.rdfscriptparser import RDFScriptParser
 
+from extensions.cardinality import CardinalityError
+
 class TestExpansionClass(unittest.TestCase):
 
     def setUp(self):
@@ -252,6 +254,23 @@ class TestExpansionClass(unittest.TestCase):
 
         self.assertEqual(e.get_extensions(self.env), exts)
 
+    def test_extensions_self_in_extension_arguments(self):
+
+        forms = self.parser.parse('s()(@extension ext(self.name))' +
+                                  't() from s()(@extension ext(self.name))' +
+                                  'e is a t()')
+
+        s = forms[0]
+        t = forms[1]
+        e = forms[2]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+        exts = [ExtensionPragma('ext', [Name(Self(), 'name')]),
+                ExtensionPragma('ext', [Name(Self(), 'name')])]
+
+        self.assertEqual(e.get_extensions(self.env), exts)
+        
     def test_extensions_in_expansion(self):
 
         forms = self.parser.parse('s(a)(@extension ext(a))' +
@@ -270,5 +289,37 @@ class TestExpansionClass(unittest.TestCase):
                 ExtensionPragma('ext', [Value("e")])]
 
         self.assertEqual(e.get_extensions(self.env), exts)
+
+
+    def test_evaluate_runs_extensions_with_error(self):
+
+        forms = self.parser.parse('t(a)(@extension AtLeastOne(a))' +
+                                  'e is a t(property)()')
+
+        t = forms[0]
+        e = forms[1]
+
+        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
+        
+        t.evaluate(self.env)
+        with self.assertRaises(CardinalityError):
+            e.evaluate(self.env)
+
+        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
+
+    def test_evaluate_runs_extensions(self):
+
+        forms = self.parser.parse('t(a)(@extension AtLeastOne(a))' +
+                                  'e is a t(property)(property=12345)')
+
+        t = forms[0]
+        e = forms[1]
+
+        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
+        
+        t.evaluate(self.env)
+        e.evaluate(self.env)
+
+        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 1)
 
 

@@ -204,7 +204,7 @@ def location(p):
 
 class RDFScriptParser:
 
-    def __init__(self, debug=True, scanner=reader, filename=None):
+    def __init__(self, debug=False, scanner=reader, filename=None):
 
         self.scanner = lex.lex(module=scanner)
         self.scanner.at_line_start = True
@@ -219,7 +219,7 @@ class RDFScriptParser:
         return self.parser.parse(script,
                                  lexer=self.scanner,
                                  tracking=True,
-                                 debug=logging.getLogger())
+                                 debug=None)
 
     def reset(self):
 

@@ -50,7 +50,7 @@ def rdf_repl(serializer='nt',
     while True:
         try:
             if env.default_prefix_set:
-                prompt = env.default_prefix.string
+                prompt = env.prefix_for_uri(env.default_prefix)
             else:
                 prompt = 'RDF'
 

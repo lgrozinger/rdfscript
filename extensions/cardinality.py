@@ -8,10 +8,14 @@ class AtLeastOne:
 
     def run(self, triplepack):
 
-        for subject in triplepack.subjects:
-            if not triplepack.has(subject, self._prop):
-                raise CardinalityError(self._prop, 'at least 1', 'none')
-
+        subjects = triplepack.subjects
+        if len(subjects) > 0:
+            for subject in subjects:
+                if not triplepack.has(subject, self._prop):
+                    raise CardinalityError(self._prop, 'at least 1', 'none')
+        else:
+            raise CardinalityError(self._prop, 'at least 1', 'none')
+                    
         return triplepack
 
 class CardinalityError(ExtensionError):
