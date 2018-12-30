@@ -3,6 +3,8 @@ import rdflib
 
 from extensions.triples import TriplePack
 from extensions.cardinality import (AtLeastOne,
+                                    ExactlyOne,
+                                    ExactlyN,
                                     CardinalityError)
 from rdfscript.core import (Uri,
                             Value,
@@ -59,3 +61,49 @@ class CardinalityExtensionsTest(unittest.TestCase):
         ext.run(self.pack)
 
         self.assertEqual(triples, self.pack.triples)
+
+    def test_exactly_one_fails(self):
+
+        with self.assertRaises(CardinalityError):
+            ext = ExactlyOne(Uri('http://test.eg/#notthere'))
+            ext.run(self.pack)
+
+        with self.assertRaises(CardinalityError):
+            ext = ExactlyOne(Uri('http://example.eg/predicate'))
+            add = self.pack.search((None, Uri('http://example.eg/predicate'), None))[0]
+            self.pack.add(add)
+            ext.run(self.pack)
+
+    def test_exactly_one_succeeds(self):
+
+        triples = list(self.pack.triples)
+        
+        ext = ExactlyOne(Uri('http://example.eg/predicate'))
+        ext.run(self.pack)
+
+        self.assertEqual(triples, self.pack.triples)
+
+    def test_exactly_N_fails(self):
+
+        with self.assertRaises(CardinalityError):
+            ext = ExactlyN(Uri('http://example.eg/predicate'), 2)
+            ext.run(self.pack)
+
+        with self.assertRaises(CardinalityError):
+            ext = ExactlyN(Uri('http://example.eg/predicate'), 2)
+            add = self.pack.search((None, Uri('http://example.eg/predicate'), None))[0]
+            self.pack.add(add)
+            self.pack.add(add)
+            ext.run(self.pack)
+
+    def test_exactly_N_succeeds(self):
+
+        with self.assertRaises(CardinalityError):
+            ext = ExactlyN(Uri('http://example.eg/predicate'), 2)
+            ext.run(self.pack)
+
+        ext = ExactlyN(Uri('http://example.eg/predicate'), 2)
+        add = self.pack.search((None, Uri('http://example.eg/predicate'), None))[0]
+        self.pack.add(add)
+        ext.run(self.pack)
+

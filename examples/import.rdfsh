@@ -1,21 +1,21 @@
-# the import statement finds a script and interprets it in the current context
+;; the import statement finds a script and interprets it in the current context
 
-# all the names, templates and prefixes in the imported script will now be available
+;; all the names, templates and prefixes in the imported script will now be available
 
-# it is *almost* like you had copy and pasted the text instead of using @import
+;; it is *almost* like you had copy and pasted the text instead of using @import
 
-# you can import any file with the .rdfsh extension
-# like the names.rdfsh example
+;; you can import any file with the .rdfsh extension
+;; like the names.rdfsh example
 
 @import <names>
 
-# now you can use 'name's  and prefixes defined in names.rdfsh
+;; now you can use 'name's  and prefixes defined in names.rdfsh
 strings
 myScript.integers
 otherPrefix.nothing
 
-# note that importing <names> changed the defaultPrefix
+;; note that importing <names> changed the defaultPrefix
 
 @import <templates>
 
-expand : templates.SimpleTemplate
+expand is a templates.SimpleTemplate()

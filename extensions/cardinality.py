@@ -12,10 +12,48 @@ class AtLeastOne:
         if len(subjects) > 0:
             for subject in subjects:
                 if not triplepack.has(subject, self._prop):
-                    raise CardinalityError(self._prop, 'at least 1', 'none')
+                    raise CardinalityError(self._prop, 'at least 1', '0')
         else:
-            raise CardinalityError(self._prop, 'at least 1', 'none')
+            raise CardinalityError(self._prop, 'at least 1', '0')
                     
+        return triplepack
+
+class ExactlyOne:
+
+    def __init__(self, property_uri):
+        self._prop = property_uri
+
+    def run(self, triplepack):
+
+        subjects = triplepack.subjects
+        if len(subjects) > 0:
+            for subject in subjects:
+                if not triplepack.has_unique(subject, self._prop):
+                    number_found = len(triplepack.search((subject, self._prop, None)))
+                    raise CardinalityError(self._prop, 'exactly 1', number_found)
+        else:
+            raise CardinalityError(self._prop, 'at least 1', '0')
+                    
+        return triplepack
+
+class ExactlyN:
+
+    def __init__(self, property_uri, n):
+        self._prop = property_uri
+        self._n = n
+        self._exactly_n = format("exactly %s" % n)
+
+    def run(self, triplepack):
+
+        subjects = triplepack.subjects
+        if len(subjects) > 0:
+            for subject in subjects:
+                number_found = len(triplepack.search((subject, self._prop, None)))
+                if not number_found == self._n:
+                    raise CardinalityError(self._prop, self._exactly_n, number_found)
+        else:
+            raise CardinalityError(self._prop, self._exactly_n, 0)
+
         return triplepack
 
 class CardinalityError(ExtensionError):
