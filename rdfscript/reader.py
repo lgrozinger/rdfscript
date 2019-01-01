@@ -12,7 +12,7 @@ tokens = (
      "FROM",
      "PREFIX",
      "EXTENSION",
-     "IMPORT")
+     "USE")
 
 t_ignore = '\t'
 literals = ['=',
@@ -27,8 +27,8 @@ reserved_words = {
      'true'           : 'BOOLEAN',
      'false'          : 'BOOLEAN',
      '@prefix'        : 'PREFIX',
-     '@import'        : 'IMPORT',
-     'import'         : 'IMPORT',
+     '@use'           : 'USE',
+     'use'            : 'USE',
      '@extension'     : 'EXTENSION',
      'self'           : 'SELF',
      'from'           : 'FROM'

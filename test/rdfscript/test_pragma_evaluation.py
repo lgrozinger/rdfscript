@@ -73,4 +73,35 @@ class PragmaEvaluateTest(unittest.TestCase):
 
         self.assertEqual(expected._prop, ext.as_python_object(self.env)._prop)
 
+    def test_import_pragma_uri(self):
+
+        form = self.parser.parse('use <test/test_files/top>')[0]
+
+        form.evaluate(self.env)
+        true = Value(True)
+        toptest = Uri('http://top.org/test')
+        thisleveltest = Uri('http://thislevel.top/test')
+        downthisleveltest = Uri('http://down.thislevel/test')
+        
+        self.assertEqual(self.env.lookup(toptest), Value(True))
+        self.assertEqual(self.env.lookup(thisleveltest), Value(True))
+        self.assertEqual(self.env.lookup(downthisleveltest), Value(True))
+
+    def test_import_pragma_name(self):
+
+        forms = self.parser.parse('x = <test/test_files/top> use x')
+        x = forms[0]
+        use = forms[1]
+
+        x.evaluate(self.env)
+        use.evaluate(self.env)
+        true = Value(True)
+        toptest = Uri('http://top.org/test')
+        thisleveltest = Uri('http://thislevel.top/test')
+        downthisleveltest = Uri('http://down.thislevel/test')
+        
+        self.assertEqual(self.env.lookup(toptest), Value(True))
+        self.assertEqual(self.env.lookup(thisleveltest), Value(True))
+        self.assertEqual(self.env.lookup(downthisleveltest), Value(True))
+
         

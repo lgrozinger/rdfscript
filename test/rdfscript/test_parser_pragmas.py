@@ -42,23 +42,23 @@ class ParserPragmaTest(unittest.TestCase):
                          [DefaultPrefixPragma('Prefix')])
 
     def test_import_pragma_uri(self):
-        script = "@import <import>"
+        script = "@use <import>"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms, [ImportPragma(Name(Uri('import')))])
 
-        script = "import <import>"
+        script = "use <import>"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms, [ImportPragma(Name(Uri('import')))])
 
     def test_import_pragma_name(self):
-        script = "@import this.target"
+        script = "@use this.target"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms, [ImportPragma(Name('this', 'target'))])
 
-        script = "import this.target"
+        script = "use this.target"
         forms  = self.parser.parse(script)
 
         self.assertEqual(forms, [ImportPragma(Name('this', 'target'))])

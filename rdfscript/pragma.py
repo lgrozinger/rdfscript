@@ -74,6 +74,17 @@ class ImportPragma(Node):
     def target(self):
         return self._target
 
+    def evaluate(self, context):
+
+        uri = self.target.evaluate(context)
+        old_prefix = context.default_prefix
+
+        context.eval_import(uri)
+
+        context._default_prefix = old_prefix
+
+        return self.target
+
 
 class ExtensionPragma(Node):
 

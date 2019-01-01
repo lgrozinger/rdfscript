@@ -59,7 +59,7 @@ def p_defaultprefix_pragma(p):
     p[0] = DefaultPrefixPragma(p[2], l)
 
 def p_pragma_import(p):
-    '''pragma : IMPORT name'''
+    '''pragma : USE name'''
     p[0] = ImportPragma(p[2], location(p))
 
 def p_extension_no_args(p):

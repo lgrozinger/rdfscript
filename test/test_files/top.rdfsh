@@ -1,7 +1,8 @@
-@prefix top <http://top.org/>
+@prefix top = <http://top.org/>
+top.test = true
 
-@import <thislevel>
-thislevel.test
+@use <thislevel>
+thislevel.test = true
 
-@import <down/thislevel>
-downthislevel.test
+@use <down/thislevel>
+downthislevel.test = true

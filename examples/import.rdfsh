@@ -7,7 +7,7 @@
 ;; you can import any file with the .rdfsh extension
 ;; like the names.rdfsh example
 
-@import <names>
+use <names>
 
 ;; now you can use 'name's  and prefixes defined in names.rdfsh
 strings
@@ -16,6 +16,6 @@ otherPrefix.nothing
 
 ;; note that importing <names> changed the defaultPrefix
 
-@import <templates>
+use <templates>
 
 expand is a templates.SimpleTemplate()
