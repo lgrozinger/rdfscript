@@ -33,8 +33,9 @@ class Env(object):
         self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RDFData(serializer=serializer)
-        self._default_prefix = Uri(self._rdf._g.identifier.toPython())
-        self._self = self._default_prefix
+        self._prefix = None
+        self._uri = Uri(self._rdf._g.identifier.toPython())
+        self._self = self._uri
         self._prefix_set_by_user = False
 
         if filename:
@@ -55,13 +56,28 @@ class Env(object):
         self._self = uri
 
     @property
-    def default_prefix(self):
-        return self._default_prefix
+    def uri(self):
+        return self._uri
 
     @property
-    def default_prefix_set(self):
-        return self._prefix_set_by_user
+    def prefix(self):
+        return self._prefix
 
+    @prefix.setter
+    def prefix(self, prefix):
+        if prefix is not None:
+            ns = self._rdf.uri_for_prefix(prefix)
+
+            if not ns:
+                raise PrefixError(prefix, None)
+            else:
+                self._prefix = prefix
+                self._uri = ns
+        else:
+            self._prefix = prefix
+
+        return prefix
+        
     def uri_for_prefix(self, prefix):
         """Return a Uri object for a Prefix object."""
         try:
@@ -83,16 +99,6 @@ class Env(object):
     def bind_prefix(self, prefix, uri):
         self._rdf.bind_prefix(prefix, uri)
         return prefix
-
-    def set_default_prefix(self, prefix):
-        ns = self._rdf.uri_for_prefix(prefix)
-
-        if not ns:
-            raise PrefixError(prefix, None)
-        else:
-            self._default_prefix = ns
-            self._prefix_set_by_user = True
-            return prefix
 
     def assign(self, uri, value):
         self._symbol_table[uri] = value

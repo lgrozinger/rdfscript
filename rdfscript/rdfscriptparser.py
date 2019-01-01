@@ -202,14 +202,22 @@ def location(p):
     pos = Position(p.lineno(0), p.lexpos(0))
     return Location(pos, p.parser.filename)
 
+def make_parser(filename=None):
+    parser = yacc.yacc()
+    parser.filename = filename
+    return parser
+
+def make_lexer(filename=None):
+    lexer = lex.lex(module=reader)
+    lexer.open_brackets = 0
+    lexer.filename = filename
+    return lexer
+
 class RDFScriptParser:
 
-    def __init__(self, debug=False, scanner=reader, filename=None):
+    def __init__(self, debug=False, filename=None):
 
-        self.scanner = lex.lex(module=scanner)
-        self.scanner.at_line_start = True
-        self.scanner.indent_stack  = [0]
-        self.scanner.filename = filename
+        self.scanner = make_lexer()
 
         self.parser = yacc.yacc(debug=debug)
         self.parser.filename = filename
@@ -220,11 +228,6 @@ class RDFScriptParser:
                                  lexer=self.scanner,
                                  tracking=True,
                                  debug=None)
-
-    def reset(self):
-
-        self.scanner.at_line_start = True
-        self.scanner.indent_stack  = [0]
 
 class Position:
 

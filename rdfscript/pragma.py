@@ -2,6 +2,8 @@ from .core import (Node,
                    Name,
                    Assignment)
 
+from .error import FailToImport
+
 
 class PrefixPragma(Node):
 
@@ -52,7 +54,7 @@ class DefaultPrefixPragma(Node):
         return self._prefix
 
     def evaluate(self, context):
-        context.set_default_prefix(self.prefix)
+        context.prefix = self.prefix
         return Name(self.prefix, location=self.location)
 
 
@@ -77,12 +79,12 @@ class ImportPragma(Node):
     def evaluate(self, context):
 
         uri = self.target.evaluate(context)
-        old_prefix = context.default_prefix
+        old_prefix = context.prefix
 
-        context.eval_import(uri)
-
-        context._default_prefix = old_prefix
-
+        if not context.eval_import(uri):
+            raise FailToImport(self.target, context.get_current_path(), self.location)
+        
+        context.prefix = old_prefix
         return self.target
 
 

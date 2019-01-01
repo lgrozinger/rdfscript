@@ -10,7 +10,7 @@ class CoreNameTest(unittest.TestCase):
         self.env = Env()
         self.env.current_self = Uri('')
         self.env.bind_prefix('p', Uri('prefix'))
-        self.env.set_default_prefix('p')
+        self.env.prefix = 'p'
 
     def tearDown(self):
         None

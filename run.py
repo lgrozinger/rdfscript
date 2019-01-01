@@ -1,12 +1,10 @@
-import ply.yacc as yacc
-import ply.lex  as lex
-import rdflib
 import sys
 import argparse
 import logging
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
+from repl import REPL
 
 def parse_from_file(filepath,
                     serializer='nt',
@@ -36,39 +34,18 @@ def rdf_repl(serializer='nt',
              out=None,
              optpaths=[],
              extensions=[]):
+
     print("Building parser with yacc...")
-    parser = RDFScriptParser()
     print("Parser build success...")
     print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
-    env = Env(repl=True,
-              serializer=serializer,
-              paths=optpaths,
-              extensions=extensions)
+    repl = REPL(serializer=serializer,
+                out=out,
+                optpaths=optpaths,
+                optextensions=extensions)
 
-    while True:
-        try:
-            if env.default_prefix_set:
-                prompt = env.prefix_for_uri(env.default_prefix)
-            else:
-                prompt = 'RDF'
-
-            if sys.version_info >= (3, 0):
-                s = input(prompt + '  > ')
-            else:
-                s = raw_input(prompt + '  > ')
-        except EOFError:
-            break
-        if not s: continue
-        forms = parser.parse(s)
-        print(env.interpret(forms))
-
-    if not out:
-        print(env)
-    else:
-        with open(out, 'w') as o:
-            o.write(str(env))
+    repl.start()
 
 def rdfscript_args():
 

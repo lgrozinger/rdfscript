@@ -1,4 +1,5 @@
 import ply.lex as leex
+import sys
 
 tokens = (
      "SYMBOL",
@@ -35,7 +36,29 @@ reserved_words = {
     }
 
 def t_eof(t):
-     pass
+     if not t.lexer.open_brackets == 0:
+          if sys.version_info >= (3, 0):
+               more = input('... ')
+          else:
+               more = raw_input('... ')
+
+          if more:
+               t.lexer.input(more)
+               return t.lexer.token()
+          
+     return None
+
+def t_lbracket(t):
+     r'\('
+     t.lexer.open_brackets += 1
+     t.type = '('
+     return t
+
+def t_rbracket(t):
+     r'\)'
+     t.lexer.open_brackets -= 1
+     t.type = ')'
+     return t
 
 def t_ISA(t):
      r'is\s+a'

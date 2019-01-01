@@ -64,7 +64,7 @@ class Name(Node):
 
     def evaluate(self, context):
 
-        uri = Uri(context.default_prefix, location=self.location)
+        uri = Uri(context.uri, location=self.location)
 
         for n in range(0, len(self.names)):
             if isinstance(self.names[n], Self):

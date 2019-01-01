@@ -18,7 +18,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         forms = self.parser.parse("UnboundSymbol")
 
         env = Env()
-        uri = Uri(env.default_prefix)
+        uri = Uri(env.uri)
         uri.extend(Uri('UnboundSymbol'), delimiter='')
 
         self.assertEqual(forms[0].evaluate(env), uri)
