@@ -6,6 +6,7 @@ from rdfscript.core import (Name,
                             Uri,
                             Value)
 
+
 class RuntimeIdentifierTest(unittest.TestCase):
 
     def setUp(self):
@@ -63,7 +64,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
         uri = Uri('http://eg.org/UnboundSymbol')
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[1].evaluate(env), uri)
 
     def test_qname_symbol_uri_unbound(self):
@@ -75,7 +76,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
         uri = Uri('http://eg.org/UnboundSymbol')
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[1].evaluate(env), uri)
 
     def test_qname_uri_uri_unbound(self):
@@ -108,7 +109,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
         expected_value = Value("value")
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[1].evaluate(env), Value('value'))
         self.assertEqual(forms[2].evaluate(env), Value('value'))
 
@@ -122,7 +123,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
         expected_value = Value("value")
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[1].evaluate(env), Value('value'))
         self.assertEqual(forms[2].evaluate(env), Value('value'))
 
@@ -136,7 +137,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
         expected_value = Value("value")
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[1].evaluate(env), Value('value'))
         self.assertEqual(forms[2].evaluate(env), Value('value'))
 
@@ -150,7 +151,7 @@ class RuntimeIdentifierTest(unittest.TestCase):
         env = Env()
         expected_value = Value("value")
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[1].evaluate(env), Value('value'))
         self.assertEqual(forms[2].evaluate(env), Value('value'))
 
@@ -176,8 +177,8 @@ class RuntimeIdentifierTest(unittest.TestCase):
         forms = self.parser.parse(script)
         env = Env()
 
-        self.assertEqual(forms[0].evaluate(env), Name('p'))
-        self.assertEqual(forms[1].evaluate(env), Name('p'))
+        self.assertEqual(forms[0].evaluate(env), Uri('http://eg.org/'))
+        self.assertEqual(forms[1].evaluate(env), Uri('http://eg.org/'))
         self.assertEqual(forms[2].evaluate(env), Uri('http://eg.org/symbol'))
 
     def test_symbol_default_prefix_bound(self):

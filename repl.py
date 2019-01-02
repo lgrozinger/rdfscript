@@ -1,9 +1,9 @@
-import rdfscript.reader
 import rdfscript.rdfscriptparser as parser
 from rdfscript.env import Env
+from rdfscript.core import Name
 
-import logging
 import sys
+
 
 class REPL:
 
@@ -40,10 +40,12 @@ class REPL:
             s = input(prompt + '  > ')
         else:
             s = raw_input(prompt + '  > ')
-            
-        if not s: self.read()
+
+        if not s:
+            self.read()
+
         self.reader.input(s)
-        
+
     def evaluate(self):
         form = self.parser.parse(lexer=self.reader)
         result = self.env.interpret(form)
@@ -61,12 +63,11 @@ class REPL:
         else:
             with open(self.out_file, 'w') as out:
                 out.write(str(self.env))
-        
+
     def get_prompt_string(self):
         if self.env.prefix is not None:
-            prompt = self.env.prefix_for_uri(self.env.prefix)
+            prompt = self.env.prefix
         else:
             prompt = 'RDF'
 
         return prompt
-                 

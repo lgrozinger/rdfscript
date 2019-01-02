@@ -1,6 +1,5 @@
 import ply.yacc as yacc
 import ply.lex as lex
-import logging
 
 from . import reader
 
@@ -19,66 +18,76 @@ from .pragma import (PrefixPragma,
 
 from .template import (Template,
                        Property,
-                       Expansion,
-                       Argument)
+                       Expansion)
 
 from .error import RDFScriptSyntax
 
 
-## script level
+# script level
 def p_forms(p):
     '''forms : form forms'''
     p[0] = [p[1]] + p[2]
 
+
 def p_empty_forms(p):
     '''forms : empty'''
-    p[0] =[]
+    p[0] = []
+
 
 def p_form_types(p):
     '''form : assignment
-            | pragma
             | extension
             | template
             | expr'''
     p[0] = p[1]
 
-## assignment
+
+# assignment
 def p_assignment(p):
     '''assignment : name '=' expr'''
     p[0] = Assignment(p[1], p[3], location(p))
 
-## pragma
+
+# pragma
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL '=' expr'''
     l = location(p)
     p[0] = PrefixPragma(p[2], p[4], l)
+
 
 def p_defaultprefix_pragma(p):
     '''pragma : PREFIX SYMBOL'''
     l = location(p)
     p[0] = DefaultPrefixPragma(p[2], l)
 
+
 def p_pragma_import(p):
     '''pragma : USE name'''
     p[0] = ImportPragma(p[2], location(p))
 
+
 def p_extension_no_args(p):
     '''extension : EXTENSION SYMBOL'''
     p[0] = ExtensionPragma(p[2], [], location(p))
+
 
 def p_extension_args(p):
     '''extension : EXTENSION SYMBOL '(' exprlist ')' '''
     p[0] = ExtensionPragma(p[2], p[4], location(p))
 
 ## expansions and templates
+
+
 def p_template_with_specialisation(p):
     '''template : name '(' exprlist ')' FROM name '(' exprlist ')' indentedinstancebody'''
     p[0] = Template(p[1], p[3], p[10], p[6], p[8], location=location(p))
+
 
 def p_base_template(p):
     '''template : name '(' exprlist ')' indentedinstancebody'''
 
     p[0] = Template(p[1], p[3], p[5], None, [], location(p))
+
 
 def p__expansion(p):
     '''expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
@@ -88,32 +97,41 @@ def p__expansion(p):
 #     '''triple : name name expr'''
 #     p[0] = TripleObject(p[1], p[2], p[3], location(p))
 
+
 def p_expr(p):
     '''expr : name
+            | pragma
             | literal
             | expansion'''
     p[0] = p[1]
+
 
 def p_indentedinstancebody(p):
     '''indentedinstancebody : '(' instancebody ')' '''
     p[0] = p[2]
 
+
 def p_empty_indentedinstancebody(p):
     '''indentedinstancebody : empty'''
     p[0] = []
+
 
 def p_instancebody(p):
     '''instancebody : bodystatements'''
     p[0] = p[1]
 
-## bodies
+# bodies
+
+
 def p_bodystatements(p):
     '''bodystatements : bodystatement bodystatements'''
     p[0] = [p[1]] + p[2]
 
+
 def p_empty_bodystatements(p):
     '''bodystatements : empty'''
     p[0] = []
+
 
 def p_bodystatement(p):
     '''bodystatement : property
@@ -121,46 +139,58 @@ def p_bodystatement(p):
                      | extension'''
     p[0] = p[1]
 
+
 def p_property(p):
     '''property : name '=' expr'''
 #                | name '=' expansion'''
     p[0] = Property(p[1], p[3], location=location(p))
 
-## lists
+# lists
+
+
 def p_exprlist(p):
     '''exprlist : emptylist
                 | notemptyexprlist'''
     p[0] = p[1]
 
+
 def p_not_empty_exprlist_1(p):
     '''notemptyexprlist : expr'''
     p[0] = [p[1]]
+
 
 def p_not_empty_exprlist_n(p):
     '''notemptyexprlist : expr ',' notemptyexprlist'''
     p[0] = [p[1]] + p[3]
 
+
 def p_empty(p):
     '''empty :'''
     pass
+
 
 def p_emptylist(p):
     '''emptylist : empty'''
     p[0] = []
 
-## names
+# names
+
+
 def p_dotted_name(p):
     '''name : dotted_list'''
     l = location(p)
     p[0] = Name(*p[1], location=l)
 
+
 def p_dotted_list_1(p):
     '''dotted_list : identifier'''
     p[0] = [p[1]]
 
+
 def p_dotted_list_n(p):
     '''dotted_list : identifier '.' dotted_list'''
     p[0] = [p[1]] + p[3]
+
 
 def p_identifier(p):
     '''identifier : SYMBOL
@@ -168,20 +198,25 @@ def p_identifier(p):
                   | self'''
     p[0] = p[1]
 
+
 def p_self(p):
     '''self : SELF'''
     p[0] = Self(location(p))
+
 
 def p_uri(p):
     '''uri : URI'''
     p[0] = Uri(p[1], location=location(p))
 
-## literal objects
+# literal objects
+
+
 def p_literal(p):
     '''literal : INTEGER
                | STRING
                | DOUBLE'''
     p[0] = Value(p[1], location(p))
+
 
 def p_literal_boolean(p):
     '''literal : BOOLEAN'''
@@ -190,7 +225,9 @@ def p_literal_boolean(p):
     else:
         p[0] = Value(False, location(p))
 
-## SYNTAX ERROR
+# SYNTAX ERROR
+
+
 def p_error(p):
     if not p:
         pass
@@ -198,20 +235,24 @@ def p_error(p):
         location = Location(Position(p.lineno, p.lexpos), p.lexer.filename)
         raise RDFScriptSyntax(p, location)
 
+
 def location(p):
     pos = Position(p.lineno(0), p.lexpos(0))
     return Location(pos, p.parser.filename)
+
 
 def make_parser(filename=None):
     parser = yacc.yacc()
     parser.filename = filename
     return parser
 
+
 def make_lexer(filename=None):
     lexer = lex.lex(module=reader)
     lexer.open_brackets = 0
     lexer.filename = filename
     return lexer
+
 
 class RDFScriptParser:
 
@@ -229,12 +270,13 @@ class RDFScriptParser:
                                  tracking=True,
                                  debug=None)
 
+
 class Position:
 
     def __init__(self, line, col):
 
         self._line = line
-        self._col  = col
+        self._col = col
 
     def __repr__(self):
         return format("(%s, %s)" % (self.line, self.col))
@@ -246,6 +288,7 @@ class Position:
     @property
     def col(self):
         return self._col
+
 
 class Location:
 

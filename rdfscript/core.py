@@ -4,8 +4,10 @@ import re
 from .error import (PrefixError,
                     UnexpectedType)
 
+
 class Node(object):
     """Language object."""
+
     def __init__(self, location):
         """
         location is a Location object representing this language
@@ -33,6 +35,7 @@ class Node(object):
     def file(self):
         return self._location.filename
 
+
 class Name(Node):
 
     def __init__(self, *names, location=None):
@@ -45,6 +48,9 @@ class Name(Node):
                  self.names == other.names) or
                 (isinstance(other, Self) and
                  self.names == [Self()]))
+
+    def __str__(self):
+        return '.'.join([str(name) for name in self.names])
 
     def __repr__(self):
         return format("[NAME: %s]" % (self.names))
@@ -79,7 +85,7 @@ class Name(Node):
                     if n > 0:
                         return Name(uri, *rest, location=self.location)
                     else:
-                        return Name(*rest, location= self.location)
+                        return Name(*rest, location=self.location)
             elif isinstance(self.names[n], Uri):
                 if n > 0:
                     uri.extend(self.names[n], delimiter='')
@@ -99,6 +105,7 @@ class Name(Node):
                     uri = lookup
 
         return uri
+
 
 class Uri(Node):
     """Language object for a URI."""
@@ -124,6 +131,9 @@ class Uri(Node):
         return (isinstance(other, Uri) and
                 self.uri == other.uri)
 
+    def __str__(self):
+        return '<' + self.uri + '>'
+
     def __repr__(self):
         return format("[URI: %s]" % self._uri)
 
@@ -143,6 +153,7 @@ class Uri(Node):
     def evaluate(self, context):
         return self
 
+
 class Value(Node):
     """Language object for an RDF literal."""
 
@@ -155,6 +166,9 @@ class Value(Node):
         return (isinstance(other, Value) and
                 type(self.value) == type(other.value) and
                 self.value == other.value)
+
+    def __str__(self):
+        return format("%r" % self.value)
 
     def __repr__(self):
         return format("[VALUE: %s]" % self.value)
@@ -169,6 +183,7 @@ class Value(Node):
     def evaluate(self, context):
         return self
 
+
 class Self(Node):
 
     def __init__(self, location=None):
@@ -179,24 +194,31 @@ class Self(Node):
                 (isinstance(other, Name) and
                  other.names == [Self()]))
 
+    def __str__(self):
+        return "self"
+
     def __repr__(self):
         return format("[SELF]")
 
     def evaluate(self, context):
         return context.current_self
 
+
 class Assignment(Node):
 
     def __init__(self, name, value, location=None):
 
         Node.__init__(self, location)
-        self._name  = name
+        self._name = name
         self._value = value
 
     def __eq__(self, other):
         return (isinstance(other, Assignment) and
                 self.name == other.name and
                 self.value == other.value)
+
+    def __str__(self):
+        return format("%s = %s" % (self.name, self.value))
 
     def __repr__(self):
         return format("[ASSIGN: %s = %s]" %

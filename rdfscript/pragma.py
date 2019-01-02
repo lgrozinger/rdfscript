@@ -11,12 +11,15 @@ class PrefixPragma(Node):
         Node.__init__(self, location)
 
         self._prefix = prefix
-        self._uri    = uri
+        self._uri = uri
 
     def __eq__(self, other):
         return (isinstance(other, PrefixPragma) and
                 self.prefix == other.prefix and
                 self.uri == other.uri)
+
+    def __str__(self):
+        return format("@prefix %s = %s" % (self.prefix, self.uri))
 
     def __repr__(self):
         return format("PREFIX DIRECTIVE: (%s, %s)" % (self.prefix, self.uri))
@@ -31,8 +34,9 @@ class PrefixPragma(Node):
 
     def evaluate(self, context):
 
-        context.bind_prefix(self.prefix, self.uri.evaluate(context))
-        return Name(self.prefix, location=self.location)
+        uri_to_bind = self.uri.evaluate(context)
+        context.bind_prefix(self.prefix, uri_to_bind)
+        return uri_to_bind
 
 
 class DefaultPrefixPragma(Node):
@@ -46,6 +50,9 @@ class DefaultPrefixPragma(Node):
         return (isinstance(other, DefaultPrefixPragma) and
                 self.prefix == other.prefix)
 
+    def __str__(self):
+        return format("@prefix %s" % self.prefix)
+
     def __repr__(self):
         return format("DEFAULTPREFIX DIRECTIVE: (%s)" % self.prefix)
 
@@ -55,7 +62,7 @@ class DefaultPrefixPragma(Node):
 
     def evaluate(self, context):
         context.prefix = self.prefix
-        return Name(self.prefix, location=self.location)
+        return context.uri_for_prefix(self.prefix)
 
 
 class ImportPragma(Node):
@@ -63,11 +70,14 @@ class ImportPragma(Node):
     def __init__(self, target, location=None):
         Node.__init__(self, location)
 
-        self._target =  target
+        self._target = target
 
     def __eq__(self, other):
         return (isinstance(other, ImportPragma) and
                 self.target == other.target)
+
+    def __str__(self):
+        return format("@use %s" % self.target)
 
     def __repr__(self):
         return format("[IMPORT DIRECTIVE: %s]" % self.target)
@@ -82,8 +92,9 @@ class ImportPragma(Node):
         old_prefix = context.prefix
 
         if not context.eval_import(uri):
-            raise FailToImport(self.target, context.get_current_path(), self.location)
-        
+            raise FailToImport(
+                self.target, context.get_current_path(), self.location)
+
         context.prefix = old_prefix
         return self.target
 
@@ -99,6 +110,9 @@ class ExtensionPragma(Node):
         return (isinstance(other, ExtensionPragma) and
                 self.name == other.name and
                 self.args == other.args)
+
+    def __str__(self):
+        return self.__repr__()
 
     def __repr__(self):
         return format("@extension %s(%s)" % (self.name, self.args))
@@ -132,5 +146,5 @@ class ExtensionPragma(Node):
 
         self.evaluate(context)
         ext_class = context.get_extension(self.name)
-        
+
         return ext_class(*self.args)

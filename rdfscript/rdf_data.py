@@ -4,6 +4,7 @@ from .error import InternalError, PrefixError
 from pysbolgraph.SBOL2Serialize import serialize_sboll2
 from pysbolgraph.SBOL2Graph import SBOL2Graph
 
+
 class RDFData(object):
     """
     This class manages the backend RDF graph.

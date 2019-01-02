@@ -121,7 +121,8 @@ class Template(Node):
         context.assign_template(uri, triples)
 
         if self.base is not None:
-            base_extensions = context.lookup_extensions(self.base.evaluate(context))
+            base_extensions = context.lookup_extensions(
+                self.base.evaluate(context))
             for ext in base_extensions:
                 ext_args = ext.args
                 for arg in self.args:
@@ -132,7 +133,7 @@ class Template(Node):
         context.current_self = Name(Self())
         extensions = [ext.evaluate(context) for ext in extensions]
         context.current_self = old_self
-        
+
         context.assign_extensions(uri, extensions)
         return uri
 
@@ -156,6 +157,9 @@ class Parameter(Node):
     def __eq__(self, other):
         return (isinstance(other, Parameter) and
                 self.name == other.name)
+
+    def __str__(self):
+        return str(self.name)
 
     def __repr__(self):
         return format("[RDFscript PARAM: %s]" % self.name)
@@ -186,6 +190,9 @@ class Property(Node):
                 self.name == other.name and
                 self.value == other.value)
 
+    def __str__(self):
+        return format("%s = %s\n" % (self.name, self.value))
+
     def __repr__(self):
         return format("%s = %s\n" % (self.name, self.value))
 
@@ -208,7 +215,7 @@ class Property(Node):
     def as_triples(self, context):
 
         triples = []
-        ### both (names)??? and values can be expansions as well????
+        # both (names)??? and values can be expansions as well????
         if isinstance(self.value, Expansion):
             triples += self.value.as_triples(context)
             triples += [(context.current_self,
@@ -315,7 +322,7 @@ class Expansion(Node):
         for ext in self.get_extensions(env):
             triples = ext.run(env, triples)
         env.current_self = old_self
-        
+
         env.add_triples(triples)
 
         return self.name.evaluate(env)
@@ -345,6 +352,9 @@ class Argument(Node):
         return (isinstance(other, Argument) and
                 self.value == other.value and
                 self.position == other.position)
+
+    def __str__(self):
+        return str(self.value)
 
     def __repr__(self):
         return format("[RDFscript ARG: %s]" % self._value)

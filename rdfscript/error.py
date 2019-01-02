@@ -11,6 +11,7 @@ class RDFScriptError(Exception):
     def __str__(self):
         return format("ERROR: %s\n at %s:\n" % (self._type, self.location))
 
+
 class FailToImport(RDFScriptError):
 
     def __init__(self, target, path, location):
@@ -27,6 +28,7 @@ class FailToImport(RDFScriptError):
         return RDFScriptError.__str__(self) + format("Could not find import '%s'\non path %s\n\n"
                                                      % (self.target, self._path))
 
+
 class RDFScriptSyntax(RDFScriptError):
 
     def __init__(self, token, location):
@@ -41,6 +43,7 @@ class RDFScriptSyntax(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("Did not expect to find '%s'\n\n"
                                                      % self.token)
+
 
 class UnexpectedType(RDFScriptError):
     def __init__(self, expected, actual, location):
@@ -59,7 +62,8 @@ class UnexpectedType(RDFScriptError):
 
     def __str__(self):
         return RDFScriptError.__str__(self) + format("Expected object of type: %s, but found %s\n\n."
-                                          % (self.expected, self.actual))
+                                                     % (self.expected, self.actual))
+
 
 class PrefixError(RDFScriptError):
 
@@ -75,6 +79,7 @@ class PrefixError(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("The prefix '%s' is not bound\n\n." % self.prefix)
 
+
 class TemplateNotFound(RDFScriptError):
 
     def __init__(self, template, location):
@@ -88,6 +93,7 @@ class TemplateNotFound(RDFScriptError):
 
     def __str__(self):
         return RDFScriptError.__str__(self) + format("Cannot find template '%s'.\n\n" % self.template)
+
 
 class NoSuchExtension(RDFScriptError):
 
@@ -103,6 +109,7 @@ class NoSuchExtension(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("Cannot find extension '%s'.\n\n" % self.name)
 
+
 class ExtensionFailure(RDFScriptError):
 
     def __init__(self, message, location):
@@ -117,6 +124,7 @@ class ExtensionFailure(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("%s" % self._message)
 
+
 class UnknownConstruct(RDFScriptError):
 
     def __init__(self, construct, location):
@@ -130,6 +138,7 @@ class UnknownConstruct(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("%s cannot be evaluated.\n\n" % self.construct)
 
+
 class InternalError(RDFScriptError):
 
     def __init__(self, core_object, location):
@@ -142,4 +151,4 @@ class InternalError(RDFScriptError):
         return self._object
 
     def __str__(self):
-        return RDFScriptError.__str__(self) + format("%s caused an internal error.\n\n" % self.construct)
+        return RDFScriptError.__str__(self) + format("%s caused an internal error.\n\n" % self.object)

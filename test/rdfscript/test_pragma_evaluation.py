@@ -1,7 +1,5 @@
 import unittest
 
-import pdb
-
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from rdfscript.core import (Name,
@@ -12,6 +10,7 @@ from rdfscript.pragma import (PrefixPragma,
                               ImportPragma)
 
 from extensions.cardinality import AtLeastOne
+
 
 class PragmaEvaluateTest(unittest.TestCase):
 
@@ -30,7 +29,7 @@ class PragmaEvaluateTest(unittest.TestCase):
         self.env.assign(name.evaluate(self.env), uri)
         value = pragma.evaluate(self.env)
 
-        self.assertEqual(value, Name('test'))
+        self.assertEqual(value, uri)
         self.assertEqual(self.env.uri_for_prefix('test'), uri)
 
     def test_prefix_pragma_uri(self):
@@ -39,7 +38,7 @@ class PragmaEvaluateTest(unittest.TestCase):
         pragma = PrefixPragma('test', Name(uri))
         value = pragma.evaluate(self.env)
 
-        self.assertEqual(value, Name('test'))
+        self.assertEqual(value, uri)
         self.assertEqual(self.env.uri_for_prefix('test'), uri)
 
     def test_default_prefix_pragma(self):
@@ -50,7 +49,7 @@ class PragmaEvaluateTest(unittest.TestCase):
         self.assertNotEqual(self.env.prefix, prefix)
 
         pragma = DefaultPrefixPragma(prefix)
-        self.assertEqual(pragma.evaluate(self.env), Name(prefix))
+        self.assertEqual(pragma.evaluate(self.env), uri)
         self.assertEqual(self.env.uri, uri)
         self.assertEqual(self.env.prefix, prefix)
 
@@ -75,11 +74,10 @@ class PragmaEvaluateTest(unittest.TestCase):
         form = self.parser.parse('use <test/test_files/top>')[0]
 
         form.evaluate(self.env)
-        true = Value(True)
         toptest = Uri('http://top.org/test')
         thisleveltest = Uri('http://thislevel.top/test')
         downthisleveltest = Uri('http://down.thislevel/test')
-        
+
         self.assertEqual(self.env.lookup(toptest), Value(True))
         self.assertEqual(self.env.lookup(thisleveltest), Value(True))
         self.assertEqual(self.env.lookup(downthisleveltest), Value(True))
@@ -92,13 +90,10 @@ class PragmaEvaluateTest(unittest.TestCase):
 
         x.evaluate(self.env)
         use.evaluate(self.env)
-        true = Value(True)
         toptest = Uri('http://top.org/test')
         thisleveltest = Uri('http://thislevel.top/test')
         downthisleveltest = Uri('http://down.thislevel/test')
-        
+
         self.assertEqual(self.env.lookup(toptest), Value(True))
         self.assertEqual(self.env.lookup(thisleveltest), Value(True))
         self.assertEqual(self.env.lookup(downthisleveltest), Value(True))
-
-        
