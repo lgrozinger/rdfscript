@@ -1,7 +1,7 @@
 @prefix myScript = <http://github.com/lgrozinger/thisScript/#>
 @prefix myScript
 
-;; line comments start with '#' and last until the next line
+;; line comments start with ';;' and last until the next line
 
 ;; 'names' can be given values
 strings = "value"
