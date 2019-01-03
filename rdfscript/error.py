@@ -61,7 +61,7 @@ class UnexpectedType(RDFScriptError):
         return self._actual
 
     def __str__(self):
-        return RDFScriptError.__str__(self) + format("Expected object of type: %s, but found %s\n\n."
+        return RDFScriptError.__str__(self) + format("Expected object of type: %s, but found %s.\n\n"
                                                      % (self.expected, self.actual))
 
 

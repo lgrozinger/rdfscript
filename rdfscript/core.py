@@ -101,7 +101,7 @@ class Name(Node):
             if lookup is not None:
                 if isinstance(lookup, Uri):
                     uri = Uri(lookup, location=self.location)
-                else:
+                elif n == len(self.names) - 1:
                     uri = lookup
 
         return uri

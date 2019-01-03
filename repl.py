@@ -1,6 +1,5 @@
 import rdfscript.rdfscriptparser as parser
 from rdfscript.env import Env
-from rdfscript.core import Name
 
 import sys
 
@@ -53,8 +52,9 @@ class REPL:
         self.pprint(result)
 
     def pprint(self, value):
-        string = format("%s" % value)
-        print(string)
+        if value is not None:
+            string = format("%s" % value)
+            print(string)
 
     def finish(self):
 

@@ -1,15 +1,11 @@
-import rdflib
-import sys
 import pathlib
 import logging
 
-from .core import Uri, Value
+from .core import Uri
 
 from .error import (RDFScriptError,
-                    FailToImport,
                     PrefixError)
 
-from .template import Template
 from .rdfscriptparser import RDFScriptParser
 
 from .importer import Importer
@@ -18,6 +14,7 @@ from .extensions import ExtensionManager
 from extensions.error import ExtensionError
 from extensions.triples import TriplePack
 from .rdf_data import RDFData
+
 
 class Env(object):
     def __init__(self,
@@ -77,7 +74,7 @@ class Env(object):
             self._prefix = prefix
 
         return prefix
-        
+
     def uri_for_prefix(self, prefix):
         """Return a Uri object for a Prefix object."""
         try:
@@ -90,7 +87,7 @@ class Env(object):
             return self._rdf.prefix_for_uri(uri)
         except PrefixError:
             raise PrefixError(uri, None)
-        
+
     def add_triples(self, triples):
         """Add a triple of Uri or Value language objects to the RDF graph."""
         for (s, p, o) in triples:
@@ -128,7 +125,7 @@ class Env(object):
 
         pack = TriplePack(triples, self._symbol_table, self._template_table)
         return extension_obj.run(pack).triples
-    
+
     def interpret(self, forms):
         result = None
 
@@ -158,4 +155,3 @@ class Env(object):
     def get_current_path(self):
 
         return [str(p) for p in self._importer.path]
-
