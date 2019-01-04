@@ -16,6 +16,7 @@ class TestExpansionClass(unittest.TestCase):
     def setUp(self):
         self.parser = RDFScriptParser()
         self.env = Env()
+        self.maxDiff = None
 
     def tearDown(self):
         None
@@ -300,7 +301,7 @@ class TestExpansionClass(unittest.TestCase):
         e = forms[1]
 
         self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
-        
+
         t.evaluate(self.env)
         with self.assertRaises(CardinalityError):
             e.evaluate(self.env)
@@ -316,10 +317,52 @@ class TestExpansionClass(unittest.TestCase):
         e = forms[1]
 
         self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
-        
+
         t.evaluate(self.env)
         e.evaluate(self.env)
 
         self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 1)
 
+    def test_add_object_for_inherited_predicate(self):
 
+        forms = self.parser.parse('t()(x = 1)' +
+                                  'e is a t()(x = 2)')
+
+        t = forms[0]
+        e = forms[1]
+
+        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+
+        expect = [(Name('e').evaluate(self.env),
+                   Name('x').evaluate(self.env),
+                   Value(1)),
+                  (Name('e').evaluate(self.env),
+                   Name('x').evaluate(self.env),
+                   Value(2))]
+
+        self.assertEqual(expect, e.as_triples(self.env))
+
+    def test_bodied_expansion_in_template(self):
+
+        forms = self.parser.parse('s()(a = 1)' +
+                                  't()(x = self.e is a s()(b = 2))' +
+                                  'f is a t()')
+
+        s = forms[0]
+        t = forms[1]
+        f = forms[2]
+
+        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
+        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+
+        expect = [(Name('f', 'e').evaluate(self.env),
+                   Name('a').evaluate(self.env),
+                   Value(1)),
+                  (Name('f', 'e').evaluate(self.env),
+                   Name('b').evaluate(self.env),
+                   Value(2)),
+                  (Name('f').evaluate(self.env),
+                   Name('x').evaluate(self.env),
+                   Name('f', 'e').evaluate(self.env))]
+
+        self.assertEqual(expect, f.as_triples(self.env))

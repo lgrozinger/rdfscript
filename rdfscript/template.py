@@ -6,6 +6,8 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
+import pdb
+
 
 class Template(Node):
 
@@ -102,23 +104,32 @@ class Template(Node):
 
         for statement in self.body:
             statement.substitute_params(self.parameters)
-            old_self = env.current_self
-            env.current_self = Name(Self())
             triples += statement.as_triples(env)
-            env.current_self = old_self
         return triples
 
-    def evaluate(self, context):
+    def store_triples(self, context):
 
-        triples = self.as_triples(context)
+        unevaluated_triples = self.as_triples(context)
+
+        def triple_eval(triple):
+            (s, p, o) =  triple
+            return (s.evaluate(context),
+                    p.evaluate(context),
+                    o.evaluate(context))
+
+        evaluated_triples = [triple_eval(triple) for triple in unevaluated_triples]
+
+        uri = self.name.evaluate(context)
+        context.assign_template(uri, evaluated_triples)
+
+        return evaluated_triples
+
+    def store_extensions(self, context):
+
         for ext in self.extensions:
             ext.substitute_params(self.parameters)
 
         extensions = self.extensions
-
-        uri = self.name.evaluate(context)
-
-        context.assign_template(uri, triples)
 
         if self.base is not None:
             base_extensions = context.lookup_extensions(
@@ -134,8 +145,18 @@ class Template(Node):
         extensions = [ext.evaluate(context) for ext in extensions]
         context.current_self = old_self
 
+        uri = self.name.evaluate(context)
         context.assign_extensions(uri, extensions)
-        return uri
+
+        return extensions
+
+    def evaluate(self, context):
+
+        self.store_triples(context)
+
+        self.store_extensions(context)
+
+        return self.name.evaluate(context)
 
 
 class Parameter(Node):
@@ -218,15 +239,14 @@ class Property(Node):
         # both (names)??? and values can be expansions as well????
         if isinstance(self.value, Expansion):
             triples += self.value.as_triples(context)
-            triples += [(context.current_self,
-                         self.name.evaluate(context),
-                         self.value.name.evaluate(context))]
+            triples += [(Name(Self()),
+                         self.name,
+                         self.value)]
             return triples
         else:
-            return [(context.current_self,
-                     self.name.evaluate(context),
-                     self.value.evaluate(context))]
-
+            return [(Name(Self()),
+                     self.name,
+                     self.value)]
 
 class Expansion(Node):
 
@@ -302,13 +322,9 @@ class Expansion(Node):
             raise TemplateNotFound(self.template, self.template.location)
 
         old_self = env.current_self
-        env.current_self = self.name.evaluate(env)
+        env.current_self = self.name
         for statement in self.body:
             triples += statement.as_triples(env)
-
-        triples = [(s.evaluate(env), p.evaluate(env), o.evaluate(env))
-                   for (s, p, o) in triples]
-
         env.current_self = old_self
 
         return triples
@@ -316,11 +332,12 @@ class Expansion(Node):
     def evaluate(self, env):
 
         triples = self.as_triples(env)
-
         old_self = env.current_self
         env.current_self = self.name.evaluate(env)
+
         for ext in self.get_extensions(env):
             triples = ext.run(env, triples)
+
         env.current_self = old_self
 
         env.add_triples(triples)

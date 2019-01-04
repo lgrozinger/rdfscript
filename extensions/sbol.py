@@ -62,7 +62,7 @@ class SBOLCompliantTopLevel:
         subpack = triplepack.sub_pack(self._subject)
         if not SBOLcheckIdentity(subpack):
             message = format("SBOL objects with versions must include their version in their name.")
-            raise SBOLComplianceError(message)
+            #raise SBOLComplianceError(message)
 
         if not SBOLdId(subpack):
             dId = self._subject.split()[-1]

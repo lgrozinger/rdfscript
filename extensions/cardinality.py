@@ -15,7 +15,7 @@ class AtLeastOne:
                     raise CardinalityError(self._prop, 'at least 1', '0')
         else:
             raise CardinalityError(self._prop, 'at least 1', '0')
-                    
+
         return triplepack
 
 class ExactlyOne:
@@ -33,7 +33,7 @@ class ExactlyOne:
                     raise CardinalityError(self._prop, 'exactly 1', number_found)
         else:
             raise CardinalityError(self._prop, 'at least 1', '0')
-                    
+
         return triplepack
 
 class ExactlyN:
