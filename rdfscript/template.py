@@ -199,10 +199,9 @@ class Property(Node):
     def as_triples(self, context):
 
         triples = []
-        # both (names)??? and values can be expansions as well????
         if isinstance(self.value, Expansion):
             triples += self.value.as_triples(context)
-            triples += [(Name(Self()),
+            triples += [(context.current_self,
                          self.name,
                          self.value.name)]
             return triples
@@ -278,11 +277,15 @@ class Expansion(Node):
 
     def as_triples(self, env):
 
+        triples = []
         try:
             triples = env.lookup_template(self.template.evaluate(env))
             triples = [marshal(self.args, triple) for triple in triples]
         except KeyError:
             raise TemplateNotFound(self.template, self.template.location)
+
+        if self.name is not None:
+            triples = replace_self(triples, self.name)
 
         old_self = env.current_self
         env.current_self = self.name
@@ -297,6 +300,8 @@ class Expansion(Node):
         triples = self.as_triples(env)
         old_self = env.current_self
         env.current_self = self.name.evaluate(env)
+
+        triples = evaluate_triples(triples, context)
 
         for ext in self.get_extensions(env):
             triples = ext.run(env, triples)
@@ -348,6 +353,17 @@ class Argument(Node):
     def evaluate(self, context):
         return self.value.evaluate(context)
 
+def evaluate_triples(triples, context):
+
+    def evaluate_triple(triple):
+        (s, p, o) = triple
+        return (s.evaluate(context),
+                p.evaluate(context),
+                o.evaluate(context))
+
+    results = [evaluate_triple(triple) for triple in triples]
+
+    return results
 
 def marshal(arguments, triple):
     (s, p, o) = triple
@@ -388,10 +404,17 @@ def check_param_is_name(param):
     else:
         return True
 
-def with_self(context, _self, fun):
-    old_self = context.current_self
-    context.current_self = _self
-    try:
-        fun()
-    finally:
-        context.current_self = old_self
+def replace_self(triples, replace_with):
+    result = []
+    for triple in triples:
+        (s, p, o) = triple
+        if s == Name(Self()):
+            s = replace_with
+        if p == Name(Self()):
+            p = replace_with
+        if o == Name(Self()):
+            o = replace_with
+
+        result.append((s, p, o))
+
+    return result

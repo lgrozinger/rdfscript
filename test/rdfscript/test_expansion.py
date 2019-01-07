@@ -241,7 +241,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_extensions_from_multiple_templates(self):
 
         forms = self.parser.parse('s(a)(@extension ext(a))' +
-                                  't(a) from s("s")(@extension ext(a))' +
+                                  't(a)(s("s") @extension ext(a))' +
                                   'e is a t("t")')
 
         s = forms[0]
@@ -258,7 +258,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_extensions_self_in_extension_arguments(self):
 
         forms = self.parser.parse('s()(@extension ext(self.name))' +
-                                  't() from s()(@extension ext(self.name))' +
+                                  't()(s() @extension ext(self.name))' +
                                   'e is a t()')
 
         s = forms[0]
@@ -271,11 +271,11 @@ class TestExpansionClass(unittest.TestCase):
                 ExtensionPragma('ext', [Name(Self(), 'name')])]
 
         self.assertEqual(e.get_extensions(self.env), exts)
-        
+
     def test_extensions_in_expansion(self):
 
         forms = self.parser.parse('s(a)(@extension ext(a))' +
-                                  't(a) from s("s")(@extension ext(a))' +
+                                  't(a)(s("s") @extension ext(a))' +
                                   'e is a t("t")(@extension ext("e"))')
 
         s = forms[0]
