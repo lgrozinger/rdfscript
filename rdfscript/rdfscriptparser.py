@@ -1,6 +1,6 @@
 import ply.yacc as yacc
 import ply.lex as lex
-
+import logging
 from . import reader
 
 from .reader import tokens
@@ -77,21 +77,17 @@ def p_extension_args(p):
 
 ## expansions and templates
 
-
-def p_template_with_specialisation(p):
-    '''template : name '(' exprlist ')' FROM name '(' exprlist ')' indentedinstancebody'''
-    p[0] = Template(p[1], p[3], p[10], p[6], p[8], location=location(p))
-
-
-def p_base_template(p):
+def p_template(p):
     '''template : name '(' exprlist ')' indentedinstancebody'''
+    p[0] = Template(p[1], p[3], p[5], location=location(p))
 
-    p[0] = Template(p[1], p[3], p[5], None, [], location(p))
-
-
-def p__expansion(p):
+def p_expansion(p):
     '''expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
     p[0] = Expansion(p[1], p[3], p[5], p[7], location(p))
+
+def p_anon_expansion(p):
+    '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
+    p[0] = Expansion(None, p[1], p[3], p[5], location(p))
 
 # def p_triple(p):
 #     '''triple : name name expr'''
@@ -136,6 +132,7 @@ def p_empty_bodystatements(p):
 def p_bodystatement(p):
     '''bodystatement : property
                      | expansion
+                     | anon_expansion
                      | extension'''
     p[0] = p[1]
 
@@ -268,7 +265,7 @@ class RDFScriptParser:
         return self.parser.parse(script,
                                  lexer=self.scanner,
                                  tracking=True,
-                                 debug=None)
+                                 debug=logging.getLogger())
 
 
 class Position:

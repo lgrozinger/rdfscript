@@ -6,34 +6,22 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
-import pdb
-
-
 class Template(Node):
 
-    def __init__(self, name, parameters, body, base, args, location=None):
+    def __init__(self, name, parameters, body, location=None):
 
         Node.__init__(self, location)
         self._name = name
 
         self._parameters = []
         for param in parameters:
-            self.check_param(param)
+            check_param_is_name(param)
             self._parameters.append(Parameter(param.names[0],
                                               parameters.index(param),
                                               location))
 
-        self._base = base
-        self._args = [Argument(arg, args.index(arg), location=arg.location)
-                      for arg in args]
         self._extensions = []
-        self._body = []
-        for statement in body:
-            if isinstance(statement, ExtensionPragma):
-                statement.substitute_params(self._parameters)
-                self._extensions.append(statement)
-            else:
-                self._body.append(statement)
+        self._body = body
 
     @property
     def name(self):
@@ -44,14 +32,6 @@ class Template(Node):
         return self._parameters
 
     @property
-    def base(self):
-        return self._base
-
-    @property
-    def args(self):
-        return self._args
-
-    @property
     def body(self):
         return self._body
 
@@ -59,52 +39,29 @@ class Template(Node):
     def extensions(self):
         return self._extensions
 
-    def check_param(self, param):
-        if not isinstance(param, Name):
-            raise UnexpectedType(Name, param, self.location)
-        elif isinstance(param.names[0], Uri):
-            raise UnexpectedType(Name, param.names[0], self.location)
-        elif isinstance(param.names[0], Self):
-            raise UnexpectedType(Name, param.names[0], self.location)
-        elif len(param.names) > 1:
-            raise UnexpectedType(Name, param, self.location)
-        else:
-            return True
-
     def __eq__(self, other):
         return (isinstance(other, Template) and
                 self._name == other.name and
                 self._parameters == other.parameters and
-                self._base == other.base and
                 self._body == other.body)
 
     def __repr__(self):
-        return format("[TEMPLATE: %s (%s) from %s\n(%s)\n"
-                      % (self.name, self.parameters, self.base, self.body))
+        return format("[TEMPLATE: %s (%s)\n(%s)\n"
+                      % (self.name, self.parameters, self.body))
 
-    def forward_parameters(self):
-        for arg in self.args:
-            for parameter in self.parameters:
-                if parameter.is_substitute(arg.value):
-                    arg.value = parameter
-
-    def as_triples(self, env):
+    def as_triples(self, context):
         triples = []
 
-        if self.base is not None:
-            triples += env.lookup_template(self.base.evaluate(env))
-            self.forward_parameters()
-
-            eval_args = [Argument(arg.value.evaluate(env),
-                                  arg.position,
-                                  location=arg.location)
-                         for arg in self.args]
-
-            triples = [marshal(eval_args, triple) for triple in triples]
-
+        old_self = context.current_self
+        context.current_self = Name(Self())
         for statement in self.body:
-            statement.substitute_params(self.parameters)
-            triples += statement.as_triples(env)
+            if not isinstance(statement, ExtensionPragma):
+                triples += statement.as_triples(context)
+
+        context.current_self = old_self
+
+        triples = sub_params_in_triples(self.parameters, triples)
+
         return triples
 
     def store_triples(self, context):
@@ -124,21 +81,23 @@ class Template(Node):
 
         return evaluated_triples
 
+    def collect_extensions(self, context):
+
+        collected = []
+
+        for statement in self.body:
+            if isinstance(statement, ExtensionPragma):
+                collected.append(statement)
+            elif isinstance(statement, Expansion) and statement.name is None:
+                collected += statement.get_extensions(context)
+
+        return collected
+
     def store_extensions(self, context):
 
-        for ext in self.extensions:
+        extensions = self.collect_extensions(context)
+        for ext in extensions:
             ext.substitute_params(self.parameters)
-
-        extensions = self.extensions
-
-        if self.base is not None:
-            base_extensions = context.lookup_extensions(
-                self.base.evaluate(context))
-            for ext in base_extensions:
-                ext_args = ext.args
-                for arg in self.args:
-                    ext_args = [arg.marshal(ext_arg) for ext_arg in ext_args]
-                extensions += [ExtensionPragma(ext.name, ext_args)]
 
         old_self = context.current_self
         context.current_self = Name(Self())
@@ -152,9 +111,13 @@ class Template(Node):
 
     def evaluate(self, context):
 
-        self.store_triples(context)
+        old_self = context.current_self
+        context.current_self = Name(Self())
 
+        self.store_triples(context)
         self.store_extensions(context)
+
+        context.current_self = old_self
 
         return self.name.evaluate(context)
 
@@ -241,10 +204,10 @@ class Property(Node):
             triples += self.value.as_triples(context)
             triples += [(Name(Self()),
                          self.name,
-                         self.value)]
+                         self.value.name)]
             return triples
         else:
-            return [(Name(Self()),
+            return [(context.current_self,
                      self.name,
                      self.value)]
 
@@ -394,3 +357,41 @@ def marshal(arguments, triple):
         o = argument.marshal(o)
 
     return (s, p, o)
+
+def sub_params_in_triples(parameters, triples):
+
+    def sub(parameters, triple):
+        (s, p, o) = triple
+        for parameter in parameters:
+            if parameter.is_substitute(s):
+                s = parameter
+            if parameter.is_substitute(p):
+                p = parameter
+            if parameter.is_substitute(o):
+                o = parameter
+
+        return (s, p, o)
+
+    subbed = [sub(parameters, triple) for triple in triples]
+
+    return subbed
+
+def check_param_is_name(param):
+    if not isinstance(param, Name):
+        raise UnexpectedType(Name, param, param.location)
+    elif isinstance(param.names[0], Uri):
+        raise UnexpectedType(Name, param.names[0], param.location)
+    elif isinstance(param.names[0], Self):
+        raise UnexpectedType(Name, param.names[0], param.location)
+    elif len(param.names) > 1:
+        raise UnexpectedType(Name, param, param.location)
+    else:
+        return True
+
+def with_self(context, _self, fun):
+    old_self = context.current_self
+    context.current_self = _self
+    try:
+        fun()
+    finally:
+        context.current_self = old_self

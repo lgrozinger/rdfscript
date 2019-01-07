@@ -27,9 +27,9 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name('e').evaluate(self.env), Name('x').evaluate(self.env), Value(12345))]
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(12345))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -39,10 +39,10 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name('e').evaluate(self.env), Name('x').evaluate(self.env), Value(12345)),
-                  (Name('e').evaluate(self.env), Name('y').evaluate(self.env), Value(54321))]
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(12345)),
+                  (Name('e'), Name('y'), Value(54321))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -52,9 +52,9 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name('e').evaluate(self.env), Uri('http://predicate.com'), Value(1))]
+        expect = [(Name(Self()), Uri('http://predicate.com'), Value(1))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -66,8 +66,8 @@ class TestExpansionClass(unittest.TestCase):
 
         self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
 
-        expect = [(Name('e').evaluate(self.env), Uri('http://predicate.com'), Value(1)),
-                  (Name('e').evaluate(self.env), Name('x').evaluate(self.env), Value(2))]
+        expect = [(Name(Self()), Name(Uri('http://predicate.com')), Value(1)),
+                  (Name('e'), Name('x'), Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -79,8 +79,8 @@ class TestExpansionClass(unittest.TestCase):
 
         self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
 
-        expect = [(Name('e').evaluate(self.env), Name('e').evaluate(self.env), Value(1)),
-                  (Name('e').evaluate(self.env), Name('x').evaluate(self.env), Value(2))]
+        expect = [(Name(Self()), Name(Self()), Value(1)),
+                  (Name('e'), Name('x'), Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -92,7 +92,7 @@ class TestExpansionClass(unittest.TestCase):
 
         self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
 
-        expect = [(Name('e').evaluate(self.env), Name('x').evaluate(self.env), Name('e').evaluate(self.env))]
+        expect = [(Name(Self()), Name('x'), Name(Self()))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -104,8 +104,8 @@ class TestExpansionClass(unittest.TestCase):
 
         self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
 
-        expect = [(Name('e').evaluate(self.env), Name('e', 'p').evaluate(self.env), Value(1)),
-                  (Name('e').evaluate(self.env), Name('x').evaluate(self.env), Value(2))]
+        expect = [(Name(Self()), Name(Self(), 'p'), Value(1)),
+                  (Name('e'), Name('x'), Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -118,11 +118,11 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[1]
         f = forms[2]
 
-        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        s.evaluate(self.env)
+        t.evaluate(self.env)
 
         expect = [(Name('e').evaluate(self.env), Name('z').evaluate(self.env), Value(True)),
-                  (Name('f').evaluate(self.env), Name('x').evaluate(self.env), Name('e').evaluate(self.env))]
+                  (Name(Self()), Name('x').evaluate(self.env), Name('e').evaluate(self.env))]
 
         self.assertEqual(expect, f.as_triples(self.env))
 

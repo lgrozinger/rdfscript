@@ -6,6 +6,7 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.pragma import ExtensionPragma
 from rdfscript.core import Name, Uri, Value
 from rdfscript.template import (Template,
+                                Expansion,
                                 Property)
 
 
@@ -26,9 +27,7 @@ class ParserTemplateTest(unittest.TestCase):
         expected_template = Template(Name('DNASequence'),
                                      [],
                                      [Property(Name('encoding'),
-                                               Name(Uri('SBOL:IUPACDNA')))],
-                                     None,
-                                     [])
+                                               Name(Uri('SBOL:IUPACDNA')))])
 
         self.assertEqual(forms, [expected_template])
 
@@ -36,35 +35,27 @@ class ParserTemplateTest(unittest.TestCase):
         script = 'DNASequence()'
         forms = self.parser.parse(script)
 
-        expected_template = Template(Name('DNASequence'),
-                                     [],
-                                     [],
-                                     None,
-                                     [])
+        expected_template = Template(Name('DNASequence'), [], [])
 
         self.assertEqual(forms, [expected_template])
 
     def test_empty_template_noargs(self):
-        script = 'DNASequence() from Other()'
+        script = 'DNASequence()(Other())'
         forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [],
-                                     [],
-                                     Name('Other'),
-                                     [])
+                                     [Expansion(None, Name('Other'), [], [])])
 
         self.assertEqual(forms, [expected_template])
 
     def test_empty_template_args(self):
-        script = 'DNASequence(x, y, z) from Other(x)'
+        script = 'DNASequence(x, y, z)(Other(x))'
         forms = self.parser.parse(script)
 
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'), Name('y'), Name('z')],
-                                     [],
-                                     Name('Other'),
-                                     [Name('x')])
+                                     [Expansion(None, Name('Other'), [Name('x')], [])])
 
         self.assertEqual(forms, [expected_template])
 
@@ -74,8 +65,6 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('DNASequence'),
                                      [Name('x'), Name('y'), Name('z')],
-                                     [],
-                                     None,
                                      [])
 
         self.assertEqual(forms, [expected_template])
@@ -87,9 +76,7 @@ class ParserTemplateTest(unittest.TestCase):
         expected_template = Template(Name('DNASequence'),
                                      [Name('x')],
                                      [Property(Name('encoding'),
-                                               Name(Uri('SBOL:IUPACDNA')))],
-                                     None,
-                                     [])
+                                               Name(Uri('SBOL:IUPACDNA')))])
 
         self.assertEqual(forms, [expected_template])
 
@@ -102,22 +89,19 @@ class ParserTemplateTest(unittest.TestCase):
                                       Name('y'),
                                       Name('z')],
                                      [Property(Name('encoding'),
-                                               Name(Uri('SBOL:IUPACDNA')))],
-                                     None,
-                                     [])
+                                               Name(Uri('SBOL:IUPACDNA')))])
 
         self.assertEqual(forms, [expected_template])
 
     def test_template_onearg_base(self):
-        script = 'B(x)(x = 42)\nA(x) from B(x)(encoding = <SBOL:IUPACDNA>)'
+        script = 'B(x)(x = 42)\nA(x)(B(x) encoding = <SBOL:IUPACDNA>)'
         forms = self.parser.parse(script)
 
         expected_template = Template(Name('A'),
                                      [Name('x')],
-                                     [Property(Name('encoding'),
-                                               Name(Uri('SBOL:IUPACDNA')))],
-                                     Name('B'),
-                                     [Name('x')])
+                                     [Expansion(None, Name('B'), [Name('x')], []),
+                                      Property(Name('encoding'),
+                                               Name(Uri('SBOL:IUPACDNA')))])
 
         self.assertEqual([forms[1]], [expected_template])
 
@@ -129,9 +113,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [Property(Name('x'), e)],
-                                     None,
-                                     [])
+                                     [Property(Name('x'), e)])
 
         self.assertEqual(expected_template, forms[0])
 
@@ -143,9 +125,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [Property(Name('x'), e)],
-                                     None,
-                                     [])
+                                     [Property(Name('x'), e)])
 
         self.assertEqual(expected_template, forms[0])
 
@@ -157,9 +137,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [e],
-                                     None,
-                                     [])
+                                     [e])
 
         self.assertEqual(expected_template, forms[0])
 
@@ -171,9 +149,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [e],
-                                     None,
-                                     [])
+                                     [e])
 
         self.assertEqual(expected_template, forms[0])
 
@@ -185,9 +161,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [Property(Name('x'), e)],
-                                     None,
-                                     [])
+                                     [Property(Name('x'), e)])
 
         self.assertEqual(expected_template, forms[0])
 
@@ -199,9 +173,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [e],
-                                     None,
-                                     [])
+                                     [e])
 
         self.assertEqual(expected_template, forms[0])
 
@@ -213,10 +185,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [ExtensionPragma(Name('ExtensionName'),
-                                                      [])],
-                                     None,
-                                     [])
+                                     [ExtensionPragma('ExtensionName', [])])
 
         self.assertEqual(expected_template, a)
 
@@ -228,10 +197,7 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [ExtensionPragma(Name('ExtensionName'),
-                                                      [Value(12345)])],
-                                     None,
-                                     [])
+                                     [ExtensionPragma('ExtensionName', [Value(12345)])])
 
         self.assertEqual(expected_template, a)
 
@@ -243,11 +209,9 @@ class ParserTemplateTest(unittest.TestCase):
 
         expected_template = Template(Name('A'),
                                      [],
-                                     [ExtensionPragma(Name('ExtensionName'),
+                                     [ExtensionPragma('ExtensionName',
                                                       [Value(12345),
-                                                       Value(67890)])],
-                                     None,
-                                     [])
+                                                       Value(67890)])])
 
         self.assertEqual(expected_template, a)
 

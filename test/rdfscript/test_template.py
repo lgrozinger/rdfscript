@@ -9,7 +9,9 @@ from rdfscript.core import (Name,
 
 from rdfscript.template import (Template,
                                 Parameter,
-                                Argument)
+                                Argument,
+                                check_param_is_name,
+                                sub_params_in_triples)
 
 from rdfscript.pragma import ExtensionPragma
 
@@ -28,7 +30,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_init(self):
 
-        template = Template(Name('x'), [], [], None, [])
+        template = Template(Name('x'), [], [])
 
         self.assertEqual(template.name, Name('x'))
 
@@ -36,37 +38,37 @@ class TemplateClassTest(unittest.TestCase):
 
         name = Name('x')
         notname = Value(1)
-        template = Template(Name('x'), [], [], None, [])
+        template = Template(Name('x'), [], [])
 
         with self.assertRaises(UnexpectedType):
-            template.check_param(notname)
+            check_param_is_name(notname)
 
-        self.assertTrue(template.check_param(name))
+        self.assertTrue(check_param_is_name(name))
 
     def test_check_param_not_simple_name(self):
 
         notparam = Name(Uri('x'))
-        template = Template(Name('x'), [], [], None, [])
+        template = Template(Name('x'), [], [])
 
         with self.assertRaises(UnexpectedType):
-            template.check_param(notparam)
+            check_param_is_name(notparam)
 
         notparam = Name(Self())
 
         with self.assertRaises(UnexpectedType):
-            template.check_param(notparam)
+            check_param_is_name(notparam)
 
     def test_check_param_too_many_names(self):
 
         notparam = Name('x', 'y')
-        template = Template(Name('x'), [], [], None, [])
+        template = Template(Name('x'), [], [])
 
         with self.assertRaises(UnexpectedType):
-            template.check_param(notparam)
+            check_param_is_name(notparam)
 
     def test_as_triples_empty(self):
 
-        template = Template(Name('x'), [], [], None, [])
+        template = Template(Name('x'), [], [])
 
         self.assertEqual(template.as_triples(self.env), [])
 
@@ -100,7 +102,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_base(self):
 
-        forms = self.parser.parse('a()(x = 1) b() from a()(y = 2)')
+        forms = self.parser.parse('a()(x = 1) b()(a() y = 2)')
         base = forms[0]
         specialised = forms[1]
 
@@ -114,8 +116,8 @@ class TemplateClassTest(unittest.TestCase):
     def test_as_triples_with_base_chain(self):
 
         forms = self.parser.parse('a()(x=1)' +
-                                  'b() from a()(y=2)' +
-                                  'c() from b()(z=3)')
+                                  'b()(a() y=2)' +
+                                  'c()(b() z=3)')
         a = forms[0]
         b = forms[1]
         c = forms[2]
@@ -131,7 +133,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_base_with_self(self):
 
-        forms = self.parser.parse('a()(x = self) b() from a()(y = 2)')
+        forms = self.parser.parse('a()(x = self) b()(a() y = 2)')
         base = forms[0]
         specialised = forms[1]
 
@@ -152,7 +154,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_base_with_params(self):
 
-        forms = self.parser.parse('a(x)(x = 12345) b(y) from a(y)')
+        forms = self.parser.parse('a(x)(x = 12345) b(y)(a(y))')
         a = forms[0]
         b = forms[1]
 
@@ -163,7 +165,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_base_with_args(self):
 
-        forms = self.parser.parse('a(x)(x = 12345) b() from a(12345)')
+        forms = self.parser.parse('a(x)(x = 12345) b()(a(12345))')
         a = forms[0]
         b = forms[1]
 
@@ -175,8 +177,8 @@ class TemplateClassTest(unittest.TestCase):
     def test_as_triples_multiple_base_args_and_parameters(self):
 
         forms = self.parser.parse('a(x, y)(x = y)' +
-                                  'b(x, y) from a(x, "string")(z=y)' +
-                                  'c(x, y) from b(1, 2)(x=y)')
+                                  'b(x, y)(a(x, "string") z=y)' +
+                                  'c(x, y)(b(1, 2) x=y)')
         a = forms[0]
         b = forms[1]
         c = forms[2]
@@ -189,16 +191,6 @@ class TemplateClassTest(unittest.TestCase):
                   (Self(), Parameter('x', 0), Parameter('y', 0))]
 
         self.assertEqual(expect, c.as_triples(self.env))
-
-    def test_forward_parameters(self):
-
-        forms = self.parser.parse('b(y) from a(y)')
-        b = forms[0]
-
-        self.assertEqual(b.args, [Argument(Name('y'), 0)])
-        b.forward_parameters()
-
-        self.assertEqual(b.args, [Argument(Parameter('y', 0), 0)])
 
     def test_current_self_preserved(self):
 
@@ -267,7 +259,7 @@ class TemplateClassTest(unittest.TestCase):
     def test_as_triples_with_expansion_as_argument(self):
 
         forms = self.parser.parse('r()(y=1) s(exp)(x=exp)' +
-                                  't() from s(e is a r())')
+                                  't()(s(e is a r()))')
 
         r = forms[0]
         s = forms[1]
@@ -301,8 +293,8 @@ class TemplateClassTest(unittest.TestCase):
         forms = self.parser.parse('t()(@extension E() @extension F())')
         t = forms[0]
 
-        self.assertEqual(t.extensions, [ExtensionPragma('E', []), ExtensionPragma('F', [])])
-
+        expect = [ExtensionPragma('E', []), ExtensionPragma('F', [])]
+        self.assertEqual(t.collect_extensions(self.env), expect)
 
     def test_evaluate_stores_extensions(self):
 
@@ -317,7 +309,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_evaluate_stores_base_extensions(self):
 
-        forms = self.parser.parse('s()(@extension F()) t() from s()(@extension E())')
+        forms = self.parser.parse('s()(@extension F()) t()(s() @extension E())')
         s = forms[0]
         t = forms[1]
 
@@ -434,3 +426,14 @@ class TemplateClassTest(unittest.TestCase):
                    Name(Self(), 'e'))]
 
         self.assertEqual(expect, t.as_triples(self.env))
+
+    def test_sub_params_in_triples(self):
+
+        params = [Parameter('x', 0), Parameter('y', 1)]
+        unsubbed = [(Name('x'), Name('y'), Value(12345)),
+                    (Name('z'), Name('x'), Name('y'))]
+
+        subbed = [(params[0], params[1], Value(12345)),
+                    (Name('z'), params[0], params[1])]
+
+        self.assertEqual(sub_params_in_triples(params, unsubbed), subbed)
