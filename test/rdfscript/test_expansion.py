@@ -1,6 +1,5 @@
 import unittest
 
-from rdfscript.template import (Expansion)
 from rdfscript.core import (Name,
                             Value,
                             Uri,
@@ -10,6 +9,7 @@ from rdfscript.env import Env
 from rdfscript.rdfscriptparser import RDFScriptParser
 
 from extensions.cardinality import CardinalityError
+
 
 class TestExpansionClass(unittest.TestCase):
 
@@ -29,7 +29,7 @@ class TestExpansionClass(unittest.TestCase):
 
         t.evaluate(self.env)
 
-        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(12345))]
+        expect = [(Name('e'), Name('x').evaluate(self.env), Value(12345))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -41,7 +41,7 @@ class TestExpansionClass(unittest.TestCase):
 
         t.evaluate(self.env)
 
-        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(12345)),
+        expect = [(Name('e'), Name('x').evaluate(self.env), Value(12345)),
                   (Name('e'), Name('y'), Value(54321))]
 
         self.assertEqual(expect, e.as_triples(self.env))
@@ -54,19 +54,20 @@ class TestExpansionClass(unittest.TestCase):
 
         t.evaluate(self.env)
 
-        expect = [(Name(Self()), Uri('http://predicate.com'), Value(1))]
+        expect = [(Name('e'), Uri('http://predicate.com'), Value(1))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
     def test_as_triples_args_with_body(self):
 
-        forms = self.parser.parse('t(x)(<http://predicate.com>=x) e is a t(1)(x=2)')
+        forms = self.parser.parse(
+            't(x)(<http://predicate.com>=x) e is a t(1)(x=2)')
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name(Self()), Name(Uri('http://predicate.com')), Value(1)),
+        expect = [(Name('e'), Uri('http://predicate.com'), Value(1)),
                   (Name('e'), Name('x'), Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
@@ -77,9 +78,9 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name(Self()), Name(Self()), Value(1)),
+        expect = [(Name('e'), Name('e'), Value(1)),
                   (Name('e'), Name('x'), Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
@@ -90,9 +91,9 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name(Self()), Name('x'), Name(Self()))]
+        expect = [(Name('e'), Name('x').evaluate(self.env), Name('e'))]
 
         self.assertEqual(expect, e.as_triples(self.env))
 
@@ -102,9 +103,9 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name(Self()), Name(Self(), 'p'), Value(1)),
+        expect = [(Name('e'), Name('e', 'p'), Value(1)),
                   (Name('e'), Name('x'), Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
@@ -121,8 +122,9 @@ class TestExpansionClass(unittest.TestCase):
         s.evaluate(self.env)
         t.evaluate(self.env)
 
-        expect = [(Name('e').evaluate(self.env), Name('z').evaluate(self.env), Value(True)),
-                  (Name(Self()), Name('x').evaluate(self.env), Name('e').evaluate(self.env))]
+        e = Name('e').evaluate(self.env)
+        expect = [(e, Name('z').evaluate(self.env), Value(True)),
+                  (Name('f'), Name('x').evaluate(self.env), e)]
 
         self.assertEqual(expect, f.as_triples(self.env))
 
@@ -135,13 +137,13 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[1]
         f = forms[2]
 
-        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        s.evaluate(self.env)
+        t.evaluate(self.env)
 
         expect = [(Name('e').evaluate(self.env),
                    Name('z').evaluate(self.env),
                    Name('e').evaluate(self.env)),
-                  (Name('f').evaluate(self.env),
+                  (Name('f'),
                    Name('x').evaluate(self.env),
                    Name('e').evaluate(self.env))]
 
@@ -155,29 +157,12 @@ class TestExpansionClass(unittest.TestCase):
         s = forms[0]
         f = forms[1]
 
-        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
+        s.evaluate(self.env)
 
         self.env.current_self = Uri('e')
-        expect = [(Uri('ef'),
+        expect = [(Name(Self(), 'f'),
                    Name('z').evaluate(self.env),
-                   Uri('ef'))]
-
-        self.assertEqual(expect, f.as_triples(self.env))
-
-    def test_as_triples_with_unresolved_context(self):
-
-        forms = self.parser.parse('s()(z=self)' +
-                                  'self.f is a s()')
-
-        s = forms[0]
-        f = forms[1]
-
-        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
-
-        self.env.current_self = Name(Self(), 'e')
-        expect = [(Name(Self(), 'e', 'f'),
-                   Name('z').evaluate(self.env),
-                   Name(Self(), 'e', 'f'))]
+                   Name(Self(), 'f'))]
 
         self.assertEqual(expect, f.as_triples(self.env))
 
@@ -190,15 +175,15 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[1]
         f = forms[2]
 
-        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        s.evaluate(self.env)
+        t.evaluate(self.env)
 
-        expect = [(Name('f', 'e').evaluate(self.env),
+        expect = [(Name('f', 'e'),
                    Name('z').evaluate(self.env),
-                   Name('f', 'e').evaluate(self.env)),
-                  (Name('f').evaluate(self.env),
+                   Name('f', 'e')),
+                  (Name('f'),
                    Name('x').evaluate(self.env),
-                   Name('f', 'e').evaluate(self.env))]
+                   Name('f', 'e'))]
 
         self.assertEqual(expect, f.as_triples(self.env))
 
@@ -250,8 +235,8 @@ class TestExpansionClass(unittest.TestCase):
 
         s.evaluate(self.env)
         t.evaluate(self.env)
-        exts = [ExtensionPragma('ext', [Value("t")]),
-                ExtensionPragma('ext', [Value("s")])]
+        exts = [ExtensionPragma('ext', [Value("s")]),
+                ExtensionPragma('ext', [Value("t")])]
 
         self.assertEqual(e.get_extensions(self.env), exts)
 
@@ -285,12 +270,11 @@ class TestExpansionClass(unittest.TestCase):
         s.evaluate(self.env)
         t.evaluate(self.env)
 
-        exts = [ExtensionPragma('ext', [Value("t")]),
-                ExtensionPragma('ext', [Value("s")]),
+        exts = [ExtensionPragma('ext', [Value("s")]),
+                ExtensionPragma('ext', [Value("t")]),
                 ExtensionPragma('ext', [Value("e")])]
 
         self.assertEqual(e.get_extensions(self.env), exts)
-
 
     def test_evaluate_runs_extensions_with_error(self):
 
@@ -300,13 +284,15 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
+        graph_triples = list(self.env._rdf._g.triples((None, None, None)))
+        self.assertEqual(len(graph_triples), 0)
 
         t.evaluate(self.env)
         with self.assertRaises(CardinalityError):
             e.evaluate(self.env)
 
-        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
+        graph_triples = list(self.env._rdf._g.triples((None, None, None)))
+        self.assertEqual(len(graph_triples), 0)
 
     def test_evaluate_runs_extensions(self):
 
@@ -316,12 +302,14 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 0)
+        graph_triples = list(self.env._rdf._g.triples((None, None, None)))
+        self.assertEqual(len(graph_triples), 0)
 
         t.evaluate(self.env)
         e.evaluate(self.env)
 
-        self.assertEqual(len(list(self.env._rdf._g.triples((None, None, None)))), 1)
+        graph_triples = list(self.env._rdf._g.triples((None, None, None)))
+        self.assertEqual(len(graph_triples), 1)
 
     def test_add_object_for_inherited_predicate(self):
 
@@ -331,13 +319,13 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[0]
         e = forms[1]
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name('e').evaluate(self.env),
+        expect = [(Name('e'),
                    Name('x').evaluate(self.env),
                    Value(1)),
-                  (Name('e').evaluate(self.env),
-                   Name('x').evaluate(self.env),
+                  (Name('e'),
+                   Name('x'),
                    Value(2))]
 
         self.assertEqual(expect, e.as_triples(self.env))
@@ -352,17 +340,17 @@ class TestExpansionClass(unittest.TestCase):
         t = forms[1]
         f = forms[2]
 
-        self.env.assign_template(s.name.evaluate(self.env), s.as_triples(self.env))
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        s.evaluate(self.env)
+        t.evaluate(self.env)
 
-        expect = [(Name('f', 'e').evaluate(self.env),
+        expect = [(Name('f', 'e'),
                    Name('a').evaluate(self.env),
                    Value(1)),
-                  (Name('f', 'e').evaluate(self.env),
+                  (Name('f', 'e'),
                    Name('b').evaluate(self.env),
                    Value(2)),
-                  (Name('f').evaluate(self.env),
+                  (Name('f'),
                    Name('x').evaluate(self.env),
-                   Name('f', 'e').evaluate(self.env))]
+                   Name('f', 'e'))]
 
         self.assertEqual(expect, f.as_triples(self.env))

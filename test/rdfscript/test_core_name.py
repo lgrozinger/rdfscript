@@ -197,3 +197,27 @@ class CoreNameTest(unittest.TestCase):
 
         self.assertEqual(name.evaluate(self.env),
                          Uri('http://literal.eg/literal'))
+
+    def test_replace_self_with_name(self):
+
+        name = Name(Self(), 'name')
+
+        name.replace_self(Name('self'))
+
+        self.assertEqual(name, Name('self', 'name'))
+
+    def test_replace_self_with_dotted_name(self):
+
+        name = Name(Self(), 'name')
+
+        name.replace_self(Name('self', 'self', 'self'))
+
+        self.assertEqual(name, Name('self', 'self', 'self', 'name'))
+
+    def test_replace_self_with_uri(self):
+
+        name = Name(Self(), 'name')
+
+        name.replace_self(Uri('self'))
+
+        self.assertEqual(name, Name(Uri('self'), 'name'))

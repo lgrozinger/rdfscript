@@ -9,7 +9,6 @@ from rdfscript.core import (Name,
 
 from rdfscript.template import (Template,
                                 Parameter,
-                                Argument,
                                 check_param_is_name,
                                 sub_params_in_triples)
 
@@ -38,7 +37,6 @@ class TemplateClassTest(unittest.TestCase):
 
         name = Name('x')
         notname = Value(1)
-        template = Template(Name('x'), [], [])
 
         with self.assertRaises(UnexpectedType):
             check_param_is_name(notname)
@@ -48,7 +46,6 @@ class TemplateClassTest(unittest.TestCase):
     def test_check_param_not_simple_name(self):
 
         notparam = Name(Uri('x'))
-        template = Template(Name('x'), [], [])
 
         with self.assertRaises(UnexpectedType):
             check_param_is_name(notparam)
@@ -61,7 +58,6 @@ class TemplateClassTest(unittest.TestCase):
     def test_check_param_too_many_names(self):
 
         notparam = Name('x', 'y')
-        template = Template(Name('x'), [], [])
 
         with self.assertRaises(UnexpectedType):
             check_param_is_name(notparam)
@@ -158,7 +154,8 @@ class TemplateClassTest(unittest.TestCase):
         a = forms[0]
         b = forms[1]
 
-        self.env.assign_template(a.name.evaluate(self.env), a.as_triples(self.env))
+        self.env.assign_template(a.name.evaluate(
+            self.env), a.as_triples(self.env))
         expect = [(Self(), Parameter('y', 0), Value(12345))]
 
         self.assertEqual(expect, b.as_triples(self.env))
@@ -249,9 +246,11 @@ class TemplateClassTest(unittest.TestCase):
 
         s.evaluate(self.env)
 
+        e = Name(Self(), 'e')
+
         expect_s = [(Name(Self()), Name('z'), Self())]
-        expect_t = [(Name(Self(), 'e'), Name('z').evaluate(self.env), Name(Self(), 'e')),
-                    (Name(Self()), Name('x'), Name(Self(), 'e'))]
+        expect_t = [(e, Name('z').evaluate(self.env), e),
+                    (Name(Self()), Name('x'), e)]
 
         self.assertEqual(expect_s, s.as_triples(self.env))
         self.assertEqual(expect_t, t.as_triples(self.env))
@@ -268,9 +267,9 @@ class TemplateClassTest(unittest.TestCase):
         r.evaluate(self.env)
         s.evaluate(self.env)
 
-        expect = [(Self(),
-                   Name('x').evaluate(self.env),
-                   Name('e').evaluate(self.env))]
+        e = self.parser.parse('e is a r()')[0]
+
+        expect = [(Self(), Name('x').evaluate(self.env), e)]
 
         self.assertEqual(expect, t.as_triples(self.env))
 
@@ -283,10 +282,261 @@ class TemplateClassTest(unittest.TestCase):
 
         t.evaluate(self.env)
 
+        found = self.env.lookup_template(t.name.evaluate(self.env))
         expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
                   (Name(Self()), Name('y').evaluate(self.env), Value(2))]
 
-        self.assertEqual(self.env.lookup_template(t.name.evaluate(self.env)), expect)
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_of_base(self):
+
+        forms = self.parser.parse('s()(z=3)t()(x=1 y=2 s())')
+        s = forms[0]
+        t = forms[1]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), Value(3))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_of_bases(self):
+
+        forms = self.parser.parse('q()(a=4) s()(z=3)t()(x=1 y=2 s() q())')
+        q = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        q.evaluate(self.env)
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), Value(3)),
+                  (Name(Self()), Name('a').evaluate(self.env), Value(4))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_of_chained_bases(self):
+
+        forms = self.parser.parse('q()(a=4) s()(z=3 q())t()(x=1 y=2 s())')
+        q = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        q.evaluate(self.env)
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), Value(3)),
+                  (Name(Self()), Name('a').evaluate(self.env), Value(4))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_parameterised_bases(self):
+
+        forms = self.parser.parse('q(p)(a=p)' +
+                                  's(t)(z=t q("s"))' +
+                                  't()(x=1 y=2 s("t"))')
+        q = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        q.evaluate(self.env)
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), Value("t")),
+                  (Name(Self()), Name('a').evaluate(self.env), Value("s"))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_forward_parameterised_bases(self):
+
+        forms = self.parser.parse('q(p)(a=p)' +
+                                  's(t)(z=t q(t))' +
+                                  't()(x=1 y=2 s("t"))')
+        q = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        q.evaluate(self.env)
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), Value("t")),
+                  (Name(Self()), Name('a').evaluate(self.env), Value("t"))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_unevaluated_parameter(self):
+
+        forms = self.parser.parse('q(p)(a=p)' +
+                                  's(t)(z=t q(t))' +
+                                  't(t)(x=1 y=2 s(t))')
+        q = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        q.evaluate(self.env)
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        param = Parameter('t', 0)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), param),
+                  (Name(Self()), Name('a').evaluate(self.env), param)]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_unevaluated_parameters(self):
+
+        forms = self.parser.parse('q(p)(a=p)' +
+                                  's(u,v)(z=u q(v))' +
+                                  't(a,b)(x=1 y=2 s(a,b))')
+        q = forms[0]
+        s = forms[1]
+        t = forms[2]
+
+        self.assertFalse(self.env.lookup_template(t.name.evaluate(self.env)))
+
+        q.evaluate(self.env)
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        a = Parameter('a', 0)
+        b = Parameter('b', 1)
+
+        found = self.env.lookup_template(t.name.evaluate(self.env))
+        expect = [(Name(Self()), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()), Name('y').evaluate(self.env), Value(2)),
+                  (Name(Self()), Name('z').evaluate(self.env), a),
+                  (Name(Self()), Name('a').evaluate(self.env), b)]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_expansion_as_property(self):
+
+        forms = self.parser.parse('a(x)(p=x)' +
+                                  'b()(q = e is a a(2))')
+
+        a = forms[0]
+        b = forms[1]
+
+        a.evaluate(self.env)
+        b.evaluate(self.env)
+
+        env = self.env
+        me = Name(Self())
+
+        found = env.lookup_template(b.name.evaluate(env))
+        expect = [(Name('e').evaluate(env), Name('p').evaluate(env), Value(2)),
+                  (me, Name('q').evaluate(env), Name('e').evaluate(env))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_expansion_in_body(self):
+
+        forms = self.parser.parse('a(x)(p=x)' +
+                                  'b()(e is a a(2))')
+
+        a = forms[0]
+        b = forms[1]
+
+        a.evaluate(self.env)
+        b.evaluate(self.env)
+
+        env = self.env
+
+        found = env.lookup_template(b.name.evaluate(env))
+        expect = [(Name('e').evaluate(env), Name('p').evaluate(env), Value(2))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_expansion_in_argument(self):
+
+        forms = self.parser.parse('a(x)(p=x)' +
+                                  'b(x)(e=x)' +
+                                  'c()(b(f is a a(2)))')
+
+        a = forms[0]
+        b = forms[1]
+        c = forms[2]
+
+        a.evaluate(self.env)
+        b.evaluate(self.env)
+        c.evaluate(self.env)
+
+        env = self.env
+        me = Name(Self())
+
+        found = env.lookup_template(c.name.evaluate(env))
+        expect = [(me, Name('e').evaluate(env), Name('f').evaluate(env)),
+                  (Name('f').evaluate(env), Name('p').evaluate(env), Value(2))]
+
+        self.assertEqual(found, expect)
+
+    def test_evaluate_stores_triples_with_expansions(self):
+
+        forms = self.parser.parse('a(x)(e=x)' +
+                                  'b(y)(p=y)' +
+                                  'c()(a(f is a b(1))' +
+                                  '    q = g is a b(2)' +
+                                  '    h is a b(3))')
+
+        a = forms[0]
+        b = forms[1]
+        c = forms[2]
+
+        a.evaluate(self.env)
+        b.evaluate(self.env)
+        c.evaluate(self.env)
+
+        me = Name(Self())
+        env = self.env
+
+        f = Name('f').evaluate(env)
+        g = Name('g').evaluate(env)
+        h = Name('h').evaluate(env)
+
+        found = env.lookup_template(c.name.evaluate(env))
+        expect = [(me, Name('e').evaluate(env), f),
+                  (g, Name('p').evaluate(env), Value(2)),
+                  (me, Name('q').evaluate(env), g),
+                  (f, Name('p').evaluate(env), Value(1)),
+                  (h, Name('p').evaluate(env), Value(3))]
+
+        self.assertEqual(found, expect)
 
     def test_init_extensions(self):
 
@@ -294,6 +544,7 @@ class TemplateClassTest(unittest.TestCase):
         t = forms[0]
 
         expect = [ExtensionPragma('E', []), ExtensionPragma('F', [])]
+
         self.assertEqual(t.collect_extensions(self.env), expect)
 
     def test_evaluate_stores_extensions(self):
@@ -305,11 +556,13 @@ class TemplateClassTest(unittest.TestCase):
 
         found = self.env.lookup_extensions(t.name.evaluate(self.env))
 
-        self.assertEqual(found, [ExtensionPragma('E', []), ExtensionPragma('F', [])])
+        self.assertEqual(found, [ExtensionPragma(
+            'E', []), ExtensionPragma('F', [])])
 
     def test_evaluate_stores_base_extensions(self):
 
-        forms = self.parser.parse('s()(@extension F()) t()(s() @extension E())')
+        forms = self.parser.parse(
+            's()(@extension F()) t()(s() @extension E())')
         s = forms[0]
         t = forms[1]
 
@@ -317,8 +570,9 @@ class TemplateClassTest(unittest.TestCase):
         t.evaluate(self.env)
 
         found = self.env.lookup_extensions(t.name.evaluate(self.env))
+        expect = [ExtensionPragma('F', []), ExtensionPragma('E', [])]
 
-        self.assertEqual(found, [ExtensionPragma('E', []), ExtensionPragma('F', [])])
+        self.assertEqual(found, expect)
 
     def test_evaluate_extension_arguments(self):
 
@@ -339,8 +593,9 @@ class TemplateClassTest(unittest.TestCase):
         t.evaluate(self.env)
 
         found = self.env.lookup_extensions(t.name.evaluate(self.env))
+        expect = [ExtensionPragma('E', [Name('argument').evaluate(self.env)])]
 
-        self.assertEqual(found, [ExtensionPragma('E', [Name('argument').evaluate(self.env)])])
+        self.assertEqual(found, expect)
 
     def test_evaluate_extension_self_name(self):
 
@@ -351,8 +606,9 @@ class TemplateClassTest(unittest.TestCase):
         t.evaluate(self.env)
 
         found = self.env.lookup_extensions(t.name.evaluate(self.env))
+        expect = [ExtensionPragma('E', [Name(Self(), 'argument')])]
 
-        self.assertEqual(found, [ExtensionPragma('E', [Name(Self(), 'argument')])])
+        self.assertEqual(found, expect)
 
     def test_evaluate_to_template_name(self):
 
@@ -404,7 +660,6 @@ class TemplateClassTest(unittest.TestCase):
 
         self.assertEqual(expect, t.as_triples(self.env))
 
-
     def test_bodied_expansion_in_template_property(self):
 
         forms = self.parser.parse('s()(a = 1)' +
@@ -434,6 +689,6 @@ class TemplateClassTest(unittest.TestCase):
                     (Name('z'), Name('x'), Name('y'))]
 
         subbed = [(params[0], params[1], Value(12345)),
-                    (Name('z'), params[0], params[1])]
+                  (Name('z'), params[0], params[1])]
 
         self.assertEqual(sub_params_in_triples(params, unsubbed), subbed)

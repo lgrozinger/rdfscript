@@ -6,6 +6,7 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
+
 class Template(Node):
 
     def __init__(self, name, parameters, body, location=None):
@@ -69,12 +70,13 @@ class Template(Node):
         unevaluated_triples = self.as_triples(context)
 
         def triple_eval(triple):
-            (s, p, o) =  triple
+            (s, p, o) = triple
             return (s.evaluate(context),
                     p.evaluate(context),
                     o.evaluate(context))
 
-        evaluated_triples = [triple_eval(triple) for triple in unevaluated_triples]
+        evaluated_triples = [triple_eval(triple)
+                             for triple in unevaluated_triples]
 
         uri = self.name.evaluate(context)
         context.assign_template(uri, evaluated_triples)
@@ -210,6 +212,7 @@ class Property(Node):
                      self.name,
                      self.value)]
 
+
 class Expansion(Node):
 
     def __init__(self, name, template, args, body, location=None):
@@ -244,7 +247,8 @@ class Expansion(Node):
                 self.body == other.body)
 
     def __repr__(self):
-        return format("%s is a %s(%s)\n  (%s)\n" % (self.name, self.template, self.args, self.body))
+        return format("%s is a %s(%s)\n  (%s)\n" %
+                      (self.name, self.template, self.args, self.body))
 
     @property
     def name(self):
@@ -295,22 +299,22 @@ class Expansion(Node):
 
         return triples
 
-    def evaluate(self, env):
+    def evaluate(self, context):
 
-        triples = self.as_triples(env)
-        old_self = env.current_self
-        env.current_self = self.name.evaluate(env)
+        triples = self.as_triples(context)
+        old_self = context.current_self
+        context.current_self = self.name.evaluate(context)
 
         triples = evaluate_triples(triples, context)
 
-        for ext in self.get_extensions(env):
-            triples = ext.run(env, triples)
+        for ext in self.get_extensions(context):
+            triples = ext.run(context, triples)
 
-        env.current_self = old_self
+        context.current_self = old_self
 
-        env.add_triples(triples)
+        context.add_triples(triples)
 
-        return self.name.evaluate(env)
+        return self.name.evaluate(context)
 
 
 class Argument(Node):
@@ -353,6 +357,7 @@ class Argument(Node):
     def evaluate(self, context):
         return self.value.evaluate(context)
 
+
 def evaluate_triples(triples, context):
 
     def evaluate_triple(triple):
@@ -365,6 +370,7 @@ def evaluate_triples(triples, context):
 
     return results
 
+
 def marshal(arguments, triple):
     (s, p, o) = triple
     for argument in arguments:
@@ -373,6 +379,7 @@ def marshal(arguments, triple):
         o = argument.marshal(o)
 
     return (s, p, o)
+
 
 def sub_params_in_triples(parameters, triples):
 
@@ -392,6 +399,7 @@ def sub_params_in_triples(parameters, triples):
 
     return subbed
 
+
 def check_param_is_name(param):
     if not isinstance(param, Name):
         raise UnexpectedType(Name, param, param.location)
@@ -404,16 +412,17 @@ def check_param_is_name(param):
     else:
         return True
 
+
 def replace_self(triples, replace_with):
     result = []
     for triple in triples:
         (s, p, o) = triple
-        if s == Name(Self()):
-            s = replace_with
-        if p == Name(Self()):
-            p = replace_with
-        if o == Name(Self()):
-            o = replace_with
+        if isinstance(s, Name):
+            s.replace_self(replace_with)
+        if isinstance(p, Name):
+            p.replace_self(replace_with)
+        if isinstance(o, Name):
+            o.replace_self(replace_with)
 
         result.append((s, p, o))
 

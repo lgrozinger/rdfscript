@@ -50,7 +50,7 @@ class Name(Node):
                  self.names == [Self()]))
 
     def __str__(self):
-        return '.'.join([str(name) for name in self.names])
+        return ':'.join([str(name) for name in self.names])
 
     def __repr__(self):
         return format("[NAME: %s]" % (self.names))
@@ -67,6 +67,20 @@ class Name(Node):
                 return False
         else:
             return False
+
+    def replace_self(self, _with):
+        names = self.names
+        new_names = []
+        for n in range(0, len(names)):
+            if names[n] == Self() and isinstance(_with, Name):
+                new_names += _with.names
+            elif names[n] == Self():
+                new_names.append(_with)
+            else:
+                new_names.append(names[n])
+
+        self._names = new_names
+        return new_names
 
     def evaluate(self, context):
 
