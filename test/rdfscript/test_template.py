@@ -501,8 +501,8 @@ class TemplateClassTest(unittest.TestCase):
         me = Name(Self())
 
         found = env.lookup_template(c.name.evaluate(env))
-        expect = [(me, Name('e').evaluate(env), Name('f').evaluate(env)),
-                  (Name('f').evaluate(env), Name('p').evaluate(env), Value(2))]
+        expect = [(Name('f').evaluate(env), Name('p').evaluate(env), Value(2)),
+                  (me, Name('e').evaluate(env), Name('f').evaluate(env))]
 
         self.assertEqual(found, expect)
 
@@ -530,10 +530,10 @@ class TemplateClassTest(unittest.TestCase):
         h = Name('h').evaluate(env)
 
         found = env.lookup_template(c.name.evaluate(env))
-        expect = [(me, Name('e').evaluate(env), f),
+        expect = [(f, Name('p').evaluate(env), Value(1)),
+                  (me, Name('e').evaluate(env), f),
                   (g, Name('p').evaluate(env), Value(2)),
                   (me, Name('q').evaluate(env), g),
-                  (f, Name('p').evaluate(env), Value(1)),
                   (h, Name('p').evaluate(env), Value(3))]
 
         self.assertEqual(found, expect)

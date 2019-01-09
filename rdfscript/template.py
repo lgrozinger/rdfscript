@@ -6,6 +6,8 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
+import pdb
+
 
 class Template(Node):
 
@@ -67,7 +69,9 @@ class Template(Node):
 
     def store_triples(self, context):
 
-        unevaluated_triples = self.as_triples(context)
+        triples = self.as_triples(context)
+        pdb.set_trace()
+        triples = expand_expansion_in_triples(triples, context)
 
         def triple_eval(triple):
             (s, p, o) = triple
@@ -75,8 +79,7 @@ class Template(Node):
                     p.evaluate(context),
                     o.evaluate(context))
 
-        evaluated_triples = [triple_eval(triple)
-                             for triple in unevaluated_triples]
+        evaluated_triples = [triple_eval(triple) for triple in triples]
 
         uri = self.name.evaluate(context)
         context.assign_template(uri, evaluated_triples)
@@ -101,10 +104,7 @@ class Template(Node):
         for ext in extensions:
             ext.substitute_params(self.parameters)
 
-        old_self = context.current_self
-        context.current_self = Name(Self())
         extensions = [ext.evaluate(context) for ext in extensions]
-        context.current_self = old_self
 
         uri = self.name.evaluate(context)
         context.assign_extensions(uri, extensions)
@@ -279,11 +279,11 @@ class Expansion(Node):
 
         return processed_extensions + self._extensions
 
-    def as_triples(self, env):
+    def as_triples(self, context):
 
         triples = []
         try:
-            triples = env.lookup_template(self.template.evaluate(env))
+            triples = context.lookup_template(self.template.evaluate(context))
             triples = [marshal(self.args, triple) for triple in triples]
         except KeyError:
             raise TemplateNotFound(self.template, self.template.location)
@@ -291,19 +291,23 @@ class Expansion(Node):
         if self.name is not None:
             triples = replace_self(triples, self.name)
 
-        old_self = env.current_self
-        env.current_self = self.name
+        old_self = context.current_self
+        context.current_self = self.name
+
         for statement in self.body:
-            triples += statement.as_triples(env)
-        env.current_self = old_self
+            triples += statement.as_triples(context)
+
+        context.current_self = old_self
 
         return triples
 
     def evaluate(self, context):
 
+        name = self.name.evaluate(context)
+
         triples = self.as_triples(context)
         old_self = context.current_self
-        context.current_self = self.name.evaluate(context)
+        context.current_self = name
 
         triples = evaluate_triples(triples, context)
 
@@ -314,7 +318,7 @@ class Expansion(Node):
 
         context.add_triples(triples)
 
-        return self.name.evaluate(context)
+        return name
 
 
 class Argument(Node):
@@ -418,12 +422,47 @@ def replace_self(triples, replace_with):
     for triple in triples:
         (s, p, o) = triple
         if isinstance(s, Name):
-            s.replace_self(replace_with)
+            s = replace_self_in_name(s, replace_with)
         if isinstance(p, Name):
-            p.replace_self(replace_with)
+            p = replace_self_in_name(p, replace_with)
         if isinstance(o, Name):
-            o.replace_self(replace_with)
+            o = replace_self_in_name(o, replace_with)
 
         result.append((s, p, o))
 
     return result
+
+
+def replace_self_in_name(name, _with):
+    names = name.names
+    new_names = []
+    for n in range(0, len(names)):
+        if names[n] == Self() and isinstance(_with, Name):
+            new_names += _with.names
+        elif names[n] == Self():
+            new_names.append(_with)
+        else:
+            new_names.append(names[n])
+
+    return Name(new_names, name.location)
+
+
+def expand_expansion_in_triples(triples, context):
+    new_triples = []
+
+    def expand(thing):
+        extra_triples = []
+        if isinstance(thing, Expansion):
+            extra_triples += thing.as_triples(context)
+            thing = thing.name
+
+        return extra_triples
+
+    for triple in triples:
+        (s, p, o) = triple
+        new_triples += expand(s)
+        new_triples += expand(p)
+        new_triples += expand(o)
+        new_triples.append((s, p, o))
+
+    return new_triples

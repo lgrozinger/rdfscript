@@ -68,20 +68,6 @@ class Name(Node):
         else:
             return False
 
-    def replace_self(self, _with):
-        names = self.names
-        new_names = []
-        for n in range(0, len(names)):
-            if names[n] == Self() and isinstance(_with, Name):
-                new_names += _with.names
-            elif names[n] == Self():
-                new_names.append(_with)
-            else:
-                new_names.append(names[n])
-
-        self._names = new_names
-        return new_names
-
     def evaluate(self, context):
 
         uri = Uri(context.uri, location=self.location)
