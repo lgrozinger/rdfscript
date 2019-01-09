@@ -6,8 +6,6 @@ from .error import (TemplateNotFound,
                     UnexpectedType)
 from .pragma import (ExtensionPragma)
 
-import pdb
-
 
 class Template(Node):
 
@@ -70,7 +68,6 @@ class Template(Node):
     def store_triples(self, context):
 
         triples = self.as_triples(context)
-        pdb.set_trace()
         triples = expand_expansion_in_triples(triples, context)
 
         def triple_eval(triple):
@@ -433,18 +430,18 @@ def replace_self(triples, replace_with):
     return result
 
 
-def replace_self_in_name(name, _with):
-    names = name.names
+def replace_self_in_name(old_name, _with):
+    names = old_name.names
     new_names = []
-    for n in range(0, len(names)):
-        if names[n] == Self() and isinstance(_with, Name):
+    for name in names:
+        if name == Self() and isinstance(_with, Name):
             new_names += _with.names
-        elif names[n] == Self():
+        elif name == Self():
             new_names.append(_with)
         else:
-            new_names.append(names[n])
+            new_names.append(name)
 
-    return Name(new_names, name.location)
+    return Name(*new_names, location=old_name.location)
 
 
 def expand_expansion_in_triples(triples, context):

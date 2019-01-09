@@ -10,7 +10,8 @@ from rdfscript.core import (Name,
 from rdfscript.template import (Template,
                                 Parameter,
                                 check_param_is_name,
-                                sub_params_in_triples)
+                                sub_params_in_triples,
+                                replace_self_in_name)
 
 from rdfscript.pragma import ExtensionPragma
 
@@ -692,3 +693,27 @@ class TemplateClassTest(unittest.TestCase):
                   (Name('z'), params[0], params[1])]
 
         self.assertEqual(sub_params_in_triples(params, unsubbed), subbed)
+
+    def test_replace_self_with_name(self):
+
+        name = Name(Self(), 'name')
+
+        name = replace_self_in_name(name, Name('self'))
+
+        self.assertEqual(name, Name('self', 'name'))
+
+    def test_replace_self_with_dotted_name(self):
+
+        name = Name(Self(), 'name')
+
+        name = replace_self_in_name(name, Name('self', 'self', 'self'))
+
+        self.assertEqual(name, Name('self', 'self', 'self', 'name'))
+
+    def test_replace_self_with_uri(self):
+
+        name = Name(Self(), 'name')
+
+        name = replace_self_in_name(name, Uri('self'))
+
+        self.assertEqual(name, Name(Uri('self'), 'name'))
