@@ -10,6 +10,7 @@ from rdfscript.core import (Name,
 from rdfscript.template import (Parameter,
                                 Property)
 
+
 class TestPropertyClass(unittest.TestCase):
 
     def setUp(self):
@@ -31,7 +32,7 @@ class TestPropertyClass(unittest.TestCase):
 
         p = Property(Name('x'), Name('y'))
 
-        expect = [(Self().evaluate(self.env), Name('x').evaluate(self.env), Name('y').evaluate(self.env))]
+        expect = [(Self().evaluate(self.env), Name('x'), Name('y'))]
         self.assertEqual(p.as_triples(self.env), expect)
 
     def test_as_triples_expansion(self):
@@ -41,10 +42,10 @@ class TestPropertyClass(unittest.TestCase):
         e = forms[1]
         p = Property(Name('y'), e)
 
-        self.env.assign_template(t.name.evaluate(self.env), t.as_triples(self.env))
+        t.evaluate(self.env)
 
-        expect = [(Name('e').evaluate(self.env), Name('x').evaluate(self.env), Value(1)),
-                  (Self().evaluate(self.env), Name('y').evaluate(self.env), Name('e').evaluate(self.env))]
+        expect = [(Name('e'), Name('x').evaluate(self.env), Value(1)),
+                  (Name(Self()).evaluate(self.env), Name('y'), Name('e'))]
 
         self.assertEqual(expect, p.as_triples(self.env))
 
@@ -52,7 +53,7 @@ class TestPropertyClass(unittest.TestCase):
 
         p = Property(Name(Self()), Value(1))
 
-        expect = [(Name(Self()).evaluate(self.env), Uri(self.env._rdf._g.identifier.toPython()), Value(1))]
+        expect = [(Name(Self()).evaluate(self.env), Name(Self()), Value(1))]
 
         self.assertEqual(expect, p.as_triples(self.env))
 
@@ -67,7 +68,9 @@ class TestPropertyClass(unittest.TestCase):
     def test_as_triples_self_prefix_in_name_with_context(self):
 
         p = Property(Name(Self(), 'p'), Value(1))
-        expect = [(Name(Self()), Name(Self(), 'p'), Value(1))]
+        expect = [(Name(Self()),
+                   Name(Self(), 'p'),
+                   Value(1))]
 
         self.env.current_self = Name(Self())
         self.assertEqual(expect, p.as_triples(self.env))
@@ -76,6 +79,6 @@ class TestPropertyClass(unittest.TestCase):
 
         p = Property(Name(Self(), 'p'), Value(1))
         self.env.current_self = Uri('context')
-        expect = [(Uri('context'), Uri('contextp'), Value(1))]
+        expect = [(Uri('context'), Name(Self(), 'p'), Value(1))]
 
         self.assertEqual(expect, p.as_triples(self.env))
