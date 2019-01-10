@@ -11,16 +11,15 @@ class REPL:
                  out=None,
                  optpaths=[],
                  optextensions=[],
-                 debug=None):
+                 debug_lvl=1):
 
         self.env = Env(repl=True,
                        serializer=serializer,
                        paths=optpaths,
                        extensions=optextensions)
 
-        self.reader = parser.make_lexer()
-        self.parser = parser.make_parser()
-
+        self.parser = parser.RDFScriptParser(debug_lvl=debug_lvl)
+        self.reader = self.parser.scanner
         self.out_file = out
 
     def start(self):
@@ -46,7 +45,7 @@ class REPL:
         self.reader.input(s)
 
     def evaluate(self):
-        form = self.parser.parse(lexer=self.reader)
+        form = self.parser.parser.parse(lexer=self.reader)
         result = self.env.interpret(form)
 
         self.pprint(result)

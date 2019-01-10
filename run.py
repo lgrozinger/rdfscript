@@ -10,9 +10,10 @@ def parse_from_file(filepath,
                     serializer='nt',
                     optpaths=[],
                     out=None,
-                    extensions=[]):
+                    extensions=[],
+                    debug_lvl=1):
 
-    parser = RDFScriptParser(debug=False, filename=filepath)
+    parser = RDFScriptParser(filename=filepath, debug_lvl=debug_lvl)
 
     with open(filepath, 'r') as in_file:
         data = in_file.read()
@@ -33,7 +34,8 @@ def parse_from_file(filepath,
 def rdf_repl(serializer='nt',
              out=None,
              optpaths=[],
-             extensions=[]):
+             extensions=[],
+             debug_lvl=1):
 
     print("Building parser with yacc...")
     print("Parser build success...")
@@ -43,7 +45,8 @@ def rdf_repl(serializer='nt',
     repl = REPL(serializer=serializer,
                 out=out,
                 optpaths=optpaths,
-                optextensions=extensions)
+                optextensions=extensions,
+                debug_lvl=debug_lvl)
 
     repl.start()
 
@@ -65,6 +68,10 @@ def rdfscript_args():
     parser.add_argument('--version', action='version', version='%(prog)s 0.0alpha')
     parser.add_argument('-e', '--extensions', action='append', nargs=2, default=[])
 
+    parser.add_argument('-d', '--debug-lvl', default=1,
+                        choices=[0, 1, 2],
+                        help="Controls the amount of debug information generated. 0 is low/none.")
+
     return  parser.parse_args()
 
 if __name__ == "__main__":
@@ -73,14 +80,16 @@ if __name__ == "__main__":
     args = rdfscript_args()
     extensions = [(ext[0], ext[1]) for ext in args.extensions]
 
-    if args.filename:
+    if args.filename is not None:
         parse_from_file(args.filename,
                         serializer=args.serializer,
                         out=args.output,
                         optpaths=args.path,
-                        extensions=extensions)
+                        extensions=extensions,
+                        debug_lvl=args.debug_lvl)
     else:
         rdf_repl(serializer=args.serializer,
                  out=args.output,
                  optpaths=args.path,
-                 extensions=extensions)
+                 extensions=extensions,
+                 debug_lvl=args.debug_lvl)

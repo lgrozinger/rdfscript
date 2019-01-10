@@ -253,19 +253,22 @@ def make_lexer(filename=None):
 
 class RDFScriptParser:
 
-    def __init__(self, debug=False, filename=None):
+    def __init__(self, debug_lvl=0, filename=None):
 
-        self.scanner = make_lexer()
+        self.scanner = make_lexer(filename)
+        self.debug = debug_lvl != 0
+        self.dbg_logger = None
+        if debug_lvl == 2:
+            self.dbg_logger = logging.getLogger()
 
-        self.parser = yacc.yacc(debug=debug)
-        self.parser.filename = filename
+        self.parser = make_parser(filename)
 
     def parse(self, script):
 
         return self.parser.parse(script,
                                  lexer=self.scanner,
                                  tracking=True,
-                                 debug=logging.getLogger())
+                                 debug=self.dbg_logger)
 
 
 class Position:

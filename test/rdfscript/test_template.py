@@ -717,3 +717,49 @@ class TemplateClassTest(unittest.TestCase):
         name = replace_self_in_name(name, Uri('self'))
 
         self.assertEqual(name, Name(Uri('self'), 'name'))
+
+    def test_as_triples_multiple_inheritance(self):
+
+        forms = self.parser.parse('s()(a=123)' +
+                                  't()(b=456)' +
+                                  'u()(s() t())')
+
+        s = forms[0]
+        t = forms[1]
+        u = forms[2]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+
+        expect = [(Name(Self()),
+                   Name('a').evaluate(self.env),
+                   Value(123)),
+                  (Name(Self()),
+                   Name('b').evaluate(self.env),
+                   Value(456))]
+
+        self.assertEqual(expect, u.as_triples(self.env))
+
+    def test_as_triples_nested_multiple_inheritance(self):
+
+        forms = self.parser.parse('s()(a=123)' +
+                                  't()(s() b=456)' +
+                                  'u()(s() t() c=789)' +
+                                  'v()(s() t() u())')
+
+        s = forms[0]
+        t = forms[1]
+        u = forms[2]
+        v = forms[3]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+        u.evaluate(self.env)
+
+        a = (Name(Self()), Name('a').evaluate(self.env), Value(123))
+        b = (Name(Self()), Name('b').evaluate(self.env), Value(456))
+        c = (Name(Self()), Name('c').evaluate(self.env), Value(789))
+
+        expect = [a, a, b, a, a, b, c]
+
+        self.assertEqual(expect, v.as_triples(self.env))

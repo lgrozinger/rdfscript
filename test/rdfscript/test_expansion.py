@@ -354,3 +354,29 @@ class TestExpansionClass(unittest.TestCase):
                    Name('f', 'e'))]
 
         self.assertEqual(expect, f.as_triples(self.env))
+
+    def test_as_triples_multiple_inheritance(self):
+
+        forms = self.parser.parse('s()(a=123)' +
+                                  't()(b=456)' +
+                                  'u()(s() t())' +
+                                  'e is a u()')
+
+        s = forms[0]
+        t = forms[1]
+        u = forms[2]
+        e = forms[3]
+
+        s.evaluate(self.env)
+        t.evaluate(self.env)
+        u.evaluate(self.env)
+
+        expect = [(Name('e'),
+                   Name('a').evaluate(self.env),
+                   Value(123)),
+                  (Name('e'),
+                   Name('b').evaluate(self.env),
+                   Value(456))]
+
+        self.assertEqual(expect, e.as_triples(self.env))
+
