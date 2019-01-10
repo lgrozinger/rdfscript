@@ -4,7 +4,7 @@
 ;; templates define common patterns of triples you can use to save typing
 
 SimpleTemplate()(property = "value")
-  
+
 ;; you can expand the template to add its triples to the RDF graph
 
 expand is a SimpleTemplate()
@@ -23,7 +23,10 @@ arguments is a ParamTemplate(1, 2)
 
 ;; templates can 'specialise' other templates
 
-SpecialisedTemplate(x) from ParamTemplate(x, 2)
+SpecialisedTemplate(x)
+(
+  ParamTemplate(x, 2)
+)
 
 specialised is a SpecialisedTemplate(3)
 

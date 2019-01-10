@@ -11,6 +11,14 @@ from rdfscript.template import (Template,
                                 Expansion)
 from rdfscript.env import Env
 
+def triple_eval(triple, env):
+    (s, p, o) = triple
+    s = s.evaluate(env)
+    p = p.evaluate(env)
+    o = o.evaluate(env)
+
+    return (s, p, o)
+
 class TriplePackTest(unittest.TestCase):
 
     def setUp(self):
@@ -26,20 +34,18 @@ class TriplePackTest(unittest.TestCase):
                                   [Property(Name('x'),
                                             Value(42)),
                                    Property(Uri('http://example.eg/predicate'),
-                                            Name('y'))],
-                                  None,
-                                  [])
+                                            Name('y'))])
 
         self.expansion = Expansion(Name('e'),
                                    Name('A'),
                                    [Value(1),
                                     Value(2)],
                                    [])
+        self.template.evaluate(self.env)
 
-        self.env.assign_template(self.template.name.evaluate(self.env),
-                                 self.template.as_triples(self.env))
+        triples =  self.expansion.as_triples(self.env)
+        triples = [triple_eval(triple, self.env) for triple in triples]
 
-        triples = self.expansion.as_triples(self.env)
         bindings = self.env._symbol_table
         templates = self.env._template_table
 
@@ -84,7 +90,9 @@ class TriplePackTest(unittest.TestCase):
                                Value(2)],
                               [])
 
-        doublePack = TriplePack(self.pack.triples + expansion.as_triples(self.env),
+        triples = expansion.as_triples(self.env)
+        triples = [triple_eval(triple, self.env) for triple in triples]
+        doublePack = TriplePack(self.pack.triples + triples,
                                 self.pack.bindings,
                                 self.pack.templates)
 

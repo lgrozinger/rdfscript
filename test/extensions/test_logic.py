@@ -31,9 +31,7 @@ class LogicExtensionsTest(unittest.TestCase):
                                   [Property(Name('x'),
                                             Value(42)),
                                    Property(Uri('http://example.eg/predicate'),
-                                            Name('y'))],
-                                  None,
-                                  [])
+                                            Name('y'))])
 
         self.expansion = Expansion(Name('e'),
                                    Name('A'),
@@ -41,10 +39,19 @@ class LogicExtensionsTest(unittest.TestCase):
                                     Value(2)],
                                    [])
 
-        self.env.assign_template(self.template.name.evaluate(self.env),
-                                 self.template.as_triples(self.env))
+        self.template.evaluate(self.env)
 
-        triples = self.expansion.as_triples(self.env)
+        def triple_eval(triple):
+            (s, p, o) = triple
+            s = s.evaluate(self.env)
+            p = p.evaluate(self.env)
+            o = o.evaluate(self.env)
+
+            return (s, p, o)
+
+        triples =  self.expansion.as_triples(self.env)
+        triples = [triple_eval(triple) for triple in triples]
+
         bindings = self.env._symbol_table
         templates = self.env._template_table
 
