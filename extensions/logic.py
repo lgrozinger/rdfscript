@@ -1,5 +1,6 @@
 from .error import ExtensionError
 
+
 class And:
 
     def __init__(self, *sub_exts):
@@ -10,6 +11,7 @@ class And:
             ext.run(triplepack)
 
         return triplepack
+
 
 class Or:
 

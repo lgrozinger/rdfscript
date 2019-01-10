@@ -16,6 +16,7 @@ from rdfscript.template import (Template,
                                 Expansion)
 from rdfscript.env import Env
 
+
 class CardinalityExtensionsTest(unittest.TestCase):
 
     def setUp(self):
@@ -26,12 +27,12 @@ class CardinalityExtensionsTest(unittest.TestCase):
                         Value(42, None))
 
         self.template = Template(Name('A'),
-                                  [Name('x'),
-                                   Name('y')],
-                                  [Property(Name('x'),
-                                            Value(42)),
-                                   Property(Uri('http://example.eg/predicate'),
-                                            Name('y'))])
+                                 [Name('x'),
+                                  Name('y')],
+                                 [Property(Name('x'),
+                                           Value(42)),
+                                  Property(Uri('http://example.eg/predicate'),
+                                           Name('y'))])
 
         self.expansion = Expansion(Name('e'),
                                    Name('A'),
@@ -49,7 +50,7 @@ class CardinalityExtensionsTest(unittest.TestCase):
 
             return (s, p, o)
 
-        triples =  self.expansion.as_triples(self.env)
+        triples = self.expansion.as_triples(self.env)
         triples = [triple_eval(triple) for triple in triples]
 
         bindings = self.env._symbol_table
@@ -78,14 +79,15 @@ class CardinalityExtensionsTest(unittest.TestCase):
 
         with self.assertRaises(CardinalityError):
             ext = ExactlyOne(Uri('http://example.eg/predicate'))
-            add = self.pack.search((None, Uri('http://example.eg/predicate'), None))[0]
+            add = self.pack.search(
+                (None, Uri('http://example.eg/predicate'), None))[0]
             self.pack.add(add)
             ext.run(self.pack)
 
     def test_exactly_one_succeeds(self):
 
         triples = list(self.pack.triples)
-        
+
         ext = ExactlyOne(Uri('http://example.eg/predicate'))
         ext.run(self.pack)
 
@@ -99,7 +101,8 @@ class CardinalityExtensionsTest(unittest.TestCase):
 
         with self.assertRaises(CardinalityError):
             ext = ExactlyN(Uri('http://example.eg/predicate'), 2)
-            add = self.pack.search((None, Uri('http://example.eg/predicate'), None))[0]
+            add = self.pack.search(
+                (None, Uri('http://example.eg/predicate'), None))[0]
             self.pack.add(add)
             self.pack.add(add)
             ext.run(self.pack)
@@ -111,7 +114,7 @@ class CardinalityExtensionsTest(unittest.TestCase):
             ext.run(self.pack)
 
         ext = ExactlyN(Uri('http://example.eg/predicate'), 2)
-        add = self.pack.search((None, Uri('http://example.eg/predicate'), None))[0]
+        add = self.pack.search(
+            (None, Uri('http://example.eg/predicate'), None))[0]
         self.pack.add(add)
         ext.run(self.pack)
-

@@ -1,4 +1,6 @@
 import rdflib
+import pdb
+
 from .core import Uri, Value
 from .error import InternalError, PrefixError
 from pysbolgraph.SBOL2Serialize import serialize_sboll2
@@ -27,6 +29,7 @@ class RDFData(object):
         elif isinstance(language_object, Value):
             return rdflib.Literal(language_object.value)
         else:
+            pdb.set_trace()
             raise InternalError(language_object,
                                 language_object.location)
 
@@ -48,6 +51,15 @@ class RDFData(object):
             self._g.set(triple)
         else:
             self._g.add(triple)
+
+    def remove(self, s, p, o):
+        triple = (self.to_rdf(s), self.to_rdf(p), self.to_rdf(o))
+
+        self._g.remove(triple)
+
+    def remove_all(self):
+        self._g.remove((None, None, None))
+        assert len(self.triples) == 0
 
     @property
     def triples(self):

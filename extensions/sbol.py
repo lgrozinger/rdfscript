@@ -1,5 +1,5 @@
-import re
 import rdflib
+import pdb
 
 from .logic import And
 from .error import ExtensionError
@@ -20,9 +20,9 @@ _toplevels = set([Uri(_sbolns.uri + tl, None) for tl
                       'Implementation',
                       'CombinatorialDerivation']])
 
-_sbol_pId =  Uri(_sbolns.uri + 'persistentIdentity', None)
-_sbol_dId =  Uri(_sbolns.uri + 'displayId', None)
-_sbol_version =  Uri(_sbolns.uri + 'version', None)
+_sbol_pId = Uri(_sbolns.uri + 'persistentIdentity', None)
+_sbol_dId = Uri(_sbolns.uri + 'displayId', None)
+_sbol_version = Uri(_sbolns.uri + 'version', None)
 _rdf_type = Uri(rdflib.RDF.type, None)
 
 
@@ -35,11 +35,11 @@ class SbolIdentity:
 
         return And(*[SBOLCompliant(s) for s in triplepack.subjects]).run(triplepack)
 
+
 class SBOLCompliant:
 
     def __init__(self, for_subject):
         self._subject = for_subject
-
 
     def run(self, triplepack):
 
@@ -51,32 +51,33 @@ class SBOLCompliant:
 
         return triplepack
 
+
 class SBOLCompliantTopLevel:
 
     def __init__(self, for_subject):
         self._subject = for_subject
 
-
     def run(self, triplepack):
 
         subpack = triplepack.sub_pack(self._subject)
-        if not SBOLcheckIdentity(subpack):
-            message = format("SBOL objects with versions must include their version in their name.")
-            #raise SBOLComplianceError(message)
 
-        if not SBOLdId(subpack):
+        if SBOLdId(subpack) is None:
             dId = self._subject.split()[-1]
-            triplepack.set(self._subject, _sbol_dId, Value(dId, None))
-            subpack.set(self._subject, _sbol_dId, Value(dId, None))
+            triplepack.set(self._subject, _sbol_dId, Value(dId))
 
-        pId = Uri(self._subject.uri, None)
-        triplepack.set(self._subject, _sbol_pId, pId)
+        if SBOLversion(subpack) is not None:
+            version_string = str(SBOLversion(subpack).value)
+            pId = Uri(self._subject.uri + '/' + version_string)
+            triplepack.set(self._subject, _sbol_pId, pId)
+        else:
+            pId = Uri(self._subject.uri, None)
+            triplepack.set(self._subject, _sbol_pId, pId)
+
 
 class SBOLCompliantChild:
 
     def __init__(self, for_subject):
         self._subject = for_subject
-
 
     def run(self, triplepack):
 
@@ -89,18 +90,19 @@ class SBOLCompliantChild:
             if triplepack.has(parent, _sbol_version):
                 triplepack.set(self._subject,
                                _sbol_version,
-                               triplepack.value(self._subject, _sbol_version))
+                               triplepack.value(parent, _sbol_version))
 
             if not SBOLdId(subpack):
                 dId = self._subject.split()[-1]
-                triplepack.set(self._subject, _sbol_dId, Value(dId, None))
-                subpack.set(self._subject, _sbol_dId, Value(dId, None))
+                triplepack.set(self._subject, _sbol_dId, Value(dId))
+                subpack.set(self._subject, _sbol_dId, Value(dId))
 
             parentpid = triplepack.value(parent, _sbol_pId)
-            pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value, None)
+            pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value)
             triplepack.set(self._subject, _sbol_pId, pId)
         else:
             pass
+
 
 class SBOLComplianceError(ExtensionError):
 
@@ -111,14 +113,18 @@ class SBOLComplianceError(ExtensionError):
     def __str__(self):
         return ExtensionError.__str__(self) + format(" %s\n" % self._helpful_message)
 
+
 def SBOLversion(triplepack):
     return triplepack.value(_sbol_version)
+
 
 def SBOLpId(triplepack):
     return triplepack.value(_sbol_pId)
 
+
 def SBOLdId(triplepack):
     return triplepack.value(_sbol_dId)
+
 
 def SBOLcheckIdentity(triplepack):
     identity = triplepack.subjects.pop()
@@ -126,6 +132,7 @@ def SBOLcheckIdentity(triplepack):
         return identity.split()[-1] == triplepack.value(_sbol_version).value
     else:
         return True
+
 
 def SBOLParent(triplepack, child):
     with_child_as_object = triplepack.search((None, None, child))
@@ -140,6 +147,7 @@ def SBOLParent(triplepack, child):
         message = format("The SBOL object %s does not have a parent object."
                          % child)
         raise SBOLComplianceError(message)
+
 
 def SBOLcheckTopLevel(triplepack):
     _type = triplepack.value(_rdf_type)

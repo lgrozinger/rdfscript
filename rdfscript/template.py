@@ -218,15 +218,12 @@ class Expansion(Node):
         self._template = template
         self._name = name
         self._args = []
-        for arg in args:
+        for n in range(0, len(args)):
+            arg = args[n]
             if isinstance(arg, Argument):
-                self._args.append(Argument(arg.value,
-                                           args.index(arg),
-                                           location))
+                self._args.append(Argument(arg.value, n, location))
             else:
-                self._args.append(Argument(arg,
-                                           args.index(arg),
-                                           location))
+                self._args.append(Argument(arg, n, location))
 
         self._extensions = []
         self._body = []
@@ -281,9 +278,12 @@ class Expansion(Node):
         triples = []
         try:
             triples = context.lookup_template(self.template.evaluate(context))
+            if triples is None:
+                raise KeyError
             triples = [marshal(self.args, triple) for triple in triples]
         except KeyError:
-            raise TemplateNotFound(self.template, self.template.location)
+            raise TemplateNotFound(self.template.evaluate(
+                context), self.template.location)
 
         if self.name is not None:
             triples = replace_self(triples, self.name)

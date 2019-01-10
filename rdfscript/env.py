@@ -133,7 +133,17 @@ class Env(object):
 
         graph_triples = self._rdf.triples
 
-        return self.run_extension_on_triples(extension, graph_triples)
+        graph_triples = self.run_extension_on_triples(extension, graph_triples)
+
+        self._rdf.remove_all()
+        assert len(self._rdf.triples) == 0
+
+        pdb.set_trace()
+        for triple in graph_triples:
+            (s, p, o) = triple
+            self._rdf.add(s, p, o)
+
+        return graph_triples
 
     def interpret(self, forms):
         result = None

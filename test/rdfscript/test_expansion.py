@@ -380,3 +380,17 @@ class TestExpansionClass(unittest.TestCase):
 
         self.assertEqual(expect, e.as_triples(self.env))
 
+    def test_similar_args_treated_as_unique(self):
+
+        forms = self.parser.parse('s(x, y)(a = x b = y)' +
+                                  'e is a s(1, 1)')
+
+        s = forms[0]
+        e = forms[1]
+
+        s.evaluate(self.env)
+
+        expect = [(Name('e'), Name('a').evaluate(self.env), Value(1)),
+                  (Name('e'), Name('b').evaluate(self.env), Value(1))]
+
+        self.assertEqual(expect, e.as_triples(self.env))
