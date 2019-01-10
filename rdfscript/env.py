@@ -34,7 +34,6 @@ class Env(object):
         self._prefix = None
         self._uri = Uri(self._rdf._g.identifier.toPython())
         self._self = self._uri
-        self._prefix_set_by_user = False
 
         if filename:
             paths.append(pathlib.Path(filename).parent)
@@ -73,6 +72,7 @@ class Env(object):
                 self._uri = ns
         else:
             self._prefix = prefix
+            self._uri = Uri(self._rdf._g.identifier.toPython())
 
         return prefix
 
@@ -149,8 +149,9 @@ class Env(object):
         if not import_text:
             return False
         else:
+            old_prefix = self.prefix
             self.interpret(parser.parse(import_text))
-
+            self.prefix = old_prefix
         return True
 
     def get_current_path(self):
