@@ -131,12 +131,10 @@ class ExtensionPragma(Node):
                           for arg in self.args]
 
     def evaluate(self, context):
-
         self._args = [arg.evaluate(context) for arg in self.args]
         return self
 
     def run(self, context, triples):
-
         self.evaluate(context)
         return context.run_extension_on_triples(self, triples)
 

@@ -49,6 +49,21 @@ class RDFData(object):
         else:
             self._g.add(triple)
 
+    @property
+    def triples(self):
+        rdflib_triples = list(self._g.triples((None, None, None)))
+
+        def to_rdfscript(triple):
+            (s, p, o) = triple
+            s = self.from_rdf(s)
+            p = self.from_rdf(p)
+            o = self.from_rdf(o)
+
+            return (s, p, o)
+
+        rdfscript_triples = [to_rdfscript(triple) for triple in rdflib_triples]
+        return rdfscript_triples
+
     def bind_prefix(self, prefix, uri):
         u = self.to_rdf(uri)
         self._g.bind(prefix, u)

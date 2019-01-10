@@ -2,7 +2,9 @@ import pathlib
 import logging
 import pdb
 
-from .core import Uri
+from .core import Uri, Value
+
+from .pragma import ExtensionPragma
 
 from .error import (RDFScriptError,
                     PrefixError)
@@ -127,12 +129,23 @@ class Env(object):
         pack = TriplePack(triples, self._symbol_table, self._template_table)
         return extension_obj.run(pack).triples
 
+    def run_extension_on_graph(self, extension):
+
+        graph_triples = self._rdf.triples
+
+        return self.run_extension_on_triples(extension, graph_triples)
+
     def interpret(self, forms):
         result = None
 
         for form in forms:
             try:
-                result = form.evaluate(self)
+                if isinstance(form, ExtensionPragma):
+                    form.evaluate(self)
+                    self.run_extension_on_graph(form)
+                    result = Value(True)
+                else:
+                    result = form.evaluate(self)
             except RDFScriptError as e:
                 logging.error(str(e))
             except ExtensionError as e:
