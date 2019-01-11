@@ -41,6 +41,8 @@ class REPL:
 
         if not s:
             self.read()
+        elif s == '@graph':
+            self.finish()
 
         self.reader.input(s)
 
