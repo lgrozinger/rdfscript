@@ -37,9 +37,6 @@ def rdf_repl(serializer='nt',
              extensions=[],
              debug_lvl=1):
 
-    print("Building parser with yacc...")
-    print("Parser build success...")
-    print("Lexer build success... Enjoy your RDF...")
     print("#"*40)
 
     repl = REPL(serializer=serializer,

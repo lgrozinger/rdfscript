@@ -3,7 +3,6 @@ from rdfscript.env import Env
 
 import sys
 
-
 class REPL:
 
     def __init__(self,
@@ -13,8 +12,7 @@ class REPL:
                  optextensions=[],
                  debug_lvl=1):
 
-        self.env = Env(repl=True,
-                       serializer=serializer,
+        self.env = Env(serializer=serializer,
                        paths=optpaths,
                        extensions=optextensions)
 

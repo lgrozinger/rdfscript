@@ -21,7 +21,6 @@ from .rdf_data import RDFData
 
 class Env(object):
     def __init__(self,
-                 repl=False,
                  filename=None,
                  serializer=None,
                  paths=[],

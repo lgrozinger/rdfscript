@@ -229,13 +229,20 @@ def p_error(p):
     if not p:
         pass
     else:
-        location = Location(Position(p.lineno, p.lexpos), p.lexer.filename)
-        raise RDFScriptSyntax(p, location)
+        if p.lexer.filename is not None:
+            location = Location(Position(p.lineno, p.lexpos), p.lexer.filename)
+        else:
+            location = None
+
+        raise RDFScriptSyntax(p.value, location)
 
 
 def location(p):
     pos = Position(p.lineno(0), p.lexpos(0))
-    return Location(pos, p.parser.filename)
+    if p.parser.filename is not None:
+        return Location(pos, p.parser.filename)
+    else:
+        return None
 
 
 def make_parser(filename=None):
@@ -270,7 +277,6 @@ class RDFScriptParser:
                                  tracking=True,
                                  debug=self.dbg_logger)
 
-
 class Position:
 
     def __init__(self, line, col):
@@ -297,7 +303,7 @@ class Location:
         self._position = position
 
         if not filename:
-            self._filename = "REPL"
+            return None
         else:
             self._filename = filename
 

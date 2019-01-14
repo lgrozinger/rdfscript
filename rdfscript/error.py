@@ -9,7 +9,10 @@ class RDFScriptError(Exception):
         return self._location
 
     def __str__(self):
-        return format("ERROR: %s\n at %s:\n" % (self._type, self.location))
+        if self.location is not None:
+            return format("ERROR: %s\n at %s:\n" % (self._type, self.location))
+        else:
+            return format("ERROR: %s:\n" % self._type)
 
 
 class FailToImport(RDFScriptError):
