@@ -3,7 +3,8 @@ from .core import (Node,
                    Uri,
                    Self)
 from .error import (TemplateNotFound,
-                    UnexpectedType)
+                    UnexpectedType,
+                    WrongNumberArguments)
 from .pragma import (ExtensionPragma)
 
 
@@ -281,6 +282,8 @@ class Expansion(Node):
             if triples is None:
                 raise KeyError
             triples = [marshal(self.args, triple) for triple in triples]
+            if includes_params_p(triples):
+                raise WrongNumberArguments(self.name, self.location)
         except KeyError:
             raise TemplateNotFound(self.template.evaluate(
                 context), self.template.location)
@@ -463,3 +466,14 @@ def expand_expansion_in_triples(triples, context):
         new_triples.append((s, p, o))
 
     return new_triples
+
+def includes_params_p(triples):
+
+    for triple in triples:
+        (s, p, o) = triple
+        if (isinstance(s, Parameter) or
+            isinstance(p, Parameter) or
+            isinstance(o, Parameter)):
+            return True
+
+    return False

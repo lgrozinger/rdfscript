@@ -7,6 +7,7 @@ from rdfscript.core import (Name,
 from rdfscript.pragma import ExtensionPragma
 from rdfscript.env import Env
 from rdfscript.rdfscriptparser import RDFScriptParser
+from rdfscript.error import WrongNumberArguments
 
 from extensions.cardinality import CardinalityError
 
@@ -394,3 +395,19 @@ class TestExpansionClass(unittest.TestCase):
                   (Name('e'), Name('b').evaluate(self.env), Value(1))]
 
         self.assertEqual(expect, e.as_triples(self.env))
+
+    def test_not_enough_arguments(self):
+
+        forms = self.parser.parse('t(a, b)(x = a y = b)' +
+                                  'e is a t(1)')
+
+        t = forms[0]
+        e = forms[1]
+
+        t.evaluate(self.env)
+
+        with self.assertRaises(WrongNumberArguments):
+            e.evaluate(self.env)
+
+        e = self.parser.parse('e is a t(1, 2)')[0]
+        e.evaluate(self.env)

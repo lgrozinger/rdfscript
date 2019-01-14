@@ -1,6 +1,9 @@
 import unittest
 
 loader = unittest.TestLoader()
-suite = loader.discover('./test/rdfscript/', pattern='test_*.py')
+
+suite = unittest.TestSuite()
+suite.addTests(loader.discover('.'))
+
 runner = unittest.TextTestRunner()
 result = runner.run(suite)

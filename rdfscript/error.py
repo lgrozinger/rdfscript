@@ -79,6 +79,19 @@ class PrefixError(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("The prefix '%s' is not bound\n\n." % self.prefix)
 
+class WrongNumberArguments(RDFScriptError):
+
+    def __init__(self, expansion, location):
+        RDFScriptError.__init__(self, location)
+        self._expansion = expansion
+        self._type = 'Wrong Number of Arguments Error'
+
+    @property
+    def expansion(self):
+        return self._expansion
+
+    def __str__(self):
+        return RDFScriptError.__str__(self) + format("Wrong number of arguments given for '%s'.\n\n" % self.expansion)
 
 class TemplateNotFound(RDFScriptError):
 
