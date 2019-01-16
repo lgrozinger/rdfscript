@@ -2,8 +2,7 @@ import unittest
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
-from rdfscript.core import (Name,
-                            Value,
+from rdfscript.core import (Value,
                             Uri)
 
 
@@ -23,13 +22,14 @@ class EnvTest(unittest.TestCase):
 
         self.env.bind_prefix(prefix, prefix_uri)
 
-        self.assertTrue('prefix' in [p for (p, n) in self.env._rdf._g.namespaces()])
+        self.assertTrue(
+            'prefix' in [p for (p, n) in self.env._rdf._g.namespaces()])
 
     def test_get_and_set_default_prefix(self):
 
         prefix = 'x'
         self.env.bind_prefix(prefix, Uri('http://eg/'))
-        before = Uri(self.env._rdf._g.identifier.toPython())
+        before = Uri('')
         self.assertEqual(before, self.env.uri)
         self.assertEqual(self.env.prefix, None)
 
@@ -39,7 +39,7 @@ class EnvTest(unittest.TestCase):
 
     def test_self_uri_init(self):
 
-        self.assertEqual(self.env.current_self, Uri(self.env._rdf._g.identifier.toPython()))
+        self.assertEqual(self.env.current_self, Uri(''))
 
     def test_self_uri_set(self):
 
@@ -108,4 +108,3 @@ class EnvTest(unittest.TestCase):
         self.env._extension_table[uri] = extensions
 
         self.assertEqual(extensions, self.env.lookup_extensions(uri))
-

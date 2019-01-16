@@ -1,6 +1,5 @@
 import pathlib
 import logging
-import pdb
 
 from .core import Uri, Value
 
@@ -33,7 +32,7 @@ class Env(object):
 
         self._rdf = RDFData(serializer=serializer)
         self._prefix = None
-        self._uri = Uri(self._rdf._g.identifier.toPython())
+        self._uri = Uri('')
         self._self = self._uri
 
         if filename:
@@ -78,7 +77,6 @@ class Env(object):
         return prefix
 
     def uri_for_prefix(self, prefix):
-        """Return a Uri object for a Prefix object."""
         try:
             return self._rdf.uri_for_prefix(prefix)
         except PrefixError:
@@ -91,7 +89,6 @@ class Env(object):
             raise PrefixError(uri, None)
 
     def add_triples(self, triples):
-        """Add a triple of Uri or Value language objects to the RDF graph."""
         for (s, p, o) in triples:
             self._rdf.add(s, p, o)
 
