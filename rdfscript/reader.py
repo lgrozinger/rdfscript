@@ -7,7 +7,6 @@ tokens = (
     "INTEGER",
     "DOUBLE",
     "URI",
-    "ISA",
     "SELF",
     "PREFIX",
     "EXTENSION",
@@ -66,13 +65,6 @@ def t_rightangle(t):
     r'>'
     t.value = '>'
     t.type = '>'
-    return t
-
-
-def t_ISA(t):
-    r'is\s+a'
-    t.type = 'ISA'
-    t.value = 'is a'
     return t
 
 

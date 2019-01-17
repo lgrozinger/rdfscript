@@ -14,8 +14,6 @@ strings
 myScript.integers
 otherPrefix.nothing
 
-;; note that importing <names> changed the defaultPrefix
-
 use <templates>
 
-expand is a templates.SimpleTemplate()
+expand = templates.SimpleTemplate()

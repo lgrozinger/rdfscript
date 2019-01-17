@@ -24,7 +24,7 @@ class TestExpansionClass(unittest.TestCase):
 
     def test_as_triples(self):
 
-        forms = self.parser.parse('t()(x=12345) e is a t()')
+        forms = self.parser.parse('t()(x=12345) e = t()')
         t = forms[0]
         e = forms[1]
 
@@ -36,7 +36,7 @@ class TestExpansionClass(unittest.TestCase):
 
     def test_as_triples_with_body(self):
 
-        forms = self.parser.parse('t()(x=12345) e is a t()(y=54321)')
+        forms = self.parser.parse('t()(x=12345) e = t()(y=54321)')
         t = forms[0]
         e = forms[1]
 
@@ -49,7 +49,7 @@ class TestExpansionClass(unittest.TestCase):
 
     def test_as_triples_args(self):
 
-        forms = self.parser.parse('t(x)(<http://predicate.com>=x) e is a t(1)')
+        forms = self.parser.parse('t(x)(<http://predicate.com>=x) e = t(1)')
         t = forms[0]
         e = forms[1]
 
@@ -62,7 +62,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_as_triples_args_with_body(self):
 
         forms = self.parser.parse(
-            't(x)(<http://predicate.com>=x) e is a t(1)(x=2)')
+            't(x)(<http://predicate.com>=x) e = t(1)(x=2)')
         t = forms[0]
         e = forms[1]
 
@@ -75,7 +75,7 @@ class TestExpansionClass(unittest.TestCase):
 
     def test_as_triples_args_with_self(self):
 
-        forms = self.parser.parse('t(x)(self=x) e is a t(1)(x=2)')
+        forms = self.parser.parse('t(x)(self=x) e = t(1)(x=2)')
         t = forms[0]
         e = forms[1]
 
@@ -88,7 +88,7 @@ class TestExpansionClass(unittest.TestCase):
 
     def test_as_triples_with_self_as_object(self):
 
-        forms = self.parser.parse('t()(x=self) e is a t()')
+        forms = self.parser.parse('t()(x=self) e = t()')
         t = forms[0]
         e = forms[1]
 
@@ -100,7 +100,7 @@ class TestExpansionClass(unittest.TestCase):
 
     def test_as_triples_args_with_self_prefix(self):
 
-        forms = self.parser.parse('t(x)(self.p=x) e is a t(1)(x=2)')
+        forms = self.parser.parse('t(x)(self.p=x) e = t(1)(x=2)')
         t = forms[0]
         e = forms[1]
 
@@ -114,8 +114,8 @@ class TestExpansionClass(unittest.TestCase):
     def test_as_triples_with_expansion_in_template(self):
 
         forms = self.parser.parse('s()(z=true)' +
-                                  't()(x = e is a s())' +
-                                  'f is a t()')
+                                  't()(x = e = s())' +
+                                  'f = t()')
         s = forms[0]
         t = forms[1]
         f = forms[2]
@@ -132,8 +132,8 @@ class TestExpansionClass(unittest.TestCase):
     def test_as_triples_with_expansion_in_template_with_self(self):
 
         forms = self.parser.parse('s()(z=self)' +
-                                  't()(x = e is a s())' +
-                                  'f is a t()')
+                                  't()(x = e = s())' +
+                                  'f = t()')
         s = forms[0]
         t = forms[1]
         f = forms[2]
@@ -153,7 +153,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_as_triples_with_context(self):
 
         forms = self.parser.parse('s()(z=self)' +
-                                  'self.f is a s()')
+                                  'self.f = s()')
 
         s = forms[0]
         f = forms[1]
@@ -170,8 +170,8 @@ class TestExpansionClass(unittest.TestCase):
     def test_as_triples_with_self_named_expansion_in_template(self):
 
         forms = self.parser.parse('s()(z=self)' +
-                                  't()(x=self.e is a s())' +
-                                  'f is a t()')
+                                  't()(x=self.e = s())' +
+                                  'f = t()')
         s = forms[0]
         t = forms[1]
         f = forms[2]
@@ -191,7 +191,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_extensions_argument_binding(self):
 
         forms = self.parser.parse('t(a)(@extension AtLeastOne(a))' +
-                                  'e is a t("a")')
+                                  'e = t("a")')
 
         t = forms[0]
         e = forms[1]
@@ -203,7 +203,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_extensions_multiple_argument_binding(self):
 
         forms = self.parser.parse('t(a, b)(@extension ext(a, b))' +
-                                  'e is a t(1, 2)')
+                                  'e = t(1, 2)')
 
         t = forms[0]
         e = forms[1]
@@ -215,7 +215,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_extensions_mixed_argument_binding(self):
 
         forms = self.parser.parse('t(a)(@extension ext(12345, a))' +
-                                  'e is a t(1)')
+                                  'e = t(1)')
 
         t = forms[0]
         e = forms[1]
@@ -228,7 +228,7 @@ class TestExpansionClass(unittest.TestCase):
 
         forms = self.parser.parse('s(a)(@extension ext(a))' +
                                   't(a)(s("s") @extension ext(a))' +
-                                  'e is a t("t")')
+                                  'e = t("t")')
 
         s = forms[0]
         t = forms[1]
@@ -245,7 +245,7 @@ class TestExpansionClass(unittest.TestCase):
 
         forms = self.parser.parse('s()(@extension ext(self.name))' +
                                   't()(s() @extension ext(self.name))' +
-                                  'e is a t()')
+                                  'e = t()')
 
         s = forms[0]
         t = forms[1]
@@ -262,7 +262,7 @@ class TestExpansionClass(unittest.TestCase):
 
         forms = self.parser.parse('s(a)(@extension ext(a))' +
                                   't(a)(s("s") @extension ext(a))' +
-                                  'e is a t("t")(@extension ext("e"))')
+                                  'e = t("t")(@extension ext("e"))')
 
         s = forms[0]
         t = forms[1]
@@ -280,7 +280,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_evaluate_runs_extensions_with_error(self):
 
         forms = self.parser.parse('t(a)(@extension AtLeastOne(a))' +
-                                  'e is a t(property)()')
+                                  'e = t(property)()')
 
         t = forms[0]
         e = forms[1]
@@ -298,7 +298,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_evaluate_runs_extensions(self):
 
         forms = self.parser.parse('t(a)(@extension AtLeastOne(a))' +
-                                  'e is a t(property)(property=12345)')
+                                  'e = t(property)(property=12345)')
 
         t = forms[0]
         e = forms[1]
@@ -315,7 +315,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_add_object_for_inherited_predicate(self):
 
         forms = self.parser.parse('t()(x = 1)' +
-                                  'e is a t()(x = 2)')
+                                  'e = t()(x = 2)')
 
         t = forms[0]
         e = forms[1]
@@ -334,8 +334,8 @@ class TestExpansionClass(unittest.TestCase):
     def test_bodied_expansion_in_template(self):
 
         forms = self.parser.parse('s()(a = 1)' +
-                                  't()(x = self.e is a s()(b = 2))' +
-                                  'f is a t()')
+                                  't()(x = self.e = s()(b = 2))' +
+                                  'f = t()')
 
         s = forms[0]
         t = forms[1]
@@ -361,7 +361,7 @@ class TestExpansionClass(unittest.TestCase):
         forms = self.parser.parse('s()(a=123)' +
                                   't()(b=456)' +
                                   'u()(s() t())' +
-                                  'e is a u()')
+                                  'e = u()')
 
         s = forms[0]
         t = forms[1]
@@ -384,7 +384,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_similar_args_treated_as_unique(self):
 
         forms = self.parser.parse('s(x, y)(a = x b = y)' +
-                                  'e is a s(1, 1)')
+                                  'e = s(1, 1)')
 
         s = forms[0]
         e = forms[1]
@@ -399,7 +399,7 @@ class TestExpansionClass(unittest.TestCase):
     def test_not_enough_arguments(self):
 
         forms = self.parser.parse('t(a, b)(x = a y = b)' +
-                                  'e is a t(1)')
+                                  'e = t(1)')
 
         t = forms[0]
         e = forms[1]
@@ -409,5 +409,5 @@ class TestExpansionClass(unittest.TestCase):
         with self.assertRaises(WrongNumberArguments):
             e.evaluate(self.env)
 
-        e = self.parser.parse('e is a t(1, 2)')[0]
+        e = self.parser.parse('e = t(1, 2)')[0]
         e.evaluate(self.env)

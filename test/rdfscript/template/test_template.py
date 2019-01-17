@@ -202,7 +202,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_expansion_in_property(self):
 
-        forms = self.parser.parse('a()(x = 1) b()(y = e is a a())')
+        forms = self.parser.parse('a()(x = 1) b()(y = e = a())')
         a = forms[0]
         b = forms[1]
 
@@ -215,7 +215,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_expansion_in_property_with_self(self):
 
-        forms = self.parser.parse('a()(x = 1) b()(self.y = e is a a())')
+        forms = self.parser.parse('a()(x = 1) b()(self.y = e = a())')
         a = forms[0]
         b = forms[1]
 
@@ -228,7 +228,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_expansion_in_property_with_self_as_name(self):
 
-        forms = self.parser.parse('a()(x = 1) b()(y = self.e is a a())')
+        forms = self.parser.parse('a()(x = 1) b()(y = self.e = a())')
         a = forms[0]
         b = forms[1]
 
@@ -241,7 +241,7 @@ class TemplateClassTest(unittest.TestCase):
 
     def test_as_triples_with_base_with_self_named_expansion(self):
 
-        forms = self.parser.parse('s()(z=self) t()(x=self.e is a s())')
+        forms = self.parser.parse('s()(z=self) t()(x=self.e = s())')
         s = forms[0]
         t = forms[1]
 
@@ -259,7 +259,7 @@ class TemplateClassTest(unittest.TestCase):
     def test_as_triples_with_expansion_as_argument(self):
 
         forms = self.parser.parse('r()(y=1) s(exp)(x=exp)' +
-                                  't()(s(e is a r()))')
+                                  't()(s(e = r()))')
 
         r = forms[0]
         s = forms[1]
@@ -268,7 +268,7 @@ class TemplateClassTest(unittest.TestCase):
         r.evaluate(self.env)
         s.evaluate(self.env)
 
-        e = self.parser.parse('e is a r()')[0]
+        e = self.parser.parse('e = r()')[0]
 
         expect = [(Self(), Name('x').evaluate(self.env), e)]
 
@@ -449,7 +449,7 @@ class TemplateClassTest(unittest.TestCase):
     def test_evaluate_stores_triples_with_expansion_as_property(self):
 
         forms = self.parser.parse('a(x)(p=x)' +
-                                  'b()(q = e is a a(2))')
+                                  'b()(q = e = a(2))')
 
         a = forms[0]
         b = forms[1]
@@ -469,7 +469,7 @@ class TemplateClassTest(unittest.TestCase):
     def test_evaluate_stores_triples_with_expansion_in_body(self):
 
         forms = self.parser.parse('a(x)(p=x)' +
-                                  'b()(e is a a(2))')
+                                  'b()(e = a(2))')
 
         a = forms[0]
         b = forms[1]
@@ -488,7 +488,7 @@ class TemplateClassTest(unittest.TestCase):
 
         forms = self.parser.parse('a(x)(p=x)' +
                                   'b(x)(e=x)' +
-                                  'c()(b(f is a a(2)))')
+                                  'c()(b(f = a(2)))')
 
         a = forms[0]
         b = forms[1]
@@ -511,9 +511,9 @@ class TemplateClassTest(unittest.TestCase):
 
         forms = self.parser.parse('a(x)(e=x)' +
                                   'b(y)(p=y)' +
-                                  'c()(a(f is a b(1))' +
-                                  '    q = g is a b(2)' +
-                                  '    h is a b(3))')
+                                  'c()(a(f = b(1))' +
+                                  '    q = g = b(2)' +
+                                  '    h = b(3))')
 
         a = forms[0]
         b = forms[1]
@@ -645,7 +645,7 @@ class TemplateClassTest(unittest.TestCase):
     def test_bodied_expansion_in_template(self):
 
         forms = self.parser.parse('s()(a = 1)' +
-                                  't()(self.e is a s()(b = 2))')
+                                  't()(self.e = s()(b = 2))')
 
         s = forms[0]
         t = forms[1]
@@ -664,7 +664,7 @@ class TemplateClassTest(unittest.TestCase):
     def test_bodied_expansion_in_template_property(self):
 
         forms = self.parser.parse('s()(a = 1)' +
-                                  't()(x = self.e is a s()(b = 2))')
+                                  't()(x = self.e = s()(b = 2))')
 
         s = forms[0]
         t = forms[1]

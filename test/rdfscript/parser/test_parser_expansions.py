@@ -6,6 +6,7 @@ from rdfscript.core import Name, Value, Uri
 from rdfscript.template import (Property,
                                 Expansion)
 
+
 class ParserExpansionTest(unittest.TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_no_args_no_body(self):
 
-        forms = self.parser.parse('e is a a()')
+        forms = self.parser.parse('e = a()')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [],
@@ -27,7 +28,7 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_one_arg_no_body(self):
 
-        forms = self.parser.parse('e is a a(12345)')
+        forms = self.parser.parse('e = a(12345)')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [Value(12345)],
@@ -37,7 +38,7 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_multi_args_no_body(self):
 
-        forms = self.parser.parse('e is a a(12345, 54321)')
+        forms = self.parser.parse('e = a(12345, 54321)')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [Value(12345),
@@ -48,8 +49,8 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_expansion_as_arg(self):
 
-        forms = self.parser.parse('e is a a(f is a b(12345))')
-        f = self.parser.parse('f is a b(12345)')[0]
+        forms = self.parser.parse('e = a(f = b(12345))')
+        f = self.parser.parse('f = b(12345)')[0]
         expect = Expansion(Name('e'),
                            Name('a'),
                            [f],
@@ -57,10 +58,9 @@ class ParserExpansionTest(unittest.TestCase):
 
         self.assertEqual(expect, forms[0])
 
-
     def test_expansion_no_args_with_body(self):
 
-        forms = self.parser.parse('e is a a()(x=true)')
+        forms = self.parser.parse('e = a()(x=true)')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [],
@@ -70,7 +70,7 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_one_arg_with_body(self):
 
-        forms = self.parser.parse('e is a a(12345)(x=true)')
+        forms = self.parser.parse('e = a(12345)(x=true)')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [Value(12345)],
@@ -80,7 +80,7 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_multi_args_with_body(self):
 
-        forms = self.parser.parse('e is a a(12345, 54321)(x=true)')
+        forms = self.parser.parse('e = a(12345, 54321)(x=true)')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [Value(12345),
@@ -91,7 +91,7 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_multiple_properties(self):
 
-        forms = self.parser.parse('e is a a()(x=true y=false)')
+        forms = self.parser.parse('e = a()(x=true y=false)')
         expect = Expansion(Name('e'),
                            Name('a'),
                            [],

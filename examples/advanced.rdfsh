@@ -23,4 +23,4 @@ false
 name = 12345
 name = name
 name.name = name.<name>
-name = expansion is a template()
+name = expansion = template()

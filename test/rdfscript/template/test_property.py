@@ -37,7 +37,7 @@ class TestPropertyClass(unittest.TestCase):
 
     def test_as_triples_expansion(self):
 
-        forms = self.parser.parse('t()(x=1) e is a t()')
+        forms = self.parser.parse('t()(x=1) e = t()')
         t = forms[0]
         e = forms[1]
         p = Property(Name('y'), e)

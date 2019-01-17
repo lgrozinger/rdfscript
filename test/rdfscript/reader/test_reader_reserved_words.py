@@ -13,28 +13,3 @@ class ReaderReservedTest(unittest.TestCase):
 
     def tearDown(self):
         None
-
-    def test_is_a(self):
-        self.reader.input('is a')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'ISA')
-        self.assertEqual(token.value, 'is a')
-
-    def test_is_a_double_identifier(self):
-        self.reader.input('this ape')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'SYMBOL')
-        self.assertEqual(token.value, 'this')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'SYMBOL')
-        self.assertEqual(token.value, 'ape')
-
-    def test_is_a_more_whitespace(self):
-        self.reader.input('is   a')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'ISA')
-        self.assertEqual(token.value, 'is a')

@@ -85,7 +85,7 @@ def p_template(p):
 
 
 def p_expansion(p):
-    '''expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
+    '''expansion : name '=' name '(' exprlist ')' indentedinstancebody'''
     p[0] = template.Expansion(p[1], p[3], p[5], p[7], location(p))
 
 

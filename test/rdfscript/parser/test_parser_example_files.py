@@ -2,6 +2,7 @@ import unittest
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 
+
 class TestParseExampleFiles(unittest.TestCase):
 
     def setUp(self):
@@ -47,11 +48,10 @@ class TestParseExampleFiles(unittest.TestCase):
         self.assertEqual(len(forms), 12)
 
     def test_advanced(self):
-        
+
         with open("examples/advanced.rdfsh") as in_file:
             text = in_file.read()
 
         forms = self.parser.parse(text)
 
         self.assertEqual(len(forms), 19)
-

@@ -121,7 +121,7 @@ class ParserTopLevelTest(unittest.TestCase):
 
     def test_assignment_name_expansion(self):
 
-        script = 'expansion = e is a t()'
+        script = 'expansion = e = t()'
         forms = self.parser.parse(script)
 
         self.assertEqual(forms, [Assignment(Name('expansion'),
@@ -132,7 +132,7 @@ class ParserTopLevelTest(unittest.TestCase):
 
     def test_assignment_uri_expansion(self):
 
-        script = '<expansion> = e is a t()'
+        script = '<expansion> = e = t()'
         forms = self.parser.parse(script)
 
         self.assertEqual(forms, [Assignment(Name(Uri('expansion')),
