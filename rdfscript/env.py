@@ -1,7 +1,7 @@
 import pathlib
 import logging
 
-from .core import Uri, Value
+import rdfscript.core as core
 
 from .pragma import ExtensionPragma
 
@@ -31,7 +31,7 @@ class Env(object):
 
         self._rdf = RDFData(serializer=serializer)
         self._prefix = None
-        self._uri = Uri('')
+        self._uri = core.Uri('')
         self._self = self._uri
 
         if filename:
@@ -42,10 +42,6 @@ class Env(object):
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
-
-    @property
-    def identity_uri(self):
-        return self._rdf.identity_uri
 
     @property
     def current_self(self):
@@ -75,7 +71,7 @@ class Env(object):
                 self._uri = ns
         else:
             self._prefix = prefix
-            self._uri = Uri(self._rdf._g.identifier.toPython())
+            self._uri = core.Uri('')
 
         return prefix
 
@@ -101,7 +97,7 @@ class Env(object):
         return prefix
 
     def lookup(self, uri):
-        assigned_to = self.identity_uri
+        assigned_to = core.identity
         values = [o for (s, p, o) in self._rdf.get(uri, assigned_to, None)]
 
         value = None
@@ -130,7 +126,7 @@ class Env(object):
         extension_class = self.get_extension(extension.name)
         extension_obj = extension_class(*extension.args)
 
-        bindings = self._rdf.get(None, self.identity_uri, None)
+        bindings = self._rdf.get(None, core.identity, None)
         symbol_table = dict()
         for (s, p, o) in bindings:
             symbol_table[s] = o

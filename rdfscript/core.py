@@ -291,9 +291,8 @@ class Assignment(Node):
         return self._value
 
     def evaluate(self, context):
-        assign_to = context.identity_uri
         Three(self.name,
-              assign_to,
+              identity,
               self.value,
               location=self.location).evaluate(context)
 
@@ -307,3 +306,12 @@ def type_assert(this_is, of_type):
         except AttributeError:
             raise error.UnexpectedType(of_type, this_is, None)
     return True
+
+
+def param_number(i):
+    assert isinstance(i, type(1))
+    param = 'http://github.com/lgrozinger/rdfscript/lang/param/'
+    return Uri(param + str(i))
+
+
+identity = Uri('http://github.com/lgrozinger/rdfscript/lang/is')

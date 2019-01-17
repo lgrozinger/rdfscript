@@ -6,11 +6,8 @@ from extensions.cardinality import (AtLeastOne,
 from extensions.error import ExtensionError
 from extensions.logic import (And,
                               Or)
-from rdfscript.core import (Uri,
-                            Value,
-                            Name,
-                            Assignment)
 
+import rdfscript.core as core
 from rdfscript.template import (Template,
                                 Property,
                                 Expansion)
@@ -22,21 +19,21 @@ class LogicExtensionsTest(unittest.TestCase):
     def setUp(self):
         self.env = Env()
 
-        self.v_uri = Uri('http://test.triplepack/#variable')
-        do_assign(self.v_uri, Value(42), self.env)
+        self.v_uri = core.Uri('http://test.triplepack/#variable')
+        do_assign(self.v_uri, core.Value(42), self.env)
 
-        self.template = Template(Name('A'),
-                                 [Name('x'),
-                                  Name('y')],
-                                 [Property(Name('x'),
-                                           Value(42)),
-                                  Property(Uri('http://example.eg/predicate'),
-                                           Name('y'))])
+        self.template = Template(core.Name('A'),
+                                 [core.Name('x'),
+                                  core.Name('y')],
+                                 [Property(core.Name('x'),
+                                           core.Value(42)),
+                                  Property(core.Uri('http://example.eg/predicate'),
+                                           core.Name('y'))])
 
-        self.expansion = Expansion(Name('e'),
-                                   Name('A'),
-                                   [Value(1),
-                                    Value(2)],
+        self.expansion = Expansion(core.Name('e'),
+                                   core.Name('A'),
+                                   [core.Value(1),
+                                    core.Value(2)],
                                    [])
 
         self.template.evaluate(self.env)
@@ -52,7 +49,7 @@ class LogicExtensionsTest(unittest.TestCase):
         triples = self.expansion.as_triples(self.env)
         triples = [triple_eval(triple) for triple in triples]
 
-        bindings = self.env._rdf.get(None, self.env.identity_uri, None)
+        bindings = self.env._rdf.get(None, core.identity, None)
         symbol_table = dict()
         for (s, p, o) in bindings:
             symbol_table[s] = o
@@ -63,7 +60,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_and_true_true(self):
 
-        true = AtLeastOne(Uri('http://example.eg/predicate', None))
+        true = AtLeastOne(core.Uri('http://example.eg/predicate', None))
 
         conjunction = And(true, true)
 
@@ -75,8 +72,8 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_and_true_false(self):
 
-        true = AtLeastOne(Uri('http://example.eg/predicate', None))
-        false = AtLeastOne(Uri('http://test.eg/#notthere', None))
+        true = AtLeastOne(core.Uri('http://example.eg/predicate', None))
+        false = AtLeastOne(core.Uri('http://test.eg/#notthere', None))
 
         conjunction = And(true, false)
 
@@ -89,8 +86,8 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_and_false_true(self):
 
-        true = AtLeastOne(Uri('http://example.eg/predicate', None))
-        false = AtLeastOne(Uri('http://test.eg/#notthere', None))
+        true = AtLeastOne(core.Uri('http://example.eg/predicate', None))
+        false = AtLeastOne(core.Uri('http://test.eg/#notthere', None))
 
         conjunction = And(false, true)
 
@@ -103,7 +100,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_and_false_false(self):
 
-        false = AtLeastOne(Uri('http://test.eg/#notthere', None))
+        false = AtLeastOne(core.Uri('http://test.eg/#notthere', None))
 
         conjunction = And(false, false)
 
@@ -116,7 +113,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_or_true_true(self):
 
-        true = AtLeastOne(Uri('http://example.eg/predicate', None))
+        true = AtLeastOne(core.Uri('http://example.eg/predicate', None))
 
         conjunction = Or(true, true)
 
@@ -128,8 +125,8 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_or_true_false(self):
 
-        true = AtLeastOne(Uri('http://example.eg/predicate', None))
-        false = AtLeastOne(Uri('http://test.eg/#notthere', None))
+        true = AtLeastOne(core.Uri('http://example.eg/predicate', None))
+        false = AtLeastOne(core.Uri('http://test.eg/#notthere', None))
 
         conjunction = Or(true, false)
 
@@ -141,8 +138,8 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_or_false_true(self):
 
-        true = AtLeastOne(Uri('http://example.eg/predicate', None))
-        false = AtLeastOne(Uri('http://test.eg/#notthere', None))
+        true = AtLeastOne(core.Uri('http://example.eg/predicate', None))
+        false = AtLeastOne(core.Uri('http://test.eg/#notthere', None))
 
         conjunction = Or(false, true)
 
@@ -154,7 +151,7 @@ class LogicExtensionsTest(unittest.TestCase):
 
     def test_or_false_false(self):
 
-        false = AtLeastOne(Uri('http://test.eg/#notthere', None))
+        false = AtLeastOne(core.Uri('http://test.eg/#notthere', None))
 
         conjunction = Or(false, false)
 
@@ -167,4 +164,4 @@ class LogicExtensionsTest(unittest.TestCase):
 
 
 def do_assign(name, value, env):
-    Assignment(name, value).evaluate(env)
+    core.Assignment(name, value).evaluate(env)
