@@ -1,15 +1,16 @@
 import unittest
-import rdflib
 
 from extensions.triples import TriplePack
 from rdfscript.core import (Uri,
                             Value,
-                            Name)
+                            Name,
+                            Assignment)
 
 from rdfscript.template import (Template,
                                 Property,
                                 Expansion)
 from rdfscript.env import Env
+
 
 def triple_eval(triple, env):
     (s, p, o) = triple
@@ -19,22 +20,22 @@ def triple_eval(triple, env):
 
     return (s, p, o)
 
+
 class TriplePackTest(unittest.TestCase):
 
     def setUp(self):
         self.env = Env()
 
         self.v_uri = Uri('http://test.triplepack/#variable')
-        self.env.assign(self.v_uri,
-                        Value(42))
+        do_assign(self.v_uri, Value(42), self.env)
 
         self.template = Template(Name('A'),
-                                  [Name('x'),
-                                   Name('y')],
-                                  [Property(Name('x'),
-                                            Value(42)),
-                                   Property(Uri('http://example.eg/predicate'),
-                                            Name('y'))])
+                                 [Name('x'),
+                                  Name('y')],
+                                 [Property(Name('x'),
+                                           Value(42)),
+                                  Property(Uri('http://example.eg/predicate'),
+                                           Name('y'))])
 
         self.expansion = Expansion(Name('e'),
                                    Name('A'),
@@ -43,13 +44,17 @@ class TriplePackTest(unittest.TestCase):
                                    [])
         self.template.evaluate(self.env)
 
-        triples =  self.expansion.as_triples(self.env)
+        triples = self.expansion.as_triples(self.env)
         triples = [triple_eval(triple, self.env) for triple in triples]
 
-        bindings = self.env._symbol_table
+        bindings = self.env._rdf.get(None, self.env.identity_uri, None)
+        symbol_table = dict()
+        for (s, p, o) in bindings:
+            symbol_table[s] = o
+
         templates = self.env._template_table
 
-        self.pack = TriplePack(triples, bindings, templates)
+        self.pack = TriplePack(triples, symbol_table, templates)
 
     def testDown(self):
         None
@@ -65,23 +70,26 @@ class TriplePackTest(unittest.TestCase):
                     Value(2))]
 
         self.assertEqual(self.pack.triples, triples)
-        self.assertEqual(self.pack.bindings, self.env._symbol_table)
+        self.assertEqual(self.pack.bindings, {self.v_uri: Value(42)})
         self.assertEqual(self.pack.templates, self.env._template_table)
 
     def test_triples_lookup(self):
 
         self.assertEqual(self.pack.lookup(self.v_uri), Value(42))
-        self.assertEqual(self.pack.lookup(Uri('http://triplepack.org/#not')), None)
+        self.assertEqual(self.pack.lookup(
+            Uri('http://triplepack.org/#not')), None)
 
     def test_triples_lookup_template(self):
 
         self.assertEqual(self.pack.lookup_template(self.template.name.evaluate(self.env)),
                          self.template.as_triples(self.env))
-        self.assertEqual(self.pack.lookup_template(Uri('http://triplepack.org/#not')), None)
+        self.assertEqual(self.pack.lookup_template(
+            Uri('http://triplepack.org/#not')), None)
 
     def test_triples_get_subjects_1(self):
 
-        self.assertEqual(self.pack.subjects, set([self.expansion.name.evaluate(self.env)]))
+        self.assertEqual(self.pack.subjects, set(
+            [self.expansion.name.evaluate(self.env)]))
 
     def test_triples_get_subjects_2(self):
         expansion = Expansion(Name('f'),
@@ -106,7 +114,8 @@ class TriplePackTest(unittest.TestCase):
 
     def test_triples_get_predicates(self):
 
-        self.assertEqual(self.pack.predicates, set([Value(1), Uri('http://example.eg/predicate')]))
+        self.assertEqual(self.pack.predicates, set(
+            [Value(1), Uri('http://example.eg/predicate')]))
 
     def test_triples_get_predicates_empty(self):
         emptyPack = TriplePack([], {}, {})
@@ -172,7 +181,8 @@ class TriplePackTest(unittest.TestCase):
                            Value(1),
                            Value(42))])
 
-        self.assertEqual(self.pack.search((Value(1), Value(2, None), Value(3, None))), [])
+        self.assertEqual(self.pack.search(
+            (Value(1), Value(2, None), Value(3, None))), [])
 
     def test_triples_get_triples_subject_predicate(self):
 
@@ -181,8 +191,10 @@ class TriplePackTest(unittest.TestCase):
                            Value(1, None),
                            Value(42, None))])
 
-        self.assertEqual(self.pack.search((Name('f').evaluate(self.env), Value(1, None), None)), [])
-        self.assertEqual(self.pack.search((Name('e').evaluate(self.env), Value(2, None), None)), [])
+        self.assertEqual(self.pack.search(
+            (Name('f').evaluate(self.env), Value(1, None), None)), [])
+        self.assertEqual(self.pack.search(
+            (Name('e').evaluate(self.env), Value(2, None), None)), [])
 
     def test_triples_get_triples_subject_object(self):
 
@@ -191,8 +203,10 @@ class TriplePackTest(unittest.TestCase):
                            Value(1, None),
                            Value(42, None))])
 
-        self.assertEqual(self.pack.search((Name('f').evaluate(self.env), None, Value(42, None))), [])
-        self.assertEqual(self.pack.search((Name('e').evaluate(self.env), None, Value(41, None))), [])
+        self.assertEqual(self.pack.search(
+            (Name('f').evaluate(self.env), None, Value(42, None))), [])
+        self.assertEqual(self.pack.search(
+            (Name('e').evaluate(self.env), None, Value(41, None))), [])
 
     def test_triples_get_triples_predicate_object(self):
 
@@ -201,20 +215,28 @@ class TriplePackTest(unittest.TestCase):
                            Value(1, None),
                            Value(42, None))])
 
-        self.assertEqual(self.pack.search((None, Value(2, None), Value(42, None))), [])
-        self.assertEqual(self.pack.search((None, Value(1, None), Value(41, None))), [])
+        self.assertEqual(self.pack.search(
+            (None, Value(2, None), Value(42, None))), [])
+        self.assertEqual(self.pack.search(
+            (None, Value(1, None), Value(41, None))), [])
 
     def test_triples_subject_has_property(self):
 
-        self.assertTrue(self.pack.has(Name('e').evaluate(self.env), Value(1, None)))
-        self.assertFalse(self.pack.has(Name('e').evaluate(self.env), Value(2, None)))
-        self.assertFalse(self.pack.has(Name('f').evaluate(self.env), Value(1, None)))
+        self.assertTrue(self.pack.has(
+            Name('e').evaluate(self.env), Value(1, None)))
+        self.assertFalse(self.pack.has(
+            Name('e').evaluate(self.env), Value(2, None)))
+        self.assertFalse(self.pack.has(
+            Name('f').evaluate(self.env), Value(1, None)))
 
     def test_triples_subject_has_unique_property(self):
 
-        self.assertTrue(self.pack.has_unique(Name('e').evaluate(self.env), Value(1, None)))
-        self.assertFalse(self.pack.has_unique(Name('e').evaluate(self.env), Value(2, None)))
-        self.assertFalse(self.pack.has_unique(Name('f').evaluate(self.env), Value(1, None)))
+        self.assertTrue(self.pack.has_unique(
+            Name('e').evaluate(self.env), Value(1, None)))
+        self.assertFalse(self.pack.has_unique(
+            Name('e').evaluate(self.env), Value(2, None)))
+        self.assertFalse(self.pack.has_unique(
+            Name('f').evaluate(self.env), Value(1, None)))
 
         duplicatePack = TriplePack(self.pack.triples + [(Name('e').evaluate(self.env),
                                                          Value(1, None),
@@ -222,14 +244,17 @@ class TriplePackTest(unittest.TestCase):
                                    self.pack.bindings,
                                    self.pack.templates)
 
-        self.assertFalse(duplicatePack.has_unique(Name('e').evaluate(self.env), Value(1, None)))
+        self.assertFalse(duplicatePack.has_unique(
+            Name('e').evaluate(self.env), Value(1, None)))
 
     def test_triples_get_values_for(self):
 
         self.assertEqual(self.pack.value(Name('e').evaluate(self.env), Value(1, None)),
                          Value(42, None))
-        self.assertEqual(self.pack.value(Name('e').evaluate(self.env), Value(2, None)), None)
-        self.assertEqual(self.pack.value(Name('f').evaluate(self.env), Value(1, None)), None)
+        self.assertEqual(self.pack.value(
+            Name('e').evaluate(self.env), Value(2, None)), None)
+        self.assertEqual(self.pack.value(
+            Name('f').evaluate(self.env), Value(1, None)), None)
 
         duplicatePack = TriplePack(self.pack.triples + [(Name('e').evaluate(self.env),
                                                          Value(1, None),
@@ -242,19 +267,33 @@ class TriplePackTest(unittest.TestCase):
 
     def test_triples_add(self):
 
-        self.assertFalse(self.pack.has(Name('e').evaluate(self.env), Value('fake', None)))
-        self.pack.add((Name('e').evaluate(self.env), Value('fake', None), Value('added', None)))
-        self.assertTrue(self.pack.has(Name('e').evaluate(self.env), Value('fake', None)))
-        self.assertEqual(self.pack.value(Name('e').evaluate(self.env), Value('fake', None)), Value('added', None))
+        self.assertFalse(self.pack.has(
+            Name('e').evaluate(self.env), Value('fake', None)))
+        self.pack.add((Name('e').evaluate(self.env), Value(
+            'fake', None), Value('added', None)))
+        self.assertTrue(self.pack.has(
+            Name('e').evaluate(self.env), Value('fake', None)))
+        self.assertEqual(self.pack.value(Name('e').evaluate(
+            self.env), Value('fake', None)), Value('added', None))
 
     def test_triples_set(self):
 
-        self.assertEqual(self.pack.value(Name('e').evaluate(self.env), Value(1, None)), Value(42, None))
+        self.assertEqual(self.pack.value(Name('e').evaluate(
+            self.env), Value(1, None)), Value(42, None))
 
-        self.pack.set(Name('e').evaluate(self.env), Value(1, None), Value('set', None))
+        self.pack.set(Name('e').evaluate(self.env),
+                      Value(1, None), Value('set', None))
 
-        self.assertTrue(self.pack.has_unique(Name('e').evaluate(self.env), Value(1, None)))
-        self.assertEqual(self.pack.value(Name('e').evaluate(self.env), Value(1, None)), Value('set', None))
+        self.assertTrue(self.pack.has_unique(
+            Name('e').evaluate(self.env), Value(1, None)))
+        self.assertEqual(self.pack.value(Name('e').evaluate(
+            self.env), Value(1, None)), Value('set', None))
 
-        self.pack.set(Name('e').evaluate(self.env), Value('fake', None), Value('set', None))
-        self.assertTrue(self.pack.has(Name('e').evaluate(self.env), Value('fake', None)))
+        self.pack.set(Name('e').evaluate(self.env),
+                      Value('fake', None), Value('set', None))
+        self.assertTrue(self.pack.has(
+            Name('e').evaluate(self.env), Value('fake', None)))
+
+
+def do_assign(name, value, env):
+    Assignment(name, value).evaluate(env)

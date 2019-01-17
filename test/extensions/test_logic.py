@@ -1,5 +1,4 @@
 import unittest
-import rdflib
 
 from extensions.triples import TriplePack
 from extensions.cardinality import (AtLeastOne,
@@ -9,12 +8,14 @@ from extensions.logic import (And,
                               Or)
 from rdfscript.core import (Uri,
                             Value,
-                            Name)
+                            Name,
+                            Assignment)
 
 from rdfscript.template import (Template,
                                 Property,
                                 Expansion)
 from rdfscript.env import Env
+
 
 class LogicExtensionsTest(unittest.TestCase):
 
@@ -22,16 +23,15 @@ class LogicExtensionsTest(unittest.TestCase):
         self.env = Env()
 
         self.v_uri = Uri('http://test.triplepack/#variable')
-        self.env.assign(self.v_uri,
-                        Value(42))
+        do_assign(self.v_uri, Value(42), self.env)
 
         self.template = Template(Name('A'),
-                                  [Name('x'),
-                                   Name('y')],
-                                  [Property(Name('x'),
-                                            Value(42)),
-                                   Property(Uri('http://example.eg/predicate'),
-                                            Name('y'))])
+                                 [Name('x'),
+                                  Name('y')],
+                                 [Property(Name('x'),
+                                           Value(42)),
+                                  Property(Uri('http://example.eg/predicate'),
+                                           Name('y'))])
 
         self.expansion = Expansion(Name('e'),
                                    Name('A'),
@@ -49,13 +49,17 @@ class LogicExtensionsTest(unittest.TestCase):
 
             return (s, p, o)
 
-        triples =  self.expansion.as_triples(self.env)
+        triples = self.expansion.as_triples(self.env)
         triples = [triple_eval(triple) for triple in triples]
 
-        bindings = self.env._symbol_table
+        bindings = self.env._rdf.get(None, self.env.identity_uri, None)
+        symbol_table = dict()
+        for (s, p, o) in bindings:
+            symbol_table[s] = o
+
         templates = self.env._template_table
 
-        self.pack = TriplePack(triples, bindings, templates)
+        self.pack = TriplePack(triples, symbol_table, templates)
 
     def test_and_true_true(self):
 
@@ -160,3 +164,7 @@ class LogicExtensionsTest(unittest.TestCase):
             conjunction.run(self.pack)
 
         self.assertEqual(triples, self.pack.triples)
+
+
+def do_assign(name, value, env):
+    Assignment(name, value).evaluate(env)

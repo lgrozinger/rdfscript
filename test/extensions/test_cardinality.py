@@ -1,6 +1,4 @@
 import unittest
-import rdflib
-import pdb
 
 from extensions.triples import TriplePack
 from extensions.cardinality import (AtLeastOne,
@@ -9,7 +7,8 @@ from extensions.cardinality import (AtLeastOne,
                                     CardinalityError)
 from rdfscript.core import (Uri,
                             Value,
-                            Name)
+                            Name,
+                            Assignment)
 
 from rdfscript.template import (Template,
                                 Property,
@@ -23,8 +22,7 @@ class CardinalityExtensionsTest(unittest.TestCase):
         self.env = Env()
 
         self.v_uri = Uri('http://test.triplepack/#variable', None)
-        self.env.assign(self.v_uri,
-                        Value(42, None))
+        do_assign(self.v_uri, Value(42), self.env)
 
         self.template = Template(Name('A'),
                                  [Name('x'),
@@ -53,10 +51,14 @@ class CardinalityExtensionsTest(unittest.TestCase):
         triples = self.expansion.as_triples(self.env)
         triples = [triple_eval(triple) for triple in triples]
 
-        bindings = self.env._symbol_table
+        bindings = self.env._rdf.get(None, self.env.identity_uri, None)
+        symbol_table = dict()
+        for (s, p, o) in bindings:
+            symbol_table[s] = o
+
         templates = self.env._template_table
 
-        self.pack = TriplePack(triples, bindings, templates)
+        self.pack = TriplePack(triples, symbol_table, templates)
 
     def test_at_least_one(self):
 
@@ -118,3 +120,7 @@ class CardinalityExtensionsTest(unittest.TestCase):
             (None, Uri('http://example.eg/predicate'), None))[0]
         self.pack.add(add)
         ext.run(self.pack)
+
+
+def do_assign(name, value, env):
+    Assignment(name, value).evaluate(env)

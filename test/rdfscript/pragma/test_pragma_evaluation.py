@@ -2,9 +2,8 @@ import unittest
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
-from rdfscript.core import (Name,
-                            Uri,
-                            Value)
+import rdfscript.core as core
+
 from rdfscript.pragma import (PrefixPragma,
                               DefaultPrefixPragma,
                               ImportPragma)
@@ -23,10 +22,11 @@ class PragmaEvaluateTest(unittest.TestCase):
 
     def test_prefix_pragma_name(self):
 
-        uri = Uri('http://prefix.test/')
-        name = Name('uri')
-        pragma = PrefixPragma('test', Name('uri'))
-        self.env.assign(name.evaluate(self.env), uri)
+        uri = core.Uri('http://prefix.test/')
+        name = core.Name('uri')
+        core.Assignment(name, uri).evaluate(self.env)
+        pragma = PrefixPragma('test', core.Name('uri'))
+
         value = pragma.evaluate(self.env)
 
         self.assertEqual(value, uri)
@@ -34,8 +34,8 @@ class PragmaEvaluateTest(unittest.TestCase):
 
     def test_prefix_pragma_uri(self):
 
-        uri = Uri('http://prefix.test/')
-        pragma = PrefixPragma('test', Name(uri))
+        uri = core.Uri('http://prefix.test/')
+        pragma = PrefixPragma('test', core.Name(uri))
         value = pragma.evaluate(self.env)
 
         self.assertEqual(value, uri)
@@ -44,7 +44,7 @@ class PragmaEvaluateTest(unittest.TestCase):
     def test_default_prefix_pragma(self):
 
         prefix = 'test'
-        uri = Uri('http://prefix.test/')
+        uri = core.Uri('http://prefix.test/')
         self.env.bind_prefix(prefix, uri)
         self.assertNotEqual(self.env.prefix, prefix)
 
@@ -59,13 +59,13 @@ class PragmaEvaluateTest(unittest.TestCase):
 
         e.evaluate(self.env)
 
-        self.assertEqual(e.args, [Name('arg').evaluate(self.env)])
+        self.assertEqual(e.args, [core.Name('arg').evaluate(self.env)])
 
     def test_python_extension_returns_extension_object(self):
 
         ext = self.parser.parse('@extension AtLeastOne(uri)')[0]
 
-        expected = AtLeastOne(Name('uri').evaluate(self.env))
+        expected = AtLeastOne(core.Name('uri').evaluate(self.env))
 
         self.assertEqual(expected._prop, ext.as_python_object(self.env)._prop)
 
@@ -74,13 +74,13 @@ class PragmaEvaluateTest(unittest.TestCase):
         form = self.parser.parse('use <test/test_files/top>')[0]
 
         form.evaluate(self.env)
-        toptest = Uri('http://top.org/test')
-        thisleveltest = Uri('http://thislevel.top/test')
-        downthisleveltest = Uri('http://down.thislevel/test')
+        toptest = core.Uri('http://top.org/test')
+        thisleveltest = core.Uri('http://thislevel.top/test')
+        downthisleveltest = core.Uri('http://down.thislevel/test')
 
-        self.assertEqual(self.env.lookup(toptest), Value(True))
-        self.assertEqual(self.env.lookup(thisleveltest), Value(True))
-        self.assertEqual(self.env.lookup(downthisleveltest), Value(True))
+        self.assertEqual(self.env.lookup(toptest), core.Value(True))
+        self.assertEqual(self.env.lookup(thisleveltest), core.Value(True))
+        self.assertEqual(self.env.lookup(downthisleveltest), core.Value(True))
 
     def test_import_pragma_name(self):
 
@@ -90,10 +90,10 @@ class PragmaEvaluateTest(unittest.TestCase):
 
         x.evaluate(self.env)
         use.evaluate(self.env)
-        toptest = Uri('http://top.org/test')
-        thisleveltest = Uri('http://thislevel.top/test')
-        downthisleveltest = Uri('http://down.thislevel/test')
+        toptest = core.Uri('http://top.org/test')
+        thisleveltest = core.Uri('http://thislevel.top/test')
+        downthisleveltest = core.Uri('http://down.thislevel/test')
 
-        self.assertEqual(self.env.lookup(toptest), Value(True))
-        self.assertEqual(self.env.lookup(thisleveltest), Value(True))
-        self.assertEqual(self.env.lookup(downthisleveltest), Value(True))
+        self.assertEqual(self.env.lookup(toptest), core.Value(True))
+        self.assertEqual(self.env.lookup(thisleveltest), core.Value(True))
+        self.assertEqual(self.env.lookup(downthisleveltest), core.Value(True))

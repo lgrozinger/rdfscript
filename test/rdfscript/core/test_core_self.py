@@ -9,7 +9,7 @@ class TestCoreSelf(unittest.TestCase):
     def test_self_evaluate(self):
 
         env = Env()
-        self.assertEqual(Uri(env._rdf._g.identifier.toPython()), Self().evaluate(env))
+        self.assertEqual(Uri(''), Self().evaluate(env))
 
     def test_equal_name(self):
 

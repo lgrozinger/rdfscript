@@ -1,6 +1,5 @@
 import pathlib
 import logging
-import pdb
 
 from .core import Uri, Value
 
@@ -26,14 +25,13 @@ class Env(object):
                  paths=[],
                  extensions=[]):
 
-        self._symbol_table = {}
         self._template_table = {}
         self._extension_table = {}
         self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RDFData(serializer=serializer)
         self._prefix = None
-        self._uri = Uri(self._rdf._g.identifier.toPython())
+        self._uri = Uri('')
         self._self = self._uri
 
         if filename:
@@ -44,6 +42,10 @@ class Env(object):
 
     def __repr__(self):
         return format("%s" % self._rdf.serialise())
+
+    @property
+    def identity_uri(self):
+        return self._rdf.identity_uri
 
     @property
     def current_self(self):
@@ -91,7 +93,6 @@ class Env(object):
             raise PrefixError(uri, None)
 
     def add_triples(self, triples):
-        """Add a triple of Uri or Value language objects to the RDF graph."""
         for (s, p, o) in triples:
             self._rdf.add(s, p, o)
 
@@ -99,11 +100,15 @@ class Env(object):
         self._rdf.bind_prefix(prefix, uri)
         return prefix
 
-    def assign(self, uri, value):
-        self._symbol_table[uri] = value
-
     def lookup(self, uri):
-        return self._symbol_table.get(uri, None)
+        assigned_to = self.identity_uri
+        values = [o for (s, p, o) in self._rdf.get(uri, assigned_to, None)]
+
+        value = None
+        if len(values) == 1:
+            value = values[0]
+
+        return value
 
     def assign_template(self, uri, template):
         self._template_table[uri] = template
@@ -125,7 +130,12 @@ class Env(object):
         extension_class = self.get_extension(extension.name)
         extension_obj = extension_class(*extension.args)
 
-        pack = TriplePack(triples, self._symbol_table, self._template_table)
+        bindings = self._rdf.get(None, self.identity_uri, None)
+        symbol_table = dict()
+        for (s, p, o) in bindings:
+            symbol_table[s] = o
+
+        pack = TriplePack(triples, symbol_table, self._template_table)
         return extension_obj.run(pack).triples
 
     def run_extension_on_graph(self, extension):

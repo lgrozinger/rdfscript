@@ -3,6 +3,7 @@ import ply.lex as leex
 
 import rdfscript.reader as reader
 
+
 class ReaderReservedTest(unittest.TestCase):
 
     def setUp(self):
@@ -37,20 +38,3 @@ class ReaderReservedTest(unittest.TestCase):
         token = self.reader.token()
         self.assertEqual(token.type, 'ISA')
         self.assertEqual(token.value, 'is a')
-
-    def test_from(self):
-        self.reader.input('from')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'FROM')
-
-    def test_from_inside_symbol(self):
-        self.reader.input('fromage fromfrom')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'SYMBOL')
-        self.assertEqual(token.value, 'fromage')
-
-        token = self.reader.token()
-        self.assertEqual(token.type, 'SYMBOL')
-        self.assertEqual(token.value, 'fromfrom')

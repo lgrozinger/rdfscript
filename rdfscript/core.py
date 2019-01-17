@@ -1,8 +1,7 @@
 import rdflib
 import re
 
-from .error import (PrefixError,
-                    UnexpectedType)
+import rdfscript.error as error
 
 
 class Node(object):
@@ -36,6 +35,65 @@ class Node(object):
         return self._location.filename
 
 
+class Two(Node):
+
+    def __init__(self, one, two, location=None):
+        Node.__init__(self, location)
+        self._one = one
+        self._two = two
+
+    def __eq__(self, other):
+        return (isinstance(other, Two) and
+                self.one == other.one and
+                self.two == other.two)
+
+    @property
+    def one(self):
+        return self._one
+
+    @property
+    def two(self):
+        return self._two
+
+
+class Three(Node):
+
+    def __init__(self, one, two, three, location=None):
+        Node.__init__(self, location)
+        self._one = one
+        self._two = two
+        self._three = three
+
+    def __eq__(self, other):
+        return (isinstance(other, Three) and
+                self.one == other.one and
+                self.two == other.two and
+                self.three == other.three)
+
+    @property
+    def one(self):
+        return self._one
+
+    @property
+    def two(self):
+        return self._two
+
+    @property
+    def three(self):
+        return self._three
+
+    def evaluate(self, context):
+        e_one = self.one.evaluate(context)
+        e_two = self.two.evaluate(context)
+        e_three = self.three.evaluate(context)
+
+        type_assert(e_one, Uri)
+        type_assert(e_two, Uri)
+
+        context.add_triples([(e_one, e_two, e_three)])
+        return e_one
+
+
 class Name(Node):
 
     def __init__(self, *names, location=None):
@@ -63,7 +121,7 @@ class Name(Node):
         if len(self.names) > 1 and isinstance(self.names[0], str):
             try:
                 return context.uri_for_prefix(self.names[0])
-            except PrefixError:
+            except error.PrefixError:
                 return False
         else:
             return False
@@ -164,7 +222,7 @@ class Value(Node):
 
     def __eq__(self, other):
         return (isinstance(other, Value) and
-                type(self.value) == type(other.value) and
+                isinstance(other.value, type(self.value)) and
                 self.value == other.value)
 
     def __str__(self):
@@ -233,11 +291,19 @@ class Assignment(Node):
         return self._value
 
     def evaluate(self, context):
-        uri = self.name.evaluate(context)
-        if not isinstance(uri, Uri):
-            raise UnexpectedType(Uri, uri, self.location)
+        assign_to = context.identity_uri
+        Three(self.name,
+              assign_to,
+              self.value,
+              location=self.location).evaluate(context)
 
-        value = self.value.evaluate(context)
+        return self.value
 
-        context.assign(uri, value)
-        return value
+
+def type_assert(this_is, of_type):
+    if not isinstance(this_is, of_type):
+        try:
+            raise error.UnexpectedType(of_type, this_is, this_is.location)
+        except AttributeError:
+            raise error.UnexpectedType(of_type, this_is, None)
+    return True

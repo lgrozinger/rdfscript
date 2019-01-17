@@ -1,5 +1,4 @@
 import rdflib
-import pdb
 
 from .core import Uri, Value
 from .error import InternalError, PrefixError
@@ -10,7 +9,7 @@ from pysbolgraph.SBOL2Graph import SBOL2Graph
 class RDFData(object):
     """
     This class manages the backend RDF graph.
-    It abstracts away rdflib objects and operates only with the core
+    It abstracts away rdflib objects and interfaces with the core
     language objects Uri and Value.
     """
 
@@ -18,6 +17,14 @@ class RDFData(object):
 
         self._g = rdflib.Graph()
         self._serializer = serializer
+
+    @property
+    def lang_ns(self):
+        return rdflib.Namespace('http://github.com/lgrozinger/rdfscript/lang/')
+
+    @property
+    def identity_uri(self):
+        return self.from_rdf(self.lang_ns['is'])
 
     @property
     def namespace(self):
@@ -34,9 +41,9 @@ class RDFData(object):
 
     def from_rdf(self, rdf_object):
         if isinstance(rdf_object, rdflib.URIRef):
-            return Uri(rdf_object.toPython(), None)
+            return Uri(rdf_object.toPython())
         elif isinstance(rdf_object, rdflib.Literal):
-            return Value(rdf_object.toPython(), None)
+            return Value(rdf_object.toPython())
         elif isinstance(rdf_object, rdflib.Namespace):
             return self.from_rdf(rdflib.URIRef(rdf_object))
         elif isinstance(rdf_object, rdflib.BNode):
@@ -51,6 +58,13 @@ class RDFData(object):
         else:
             self._g.add(triple)
 
+    def get(self, s, p, o):
+        triple = (s, p, o)
+        triple = tuple(self.to_rdf(t) if t is not None else t for t in triple)
+
+        results = self._g.triples(triple)
+        return [tuple(self.from_rdf(t) for t in triple) for triple in results]
+
     def remove(self, s, p, o):
         triple = (self.to_rdf(s), self.to_rdf(p), self.to_rdf(o))
 
@@ -62,18 +76,9 @@ class RDFData(object):
 
     @property
     def triples(self):
-        rdflib_triples = list(self._g.triples((None, None, None)))
+        triples = self._g.triples((None, None, None))
 
-        def to_rdfscript(triple):
-            (s, p, o) = triple
-            s = self.from_rdf(s)
-            p = self.from_rdf(p)
-            o = self.from_rdf(o)
-
-            return (s, p, o)
-
-        rdfscript_triples = [to_rdfscript(triple) for triple in rdflib_triples]
-        return rdfscript_triples
+        return [tuple(self.from_rdf(t) for t in triple) for triple in triples]
 
     def bind_prefix(self, prefix, uri):
         u = self.to_rdf(uri)

@@ -1,5 +1,3 @@
-import rdflib
-
 class TriplePack(object):
     """
     The object passed to an extensions' run() method.
@@ -60,7 +58,7 @@ class TriplePack(object):
 
         if len(args) == 2:
             owner = args[0]
-            what  = args[1]
+            what = args[1]
         else:
             what = args[0]
 
@@ -72,7 +70,7 @@ class TriplePack(object):
 
         if len(args) == 2:
             owner = args[0]
-            what  = args[1]
+            what = args[1]
         else:
             what = args[0]
 
@@ -84,7 +82,7 @@ class TriplePack(object):
 
         if len(args) == 2:
             owner = args[0]
-            what  = args[1]
+            what = args[1]
         else:
             what = args[0]
 

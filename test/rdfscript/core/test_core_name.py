@@ -1,6 +1,6 @@
 import unittest
 
-from rdfscript.core import Name, Uri, Self, Value
+from rdfscript.core import Name, Uri, Self, Value, Assignment
 
 from rdfscript.env import Env
 
@@ -66,7 +66,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first')
         value = Value(1)
 
-        self.env.assign(name.evaluate(self.env), value)
+        do_assign(name, value, self.env)
         self.assertEqual(value, name.evaluate(self.env))
 
     def test_name_evaluate_bound_prefixed(self):
@@ -74,7 +74,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', 'second')
         value = Value(1)
 
-        self.env.assign(name.evaluate(self.env), value)
+        do_assign(name, value, self.env)
         self.assertEqual(value, name.evaluate(self.env))
 
     def test_name_evaluate_bound_self(self):
@@ -82,7 +82,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name(Self(), 'second')
         value = Value(1)
 
-        self.env.assign(name.evaluate(self.env), value)
+        do_assign(name, value, self.env)
         self.assertEqual(value, name.evaluate(self.env))
 
     def test_name_evaluate_bound_chained(self):
@@ -90,7 +90,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', 'second', 'third', 'fourth')
         value = Value(1)
 
-        self.env.assign(name.evaluate(self.env), value)
+        do_assign(name, value, self.env)
         self.assertEqual(value, name.evaluate(self.env))
 
     def test_name_evaluate_chained_mix(self):
@@ -101,7 +101,7 @@ class CoreNameTest(unittest.TestCase):
 
         self.assertEqual(name.evaluate(self.env), uri)
 
-        self.env.assign(name.evaluate(self.env), value)
+        do_assign(name, value, self.env)
         self.assertEqual(self.env.lookup(uri), value)
 
     def test_name_evaluate_unbound_unresolved_self_prefix(self):
@@ -124,7 +124,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', 'second')
         value = Uri('http://first.org/#')
 
-        self.env.assign(Name('first').evaluate(self.env), value)
+        do_assign(Name('first'), value, self.env)
 
         self.assertEqual(name.evaluate(self.env),
                          Uri('http://first.org/#second'))
@@ -134,7 +134,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', 'second', 'third')
         value = Uri('http://first.org/#second#')
 
-        self.env.assign(Name('first', 'second').evaluate(self.env), value)
+        do_assign(Name('first', 'second'), value, self.env)
 
         self.assertEqual(name.evaluate(self.env), Uri(
             'http://first.org/#second#third'))
@@ -144,7 +144,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', 'second')
         value = Value(12345)
 
-        self.env.assign(Name('first').evaluate(self.env), value)
+        do_assign(Name('first'), value, self.env)
 
         self.assertEqual(name.evaluate(self.env), Uri('prefixfirstsecond'))
 
@@ -153,7 +153,7 @@ class CoreNameTest(unittest.TestCase):
         name = Name('first', 'second', 'third')
         value = Value(12345)
 
-        self.env.assign(Name('first', 'second').evaluate(self.env), value)
+        do_assign(Name('first', 'second'), value, self.env)
 
         self.assertEqual(name.evaluate(self.env),
                          Uri('prefixfirstsecondthird'))
@@ -197,3 +197,7 @@ class CoreNameTest(unittest.TestCase):
 
         self.assertEqual(name.evaluate(self.env),
                          Uri('http://literal.eg/literal'))
+
+
+def do_assign(name, value, env):
+    Assignment(name, value).evaluate(env)

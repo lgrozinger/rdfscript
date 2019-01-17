@@ -3,6 +3,7 @@ import ply.lex as leex
 
 import rdfscript.reader as reader
 
+
 class ReaderSpecialsTest(unittest.TestCase):
 
     def setUp(self):
@@ -64,6 +65,22 @@ class ReaderSpecialsTest(unittest.TestCase):
 
         self.assertEqual(token.value, '[')
         self.assertEqual(token.type, '[')
+
+    def test_right_angle(self):
+        self.reader.input('>')
+        token = self.reader.token()
+
+        self.assertEqual(token.value, '>')
+        self.assertEqual(token.type, '>')
+
+    def test_right_angle_between(self):
+        self.reader.input('name > name > name')
+
+        tokens = [token for token in self.reader]
+        token_types = [token.type for token in tokens]
+
+        self.assertEqual(token_types, ['SYMBOL', '>', 'SYMBOL', '>', 'SYMBOL'])
+
 
 if __name__ == '__main__':
     unittest.main()

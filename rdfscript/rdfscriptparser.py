@@ -5,20 +5,9 @@ from . import reader
 
 from .reader import tokens
 
-from .core import (Uri,
-                   Name,
-                   Value,
-                   Self,
-                   Assignment)
-
-from .pragma import (PrefixPragma,
-                     DefaultPrefixPragma,
-                     ImportPragma,
-                     ExtensionPragma)
-
-from .template import (Template,
-                       Property,
-                       Expansion)
+import rdfscript.core as core
+import rdfscript.pragma as pragma
+import rdfscript.template as template
 
 from .error import RDFScriptSyntax
 
@@ -38,6 +27,8 @@ def p_form_types(p):
     '''form : assignment
             | extension
             | template
+            | three
+            | two
             | expr'''
     p[0] = p[1]
 
@@ -45,49 +36,62 @@ def p_form_types(p):
 # assignment
 def p_assignment(p):
     '''assignment : name '=' expr'''
-    p[0] = Assignment(p[1], p[3], location(p))
+    p[0] = core.Assignment(p[1], p[3], location(p))
+
+
+# triple statements
+def p_two(p):
+    '''two : expr '>' expr'''
+    p[0] = core.Two(p[1], p[3], location(p))
+
+
+def p_three(p):
+    '''three : expr '>' expr '>' expr'''
+    p[0] = core.Three(p[1], p[3], p[5], location(p))
 
 
 # pragma
 def p_pragma_prefix(p):
     '''pragma : PREFIX SYMBOL '=' expr'''
-    l = location(p)
-    p[0] = PrefixPragma(p[2], p[4], l)
+    loc = location(p)
+    p[0] = pragma.PrefixPragma(p[2], p[4], location=loc)
 
 
 def p_defaultprefix_pragma(p):
     '''pragma : PREFIX SYMBOL'''
-    l = location(p)
-    p[0] = DefaultPrefixPragma(p[2], l)
+    loc = location(p)
+    p[0] = pragma.DefaultPrefixPragma(p[2], location=loc)
 
 
 def p_pragma_import(p):
     '''pragma : USE name'''
-    p[0] = ImportPragma(p[2], location(p))
+    p[0] = pragma.ImportPragma(p[2], location(p))
 
 
 def p_extension_no_args(p):
     '''extension : EXTENSION SYMBOL'''
-    p[0] = ExtensionPragma(p[2], [], location(p))
+    p[0] = pragma.ExtensionPragma(p[2], [], location(p))
 
 
 def p_extension_args(p):
     '''extension : EXTENSION SYMBOL '(' exprlist ')' '''
-    p[0] = ExtensionPragma(p[2], p[4], location(p))
+    p[0] = pragma.ExtensionPragma(p[2], p[4], location(p))
 
-## expansions and templates
 
+# expansions and templates
 def p_template(p):
     '''template : name '(' exprlist ')' indentedinstancebody'''
-    p[0] = Template(p[1], p[3], p[5], location=location(p))
+    p[0] = template.Template(p[1], p[3], p[5], location=location(p))
+
 
 def p_expansion(p):
     '''expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
-    p[0] = Expansion(p[1], p[3], p[5], p[7], location(p))
+    p[0] = template.Expansion(p[1], p[3], p[5], p[7], location(p))
+
 
 def p_anon_expansion(p):
     '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
-    p[0] = Expansion(None, p[1], p[3], p[5], location(p))
+    p[0] = template.Expansion(None, p[1], p[3], p[5], location(p))
 
 # def p_triple(p):
 #     '''triple : name name expr'''
@@ -140,7 +144,7 @@ def p_bodystatement(p):
 def p_property(p):
     '''property : name '=' expr'''
 #                | name '=' expansion'''
-    p[0] = Property(p[1], p[3], location=location(p))
+    p[0] = template.Property(p[1], p[3], location=location(p))
 
 # lists
 
@@ -175,8 +179,8 @@ def p_emptylist(p):
 
 def p_dotted_name(p):
     '''name : dotted_list'''
-    l = location(p)
-    p[0] = Name(*p[1], location=l)
+    loc = location(p)
+    p[0] = core.Name(*p[1], location=loc)
 
 
 def p_dotted_list_1(p):
@@ -198,12 +202,12 @@ def p_identifier(p):
 
 def p_self(p):
     '''self : SELF'''
-    p[0] = Self(location(p))
+    p[0] = core.Self(location(p))
 
 
 def p_uri(p):
     '''uri : URI'''
-    p[0] = Uri(p[1], location=location(p))
+    p[0] = core.Uri(p[1], location=location(p))
 
 # literal objects
 
@@ -212,15 +216,15 @@ def p_literal(p):
     '''literal : INTEGER
                | STRING
                | DOUBLE'''
-    p[0] = Value(p[1], location(p))
+    p[0] = core.Value(p[1], location(p))
 
 
 def p_literal_boolean(p):
     '''literal : BOOLEAN'''
     if p[1] == 'true':
-        p[0] = Value(True, location(p))
+        p[0] = core.Value(True, location(p))
     else:
-        p[0] = Value(False, location(p))
+        p[0] = core.Value(False, location(p))
 
 # SYNTAX ERROR
 
@@ -276,6 +280,7 @@ class RDFScriptParser:
                                  lexer=self.scanner,
                                  tracking=True,
                                  debug=self.dbg_logger)
+
 
 class Position:
 

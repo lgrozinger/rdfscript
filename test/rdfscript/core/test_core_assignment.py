@@ -54,8 +54,7 @@ class CoreAssignmentTest(unittest.TestCase):
         name = Name('variable')
         value = Name(Uri('http://variable/#value'))
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(Assignment(name, value).evaluate(self.env), value)
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_name_name(self):
@@ -63,8 +62,7 @@ class CoreAssignmentTest(unittest.TestCase):
         name = Name('variable')
         value = Name('value')
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(Assignment(name, value).evaluate(self.env), value)
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_uri_string(self):
@@ -108,8 +106,7 @@ class CoreAssignmentTest(unittest.TestCase):
         name = Name(Uri('http://variable/#v'))
         value = Name(Uri('http://variable/#value'))
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(Assignment(name, value).evaluate(self.env), value)
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_uri_name(self):
@@ -117,8 +114,7 @@ class CoreAssignmentTest(unittest.TestCase):
         name = Name(Uri('http://variable/#v'))
         value = Name('Name')
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(Assignment(name, value).evaluate(self.env), value)
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_self_name(self):
@@ -126,6 +122,5 @@ class CoreAssignmentTest(unittest.TestCase):
         name = Name(Self(), 'v')
         value = Name('Name')
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(Assignment(name, value).evaluate(self.env), value)
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
