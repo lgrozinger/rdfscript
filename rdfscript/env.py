@@ -106,6 +106,18 @@ class Env(object):
 
         return value
 
+    def lookup_property(self, belonging_to, which_property):
+        triples = self._rdf.get(belonging_to, which_property, None)
+        values = [o for (s, p, o) in triples]
+
+        result = None
+        if len(values) == 1:
+            result = values[0]
+        elif len(values) > 1:
+            result = values
+
+        return result
+
     def assign_template(self, uri, template):
         self._template_table[uri] = template
 
@@ -157,7 +169,7 @@ class Env(object):
                 if isinstance(form, ExtensionPragma):
                     form.evaluate(self)
                     self.run_extension_on_graph(form)
-                    result = Value(True)
+                    result = core.Value(True)
                 else:
                     result = form.evaluate(self)
             except RDFScriptError as e:

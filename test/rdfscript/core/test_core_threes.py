@@ -7,7 +7,7 @@ import rdfscript.rdfscriptparser as parser
 import rdfscript.error as error
 
 
-class TripleTest(unittest.TestCase):
+class TestThrees(unittest.TestCase):
 
     def setUp(self):
         self.parser = parser.RDFScriptParser()

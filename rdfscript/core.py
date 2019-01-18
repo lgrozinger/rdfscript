@@ -47,6 +47,12 @@ class Two(Node):
                 self.one == other.one and
                 self.two == other.two)
 
+    def __repr__(self):
+        return format("[TWO: %s > %s]" % (self.one, self.two))
+
+    def __str__(self):
+        return format("%s > %s" % (self.one, self.two))
+
     @property
     def one(self):
         return self._one
@@ -54,6 +60,11 @@ class Two(Node):
     @property
     def two(self):
         return self._two
+
+    def evaluate(self, context):
+        e_one = self.one.evaluate(context)
+        e_two = self.two.evaluate(context)
+        return context.lookup_property(e_one, e_two)
 
 
 class Three(Node):
@@ -69,6 +80,14 @@ class Three(Node):
                 self.one == other.one and
                 self.two == other.two and
                 self.three == other.three)
+
+    def __repr__(self):
+        return format("[THREE: %s > %s > %s]" % (self.one,
+                                                 self.two,
+                                                 self.three))
+
+    def __str__(self):
+        return format("%s > %s > %s" % (self.one, self.two, self.three))
 
     @property
     def one(self):
@@ -97,7 +116,6 @@ class Three(Node):
 class Name(Node):
 
     def __init__(self, *names, location=None):
-
         Node.__init__(self, location)
         self._names = list(names)
 
@@ -108,7 +126,7 @@ class Name(Node):
                  self.names == [Self()]))
 
     def __str__(self):
-        return ':'.join([str(name) for name in self.names])
+        return '.'.join([str(name) for name in self.names])
 
     def __repr__(self):
         return format("[NAME: %s]" % (self.names))
@@ -166,17 +184,8 @@ class Name(Node):
 
 
 class Uri(Node):
-    """Language object for a URI."""
 
     def __init__(self, uri, location=None):
-        """
-        uri can be one of:
-          - string
-          - rdflib.URIRef object
-          - Uri object
-
-        uri is converted to a string
-        """
         Node.__init__(self, location)
         if isinstance(uri, rdflib.URIRef):
             self._uri = uri.toPython()
@@ -213,10 +222,8 @@ class Uri(Node):
 
 
 class Value(Node):
-    """Language object for an RDF literal."""
 
     def __init__(self, python_literal, location=None):
-
         Node.__init__(self, location)
         self._python_val = python_literal
 
@@ -265,7 +272,6 @@ class Self(Node):
 class Assignment(Node):
 
     def __init__(self, name, value, location=None):
-
         Node.__init__(self, location)
         self._name = name
         self._value = value
