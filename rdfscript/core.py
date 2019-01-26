@@ -3,15 +3,17 @@ import re
 
 import rdfscript.error as error
 
+__lang__ = "https://github.com/lgrozinger/rdfscript/lang/"
+
+
+def lang_uri(obj):
+
+    type_assert(obj, Name, Uri, Value, Self)
+    return Uri(__lang__ + obj.__class__.__name__)
 
 class Node(object):
-    """Language object."""
 
     def __init__(self, location):
-        """
-        location is a Location object representing this language
-        object's position in the source code.
-        """
         self._location = location
 
     @property
@@ -118,6 +120,8 @@ class Name(Node):
     def __init__(self, *names, location=None):
         Node.__init__(self, location)
         self._names = list(names)
+        for name in names[1:]:
+            type_assert(name, Uri, str, Self)
 
     def __eq__(self, other):
         return ((isinstance(other, Name) and
@@ -135,52 +139,108 @@ class Name(Node):
     def names(self):
         return self._names
 
-    def is_prefixed(self, context):
-        if len(self.names) > 1 and isinstance(self.names[0], str):
-            try:
-                return context.uri_for_prefix(self.names[0])
-            except error.PrefixError:
-                return False
-        else:
+    def concrete_p(self, context):
+        return not Self() in self.names or context.concrete_self_p()
+
+    def bound_p(self, context):
+
+        if not self.concrete_p(context):
             return False
+
+        roots = context.namespaces
+        for root in roots:
+            current = root
+
+            for i in range(0, len(self.names)):
+                name = self.names[i]
+                type_assert(current, Uri)
+                type_assert(name, str, Self, Uri)
+
+                if isinstance(name, (Uri, str)):
+                    concrete_name = Uri(name)
+                else:
+                    concrete_name = context.concrete_self_p()
+
+                hit = context.lookup_property(current, concrete_name)
+
+                if hit is None:
+                    break
+                else:
+                    type_assert(hit, Uri, Value)
+                    current = hit
+                    if i == len(self.names) - 1:
+                        return hit
+
+        return False
+
+    def get_prefix(self, context):
+        prefix = self.names[0]
+
+        if isinstance(prefix, Uri):
+            prefix = Uri(prefix.uri)
+            self.names.pop(0)
+        elif isinstance(prefix, Self):
+            prefix = Uri(context.current_self)
+            self.names.pop(0)
+        elif context.prefix is not None:
+            prefix = context.uri_for_prefix(context.prefix)
+        else:
+            prefix = Uri(prefix)
+            self.names.pop(0)
+
+        return prefix
+
+    def pop_prefix(self, context):
+        prefix = self.names[0]
+
+        if isinstance(prefix, Uri):
+            prefix = Uri(prefix.uri)
+            self.names.pop(0)
+        elif isinstance(prefix, Self):
+            prefix = Uri(context.current_self)
+            self.names.pop(0)
+        elif context.prefix is not None:
+            prefix = context.uri_for_prefix(context.prefix)
+        else:
+            prefix = Uri(prefix)
+            self.names.pop(0)
+
+        return prefix
+
+    def resolve(self, context):
+        result = False
+        names = [name for name in self.names]
+        leftover_names = []
+        while not result and names:
+            leftover_names.insert(0, names.pop())
+            result = Name(*names).bound_p(context)
+            if not isinstance(result, Uri):
+                result = False
+
+        leftover_name = Name(*leftover_names)
+        if not result:
+            result = leftover_name.pop_prefix(context)
+
+        for name in leftover_name.names:
+            type_assert(name, Uri, str, Self)
+            if isinstance(name, Self):
+                name_uri = context.current_self
+            else:
+                name_uri = Uri(name)
+
+            result.extend(name_uri, delimiter='')
+
+        return result
 
     def evaluate(self, context):
 
-        uri = Uri(context.uri, location=self.location)
+        result = False
+        if self.concrete_p(context):
+            result = self.bound_p(context)
+        else:
+            result = self
 
-        for n in range(0, len(self.names)):
-            if isinstance(self.names[n], Self):
-                current_self = context.current_self
-                if isinstance(current_self, Uri):
-                    if n > 0:
-                        uri.extend(context.current_self, delimiter='')
-                    else:
-                        uri = Uri(current_self, location=self.location)
-                elif isinstance(current_self, Name):
-                    rest = current_self.names + self.names[n + 1:]
-                    if n > 0:
-                        return Name(uri, *rest, location=self.location)
-                    else:
-                        return Name(*rest, location=self.location)
-            elif isinstance(self.names[n], Uri):
-                if n > 0:
-                    uri.extend(self.names[n], delimiter='')
-                else:
-                    uri = Uri(self.names[n])
-            elif isinstance(self.names[n], str):
-                if n == 0 and self.is_prefixed(context):
-                    uri = self.is_prefixed(context)
-                else:
-                    uri.extend(Uri(self.names[n]), delimiter='')
-
-            lookup = context.lookup(uri)
-            if lookup is not None:
-                if isinstance(lookup, Uri):
-                    uri = Uri(lookup, location=self.location)
-                elif n == len(self.names) - 1:
-                    uri = lookup
-
-        return uri
+        return result or self.resolve(context)
 
 
 class Uri(Node):
@@ -273,6 +333,7 @@ class Assignment(Node):
 
     def __init__(self, name, value, location=None):
         Node.__init__(self, location)
+        type_assert(name, Name)
         self._name = name
         self._value = value
 
@@ -297,27 +358,32 @@ class Assignment(Node):
         return self._value
 
     def evaluate(self, context):
-        Three(self.name,
-              identity,
-              self.value,
-              location=self.location).evaluate(context)
 
-        return self.value
+        binding = new_name.bound_p(context)
+        if binding:
+            raise error.BindingError(self.name, binding, self.location)
+        else:
+            ns = context.glowball
+            source_names = self.name.names[:-1]
+            for i in range(0, len(source_names)):
+                type_assert(source_names[i], Uri, str)
+                link = Uri(source_names[i])
+                Three(ns, link, link).evaluate(context)
+                ns = link
+
+        final_link = Uri(self.name.names[-1])
+        binding = self.value.evaluate(context)
+        assign = Three(ns, final_link, binding, location=self.location)
+        assign.evaluate(context)
+
+        return binding
 
 
-def type_assert(this_is, of_type):
-    if not isinstance(this_is, of_type):
+def type_assert(this_is, *of_type):
+    if isinstance(this_is, of_type):
+        return True
+    else:
         try:
             raise error.UnexpectedType(of_type, this_is, this_is.location)
         except AttributeError:
             raise error.UnexpectedType(of_type, this_is, None)
-    return True
-
-
-def param_number(i):
-    assert isinstance(i, type(1))
-    param = 'http://github.com/lgrozinger/rdfscript/lang/param/'
-    return Uri(param + str(i))
-
-
-identity = Uri('http://github.com/lgrozinger/rdfscript/lang/is')

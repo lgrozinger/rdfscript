@@ -30,6 +30,8 @@ class Env(object):
         self._extension_manager = ExtensionManager(extras=extensions)
 
         self._rdf = RDFData(serializer=serializer)
+        self._glowball = core.Uri('')
+        self._namespaces = []
         self._prefix = None
         self._uri = core.Uri('')
         self._self = self._uri
@@ -50,6 +52,14 @@ class Env(object):
     @current_self.setter
     def current_self(self, uri):
         self._self = uri
+
+    @property
+    def glowball(self):
+        return self._glowball
+
+    @property
+    def namespaces(self):
+        return [self.glowball] + self._namespaces
 
     @property
     def uri(self):
@@ -75,8 +85,10 @@ class Env(object):
 
         return prefix
 
+    def concrete_self_p(self):
+        return isinstance(self.current_self, core.Uri) and self.current_self
+
     def uri_for_prefix(self, prefix):
-        """Return a Uri object for a Prefix object."""
         try:
             return self._rdf.uri_for_prefix(prefix)
         except PrefixError:

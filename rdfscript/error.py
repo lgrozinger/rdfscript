@@ -48,11 +48,30 @@ class RDFScriptSyntax(RDFScriptError):
                                                      % self.token)
 
 
+class BindingError(RDFScriptError):
+    def __init__(self, name, existing_binding, location):
+        RDFScriptError.__init__(self, location)
+        self._name = name
+        self._binding = existing_binding
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def binding(self):
+        return self._binding
+
+    def __str__(self):
+        return RDFScriptError.__str__(self) + format("The name %s is already bound to %s\n\n"
+                                                     % (self.name, self.binding))
+
+
 class UnexpectedType(RDFScriptError):
     def __init__(self, expected, actual, location):
         RDFScriptError.__init__(self, location)
-        self._expected = expected
-        self._actual = actual
+        self._expected = [clazz.__name__ for clazz in expected]
+        self._actual = actual.__class__.__name__
         self._type = 'Unexpected Type Error'
 
     @property
@@ -64,8 +83,12 @@ class UnexpectedType(RDFScriptError):
         return self._actual
 
     def __str__(self):
+        expected_types = format("%s" % self.expected[0])
+        for type in self.expected[1:]:
+            expected_types += format(" or %s" % type)
+
         return RDFScriptError.__str__(self) + format("Expected object of type: %s, but found %s.\n\n"
-                                                     % (self.expected, self.actual))
+                                                     % (expected_types, self.actual))
 
 
 class PrefixError(RDFScriptError):
@@ -82,6 +105,7 @@ class PrefixError(RDFScriptError):
     def __str__(self):
         return RDFScriptError.__str__(self) + format("The prefix '%s' is not bound\n\n." % self.prefix)
 
+
 class WrongNumberArguments(RDFScriptError):
 
     def __init__(self, expansion, location):
@@ -95,6 +119,7 @@ class WrongNumberArguments(RDFScriptError):
 
     def __str__(self):
         return RDFScriptError.__str__(self) + format("Wrong number of arguments given for '%s'.\n\n" % self.expansion)
+
 
 class TemplateNotFound(RDFScriptError):
 

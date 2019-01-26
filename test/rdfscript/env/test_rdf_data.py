@@ -28,32 +28,6 @@ class RDFDataTest(unittest.TestCase):
         self.assertEqual(data.namespace, Uri(
             data._g.identifier.toPython(), None))
 
-    def test_to_rdf(self):
-
-        data = RDFData()
-        self.assertEqual(rdflib.URIRef('http://test.org/#'),
-                         data.to_rdf(Uri('http://test.org/#', None)))
-        self.assertEqual(rdflib.URIRef(''), data.to_rdf(Uri('', None)))
-        self.assertEqual(rdflib.Literal(42), data.to_rdf(Value(42, None)))
-        self.assertEqual(rdflib.Literal("String"),
-                         data.to_rdf(Value("String", None)))
-        self.assertEqual(rdflib.Literal(True), data.to_rdf(Value(True, None)))
-        self.assertEqual(rdflib.Literal(0.12345),
-                         data.to_rdf(Value(0.12345, None)))
-
-    def test_from_rdf(self):
-
-        data = RDFData()
-        self.assertEqual(Uri('http://namespace.eg/', None),
-                         data.from_rdf(rdflib.Namespace('http://namespace.eg/')))
-        self.assertEqual(Uri('http://uri.org/', None),
-                         data.from_rdf(rdflib.URIRef('http://uri.org/')))
-        self.assertEqual(Value(42, None), data.from_rdf(rdflib.Literal(42)))
-        self.assertEqual(Value(False, None),
-                         data.from_rdf(rdflib.Literal(False)))
-        self.assertEqual(Value("String", None),
-                         data.from_rdf(rdflib.Literal("String")))
-
     def test_add(self):
 
         data = RDFData()
@@ -114,12 +88,6 @@ class RDFDataTest(unittest.TestCase):
 
         self.assertEqual(data.prefix_for_uri(
             Uri('http://prefix.org/#', None)), 'test_prefix')
-
-    def test_identity_uri(self):
-        expected = Uri('http://github.com/lgrozinger/rdfscript/lang/is')
-        actually = RDFData().identity_uri
-
-        self.assertEqual(expected, actually)
 
     def test_get_all_triples(self):
         data = RDFData()

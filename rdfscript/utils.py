@@ -1,0 +1,48 @@
+import rdflib
+
+import rdfscript.core as core
+
+
+def to_rdf(language_object):
+    if isinstance(language_object, core.Uri):
+        return rdflib.URIRef(language_object.uri)
+    elif isinstance(language_object, core.Value):
+        return rdflib.Literal(language_object.value)
+    else:
+        raise TypeError
+
+
+def from_rdf(rdf_object):
+    if isinstance(rdf_object, rdflib.URIRef):
+        return core.Uri(rdf_object.toPython())
+    elif isinstance(rdf_object, rdflib.Literal):
+        return core.Value(rdf_object.toPython())
+    elif isinstance(rdf_object, rdflib.Namespace):
+        return from_rdf(rdflib.URIRef(rdf_object))
+    elif isinstance(rdf_object, rdflib.BNode):
+        return from_rdf(rdflib.URIRef(rdf_object))
+    else:
+        raise TypeError
+
+
+def triple_map(function, triple):
+    return tuple([function(t) for t in triple])
+
+
+def from_rdf_triple(triple):
+    return triple_map(from_rdf, triple)
+
+
+def from_rdf_triples(triples):
+    return [from_rdf_triple(t) for t in list(triples)]
+
+
+def to_rdf_triple(triple):
+    return triple_map(to_rdf, triple)
+
+
+def to_rdf_triples(triples):
+    return [to_rdf_triple(t) for t in list(triples)]
+
+
+def sub_graph(rdflib_graph):

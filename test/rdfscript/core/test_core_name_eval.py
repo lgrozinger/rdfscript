@@ -2,8 +2,7 @@ import unittest
 
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
-from rdfscript.core import (Name,
-                            Uri,
+from rdfscript.core import (Uri,
                             Value)
 
 

@@ -17,27 +17,26 @@ class CoreAssignmentTest(unittest.TestCase):
 
         name = Name('variable')
         value = Value("string")
+        assign = Assignment(name, value)
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(assign.evaluate(self.env), value.evaluate(self.env))
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_name_integer(self):
 
         name = Name('variable')
         value = Value(12345)
+        assign = Assignment(name, value)
 
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        self.assertEqual(assign.evaluate(self.env), value.evaluate(self.env))
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_name_boolean(self):
 
         name = Name('variable')
         value = Value(False)
-
-        self.assertEqual(Assignment(name, value).evaluate(
-            self.env), value.evaluate(self.env))
+        assign = Assignment(name, value)
+        self.assertEqual(assign.evaluate(self.env), value.evaluate(self.env))
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
     def test_assignment_name_double(self):

@@ -23,10 +23,6 @@ class RDFData(object):
         return rdflib.Namespace('http://github.com/lgrozinger/rdfscript/lang/')
 
     @property
-    def identity_uri(self):
-        return self.from_rdf(self.lang_ns['is'])
-
-    @property
     def namespace(self):
         return self.from_rdf(self._g.identifier)
 
