@@ -38,6 +38,16 @@ class TestRuntime(unittest.TestCase):
         actually = rt._resolver.resolve(name)
         self.assertEqual(expected, actually)
 
+    def test_bind_levels(self):
+        rt = runtime.Runtime()
+        name = core.Name('v', 'u')
+        value = core.Value(12345)
+        rt.bind(value, name)
+
+        expected = value
+        actually = rt._resolver.resolve(name)
+        self.assertEqual(expected, actually)
+
     def test_bound_p_true(self):
         rt = runtime.Runtime()
         name = core.Name('v')
@@ -69,5 +79,14 @@ class TestRuntime(unittest.TestCase):
         w = core.Name('v', 'w')
         value = core.Value(12345)
         rt.bind(value, u)
+
+        self.assertFalse(rt.bound_p(w))
+
+    def test_bound_p_intermediate_value(self):
+        rt = runtime.Runtime()
+        v = core.Name('v')
+        w = core.Name('v', 'w')
+        value = core.Value(12345)
+        rt.bind(value, v)
 
         self.assertFalse(rt.bound_p(w))
