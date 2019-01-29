@@ -1,6 +1,7 @@
 import rdfscript.graph as graph
 import rdfscript.resource_handler as handlers
 
+
 class Runtime:
 
     def __init__(self):
@@ -12,3 +13,9 @@ class Runtime:
     @property
     def prefix(self):
         return self._g.root
+
+    def bind(self, what, where):
+        self._creator.create(where, what)
+
+    def bound_p(self, where):
+        return self._resolver.resolve(where) is not None

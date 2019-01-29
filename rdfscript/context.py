@@ -15,6 +15,10 @@ class Context:
     def root(self):
         return utils.from_rdf(self._root)
 
+    @property
+    def triples(self):
+        return self.get_all_triples()
+
     def put(self, what, where):
         rdf_where = utils.to_rdf(where)
         rdf_what = utils.to_rdf(what)
