@@ -2,7 +2,7 @@ import pathlib
 import logging
 
 import rdfscript.core as core
-
+import rdfscript.graph as graph
 from .pragma import ExtensionPragma
 
 from .error import (RDFScriptError,
@@ -25,13 +25,11 @@ class Env(object):
                  paths=[],
                  extensions=[]):
 
+        self._g = graph.EnvironmentGraph()
         self._template_table = {}
         self._extension_table = {}
         self._extension_manager = ExtensionManager(extras=extensions)
 
-        self._rdf = RDFData(serializer=serializer)
-        self._glowball = core.Uri('')
-        self._namespaces = []
         self._prefix = None
         self._uri = core.Uri('')
         self._self = self._uri

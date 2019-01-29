@@ -7,11 +7,6 @@ from pysbolgraph.SBOL2Graph import SBOL2Graph
 
 
 class RDFData(object):
-    """
-    This class manages the backend RDF graph.
-    It abstracts away rdflib objects and interfaces with the core
-    language objects Uri and Value.
-    """
 
     def __init__(self, serializer=None):
 
@@ -25,27 +20,6 @@ class RDFData(object):
     @property
     def namespace(self):
         return self.from_rdf(self._g.identifier)
-
-    def to_rdf(self, language_object):
-        if isinstance(language_object, Uri):
-            return rdflib.URIRef(language_object.uri)
-        elif isinstance(language_object, Value):
-            return rdflib.Literal(language_object.value)
-        else:
-            raise InternalError(language_object,
-                                language_object.location)
-
-    def from_rdf(self, rdf_object):
-        if isinstance(rdf_object, rdflib.URIRef):
-            return Uri(rdf_object.toPython())
-        elif isinstance(rdf_object, rdflib.Literal):
-            return Value(rdf_object.toPython())
-        elif isinstance(rdf_object, rdflib.Namespace):
-            return self.from_rdf(rdflib.URIRef(rdf_object))
-        elif isinstance(rdf_object, rdflib.BNode):
-            return self.from_rdf(rdflib.URIRef(rdf_object))
-        else:
-            raise TypeError
 
     def add(self, s, p, o, unique=False):
         triple = (self.to_rdf(s), self.to_rdf(p), self.to_rdf(o))

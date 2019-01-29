@@ -2,10 +2,13 @@ import unittest
 import rdflib
 
 import rdfscript.core as core
+import rdfscript.context as context
 from rdfscript.utils import to_rdf
 from rdfscript.utils import from_rdf
 from rdfscript.utils import from_rdf_triples
 from rdfscript.utils import to_rdf_triples
+from rdfscript.utils import name_to_uri
+from rdfscript.utils import contextualise_uri
 
 
 class TestRDFLibUtils(unittest.TestCase):
@@ -77,7 +80,7 @@ class TestRDFLibUtils(unittest.TestCase):
         actually = to_rdf_triples(triples)
         self.assertEqual(expected, actually)
 
-    def test_triples_from_rdf_one(self):
+    def test_triples_to_rdf_one(self):
         triples = [(core.Uri('subject'),
                     core.Uri('predicate'),
                     core.Value("value"))]
@@ -97,4 +100,18 @@ class TestRDFLibUtils(unittest.TestCase):
                      rdflib.URIRef('predicate'),
                      rdflib.Literal("value"))] * 10
         actually = to_rdf_triples(triples)
+        self.assertEqual(expected, actually)
+
+    def test_name_to_uri(self):
+        name = core.Name(core.Uri('https://name/'), 'name')
+        expected = core.Uri('https://name/name')
+        actually = name_to_uri(name)
+        self.assertEqual(expected, actually)
+
+    def test_contextualise_uri(self):
+        c = context.Context(rdflib.Graph())
+        uri = core.Uri('uri')
+        root = from_rdf(c._graph.identifier)
+        expected = core.Uri(root.uri + 'uri')
+        actually = contextualise_uri(uri, c)
         self.assertEqual(expected, actually)

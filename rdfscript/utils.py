@@ -45,4 +45,17 @@ def to_rdf_triples(triples):
     return [to_rdf_triple(t) for t in list(triples)]
 
 
-def sub_graph(rdflib_graph):
+def name_to_uri(name):
+    result = core.Uri('')
+    for step in name.names:
+        try:
+            result.extend(step, delimiter='')
+        except AttributeError:
+            result.extend(core.Uri(step), delimiter='')
+
+    return result
+
+
+def contextualise_uri(uri, context):
+    context_uri = context.root
+    return core.Uri(context_uri.uri + uri.uri)

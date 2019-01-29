@@ -1,22 +1,25 @@
-import rdflib
-
 import rdfscript.utils as utils
 
 
 class Context:
 
     def __init__(self, context_graph):
-
         self._graph = context_graph
         self._root = self._graph.identifier
+
+    def __eq__(self, other):
+        return isinstance(other, Context) \
+            and self.get_all_triples() == other.get_all_triples()
 
     @property
     def root(self):
         return utils.from_rdf(self._root)
 
     def put(self, what, where):
-        triple = (self.root, where, what)
-        self._graph.set(utils.to_rdf_triple(triple))
+        rdf_where = utils.to_rdf(where)
+        rdf_what = utils.to_rdf(what)
+        triple = (self._root, rdf_where, rdf_what)
+        self._graph.set(triple)
         return triple
 
     def get(self, what):
