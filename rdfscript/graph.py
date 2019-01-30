@@ -30,19 +30,19 @@ class EnvironmentGraph:
         return context.Context(rdflib_graph)
 
     def bind_prefix(self, prefix, uri):
-        p = core.Uri(prefix)
+        p = prefix.names[0]
         u = utils.to_rdf(uri)
-        self.graph.bind(prefix, u)
-        self.root_context.put(uri, p)
+        self.graph.bind(p, u)
+        self.root_context.put(uri, core.Uri(p))
         return prefix
 
     def prefix_to_uri(self, prefix):
         namespaces = self.graph.namespaces()
-        matching = [n for (p, n) in namespaces if p == prefix]
+        matching = [n for (p, n) in namespaces if p == prefix.names[0]]
         if len(matching) == 1:
             matching = utils.from_rdf(matching[0])
         elif len(matching) == 0:
-            raise error.PrefixError(None, None)
+            raise error.PrefixError(prefix, prefix.location)
 
         return matching
 
@@ -55,4 +55,5 @@ class EnvironmentGraph:
             matching = matching[0]
         elif len(matching) == 0:
             raise error.PrefixError(uri, uri.location)
-        return matching
+
+        return core.Name(matching)

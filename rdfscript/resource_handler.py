@@ -1,8 +1,6 @@
 import rdfscript.utils as utils
 import rdfscript.core as core
 
-import pdb
-
 
 class Resolver:
 
@@ -21,6 +19,7 @@ class Resolver:
         elif len(steps) > 1:
             next_context_uri = context.get(step)
             if next_context_uri:
+                utils.type_assert(next_context_uri, core.Uri)
                 next_context = self._graph.get_context(next_context_uri)
                 next_name = core.Name(*steps[1:])
                 value = self.resolve(next_name, context=next_context)

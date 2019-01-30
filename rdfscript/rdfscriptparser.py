@@ -26,10 +26,10 @@ def p_empty_forms(p):
 def p_form_types(p):
     '''form : assignment
             | extension
+            | pragma
             | template
             | three
-            | two
-            | expr'''
+            | two'''
     p[0] = p[1]
 
 
@@ -52,7 +52,8 @@ def p_three(p):
 
 # pragma
 def p_pragma_prefix(p):
-    '''pragma : PREFIX SYMBOL '=' expr'''
+    '''pragma : PREFIX SYMBOL '=' name
+              | PREFIX SYMBOL '=' uri'''
     loc = location(p)
     p[0] = pragma.PrefixPragma(p[2], p[4], location=loc)
 
@@ -100,6 +101,7 @@ def p_anon_expansion(p):
 
 def p_expr(p):
     '''expr : name
+            | uri
             | pragma
             | literal
             | expansion'''
@@ -178,24 +180,23 @@ def p_emptylist(p):
 
 
 def p_dotted_name(p):
-    '''name : dotted_list'''
+    '''name : dotted_name_list'''
     loc = location(p)
     p[0] = core.Name(*p[1], location=loc)
 
 
 def p_dotted_list_1(p):
-    '''dotted_list : identifier'''
+    '''dotted_name_list : identifier'''
     p[0] = [p[1]]
 
 
 def p_dotted_list_n(p):
-    '''dotted_list : identifier '.' dotted_list'''
+    '''dotted_name_list : identifier '.' dotted_name_list'''
     p[0] = [p[1]] + p[3]
 
 
 def p_identifier(p):
     '''identifier : SYMBOL
-                  | uri
                   | self'''
     p[0] = p[1]
 

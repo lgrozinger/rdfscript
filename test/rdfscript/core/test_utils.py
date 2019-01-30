@@ -3,12 +3,14 @@ import rdflib
 
 import rdfscript.core as core
 import rdfscript.context as context
+import rdfscript.error as err
 from rdfscript.utils import to_rdf
 from rdfscript.utils import from_rdf
 from rdfscript.utils import from_rdf_triples
 from rdfscript.utils import to_rdf_triples
 from rdfscript.utils import name_to_uri
 from rdfscript.utils import contextualise_uri
+from rdfscript.utils import type_assert
 
 
 class TestRDFLibUtils(unittest.TestCase):
@@ -115,3 +117,21 @@ class TestRDFLibUtils(unittest.TestCase):
         expected = core.Uri(root.uri + 'uri')
         actually = contextualise_uri(uri, c)
         self.assertEqual(expected, actually)
+
+    def test_type_assert_incorrect_type_single(self):
+
+        with self.assertRaises(err.UnexpectedType):
+            type_assert(core.Name(''), core.Uri)
+
+    def test_type_assert_incorrect_type_multiple(self):
+
+        with self.assertRaises(err.UnexpectedType):
+            type_assert(core.Name(''), core.Uri, core.Self)
+
+    def test_type_assert_correct_type_single(self):
+
+        type_assert(core.Uri(''), core.Uri)
+
+    def test_type_assert_correct_type_multiple(self):
+
+        type_assert(core.Uri(''), core.Name, core.Uri)

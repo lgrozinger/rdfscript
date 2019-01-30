@@ -40,7 +40,8 @@ class TestEnvironmentGraph(unittest.TestCase):
         eg = graph.EnvironmentGraph()
         before = set(eg.graph.namespaces())
         uri = core.Uri('http://prefix/')
-        eg.bind_prefix('prefix', uri)
+        p = core.Name('prefix')
+        eg.bind_prefix(p, uri)
 
         expected = {('prefix', utils.to_rdf(uri))}.union(before)
         actually = set(eg.graph.namespaces())
@@ -49,23 +50,26 @@ class TestEnvironmentGraph(unittest.TestCase):
     def test_get_uri_for_prefix(self):
         eg = graph.EnvironmentGraph()
         uri = core.Uri('http://prefix/')
-        eg.bind_prefix('prefix', uri)
+        p = core.Name('prefix')
+        eg.bind_prefix(p, uri)
 
         expected = uri
-        actually = eg.prefix_to_uri('prefix')
+        actually = eg.prefix_to_uri(p)
         self.assertEqual(expected, actually)
 
     def test_get_uri_for_unbound_prefix(self):
         eg = graph.EnvironmentGraph()
+        p = core.Name('prefix')
         with self.assertRaises(error.PrefixError):
-            eg.prefix_to_uri('prefix')
+            eg.prefix_to_uri(p)
 
     def test_get_prefix_for_uri(self):
         eg = graph.EnvironmentGraph()
         uri = core.Uri('http://prefix/')
-        eg.bind_prefix('prefix', uri)
+        p = core.Name('prefix')
+        eg.bind_prefix(p, uri)
 
-        expected = 'prefix'
+        expected = p
         actually = eg.uri_to_prefix(uri)
         self.assertEqual(expected, actually)
 

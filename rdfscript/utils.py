@@ -1,6 +1,7 @@
 import rdflib
 
 import rdfscript.core as core
+import rdfscript.error as error
 
 
 def to_rdf(language_object):
@@ -59,3 +60,13 @@ def name_to_uri(name):
 def contextualise_uri(uri, context):
     context_uri = context.root
     return core.Uri(context_uri.uri + uri.uri)
+
+
+def type_assert(this_is, *of_type):
+    if isinstance(this_is, of_type):
+        return True
+    else:
+        try:
+            raise error.UnexpectedType(of_type, this_is, this_is.location)
+        except AttributeError:
+            raise error.UnexpectedType(of_type, this_is, None)

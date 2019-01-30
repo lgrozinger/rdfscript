@@ -14,7 +14,7 @@ class TestRuntime(unittest.TestCase):
 
     def test_get_prefix(self):
         rt = runtime.Runtime()
-        expected = rt._g.root
+        expected = None
         actually = rt.prefix
 
         self.assertEqual(expected, actually)
@@ -90,3 +90,24 @@ class TestRuntime(unittest.TestCase):
         rt.bind(value, v)
 
         self.assertFalse(rt.bound_p(w))
+
+    def test_add_prefix(self):
+        rt = runtime.Runtime()
+        name = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+
+        rt.add_prefix(name, uri)
+        expected = uri
+        actually = rt._g.prefix_to_uri(name)
+        self.assertEqual(expected, actually)
+
+    def test_set_prefix(self):
+        rt = runtime.Runtime()
+        name = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+
+        rt.add_prefix(name, uri)
+        rt.prefix = name
+        expected = name
+        actually = rt.prefix
+        self.assertEqual(expected, actually)
