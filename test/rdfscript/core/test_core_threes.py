@@ -5,6 +5,8 @@ import rdfscript.core as core
 import rdfscript.env as env
 import rdfscript.rdfscriptparser as parser
 import rdfscript.error as error
+import rdfscript.evaluate as evaluate
+import rdfscript.runtime as runtime
 
 
 class TestThrees(unittest.TestCase):
@@ -48,33 +50,37 @@ class TestThrees(unittest.TestCase):
         self.assertTrue(t1 == t2)
 
     def test_evaluate_3_names(self):
-        context = env.Env()
+        rt = runtime.Runtime()
 
         expected = (rdflib.URIRef('one'),
                     rdflib.URIRef('two'),
                     rdflib.URIRef('three'))
 
-        graph = context._rdf._g.triples((None, None, None))
+        graph = rt._g.graph.triples((None, None, None))
         self.assertFalse(expected in graph)
 
         t = self.parser.parse('one > two > three')[0]
-        t.evaluate(context)
-        graph = context._rdf._g.triples((None, None, None))
+        rt.bind(core.Uri('one'), core.Name('one'))
+        rt.bind(core.Uri('two'), core.Name('two'))
+        rt.bind(core.Uri('three'), core.Name('three'))
+        evaluate.evaluate(t, rt)
+        graph = rt._g.graph.triples((None, None, None))
         self.assertTrue(expected in graph)
 
     def test_evaluate_name_uri_value(self):
-        context = env.Env()
+        rt = runtime.Runtime()
 
         expected = (rdflib.URIRef('one'),
                     rdflib.URIRef('two'),
                     rdflib.Literal(3))
 
-        graph = context._rdf._g.triples((None, None, None))
+        graph = rt._g.graph.triples((None, None, None))
         self.assertFalse(expected in graph)
 
         t = self.parser.parse('one > <two> > 3')[0]
-        t.evaluate(context)
-        graph = context._rdf._g.triples((None, None, None))
+        rt.bind(core.Uri('one'), core.Name('one'))
+        evaluate.evaluate(t, rt)
+        graph = rt._g.graph.triples((None, None, None))
         self.assertTrue(expected in graph)
 
     def test_evaluate_value_value_value(self):

@@ -36,6 +36,23 @@ def evaluate_assignment(assignment, rt):
     return value
 
 
+def evaluate_three(three, rt):
+    e_one = evaluate(three.one, rt)
+    e_two = evaluate(three.two, rt)
+    e_three = evaluate(three.three, rt)
+
+    utils.type_assert(e_one, core.Uri)
+    utils.type_assert(e_two, core.Uri)
+    utils.type_assert(e_three, core.Uri, core.Value)
+
+    rt._g.graph.add(utils.to_rdf_triple((e_one, e_two, e_three)))
+    return three.one
+
+
+def evaluate_two(two, rt):
+    pass
+
+
 def evaluate_prefixpragma(pragma, rt):
     uri = pragma.uri
     if isinstance(uri, core.Name):
@@ -147,6 +164,8 @@ _handler_index = {
     core.Name: evaluate_name,
     core.Assignment: evaluate_assignment,
     core.Value: evaluate_value,
+    core.Three: evaluate_three,
+    core.Two: evaluate_two,
     pragma.PrefixPragma: evaluate_prefixpragma,
     pragma.DefaultPrefixPragma: evaluate_defaultprefixpragma,
     type(None): unknown_node,

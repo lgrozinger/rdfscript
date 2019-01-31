@@ -32,7 +32,7 @@ class ParserTriplesTest(unittest.TestCase):
 
     def test_parser_three_uri_uri_uri(self):
         forms = self.parser.parse('<name> > <name> > <name>')
-        uri = core.Name(core.Uri('name'))
+        uri = core.Uri('name')
         expected = core.Three(uri, uri, uri)
         actually = forms[0]
 
