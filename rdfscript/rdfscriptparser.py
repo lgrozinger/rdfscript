@@ -52,14 +52,14 @@ def p_three(p):
 
 # pragma
 def p_pragma_prefix(p):
-    '''pragma : PREFIX SYMBOL '=' name
-              | PREFIX SYMBOL '=' uri'''
+    '''pragma : PREFIX name '=' name
+              | PREFIX name '=' uri'''
     loc = location(p)
     p[0] = pragma.PrefixPragma(p[2], p[4], location=loc)
 
 
 def p_defaultprefix_pragma(p):
-    '''pragma : PREFIX SYMBOL'''
+    '''pragma : PREFIX name'''
     loc = location(p)
     p[0] = pragma.DefaultPrefixPragma(p[2], location=loc)
 

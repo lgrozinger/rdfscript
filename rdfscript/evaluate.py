@@ -4,6 +4,7 @@ import pdb
 
 import rdfscript.core as core
 import rdfscript.utils as utils
+import rdfscript.pragma as pragma
 import rdfscript.error as error
 
 
@@ -35,17 +36,24 @@ def evaluate_assignment(assignment, rt):
     return value
 
 
-def evaluate_prefixpragma(pragma, env):
+def evaluate_prefixpragma(pragma, rt):
+    uri = pragma.uri
+    if isinstance(uri, core.Name):
+        uri = rt.binding(uri)
 
-    return env.bind_prefix(pragma.prefix, evaluate(pragma.uri, env))
+    utils.type_assert(uri, core.Uri)
+    utils.type_assert(pragma.prefix, core.Name)
+
+    rt.add_prefix(pragma.prefix, uri)
+    return pragma.prefix
 
 
-def evaluate_defaultprefixpragma(pragma, env):
+def evaluate_defaultprefixpragma(pragma, rt):
+    prefix = pragma.prefix
+    utils.type_assert(prefix, core.Name)
 
-    if not env.set_default_prefix(pragma.prefix):
-        raise PrefixError(pragma.prefix, pragma.location)
-    else:
-        return pragma.prefix
+    rt.prefix = prefix
+    return prefix
 
 
 def evaluate_importpragma(pragma, env):
@@ -139,5 +147,7 @@ _handler_index = {
     core.Name: evaluate_name,
     core.Assignment: evaluate_assignment,
     core.Value: evaluate_value,
+    pragma.PrefixPragma: evaluate_prefixpragma,
+    pragma.DefaultPrefixPragma: evaluate_defaultprefixpragma,
     type(None): unknown_node,
 }

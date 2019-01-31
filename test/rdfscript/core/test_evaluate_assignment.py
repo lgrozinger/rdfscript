@@ -57,6 +57,3 @@ class TestEvaluateAssignment(unittest.TestCase):
 
         with self.assertRaises(error.UnexpectedType):
             evaluate.evaluate(assign, self.rt)
-
-    def test_resolve_unbound(self):
-        pass

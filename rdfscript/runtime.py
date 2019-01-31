@@ -33,10 +33,20 @@ class Runtime:
         self._g.bind_prefix(name, uri)
 
     def bind(self, what, where):
+        if self.prefix is not None:
+            steps = self.prefix.names + where.names
+            where = core.Name(*steps, location=where.location)
+
         self._creator.create(where, what)
 
     def binding(self, where):
-        return self._resolver.resolve(where)
+        binding = None
+        if self.prefix is not None:
+            steps = self.prefix.names + where.names
+            prefixed_where = core.Name(*steps, location=where.location)
+            binding = self._resolver.resolve(prefixed_where)
+
+        return binding or self._resolver.resolve(where)
 
     def bound_p(self, where):
         result = False

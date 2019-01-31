@@ -111,3 +111,83 @@ class TestRuntime(unittest.TestCase):
         expected = name
         actually = rt.prefix
         self.assertEqual(expected, actually)
+
+    def test_resolve_with_prefix(self):
+        rt = runtime.Runtime()
+        name = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+        rt.add_prefix(name, uri)
+
+        value = core.Value(1234)
+        name = core.Name('Prefix', 'var')
+        rt.bind(value, name)
+
+        expected = value
+        actually = rt.binding(name)
+        self.assertEqual(expected, actually)
+
+    def test_resolve_with_implicit_prefix(self):
+        rt = runtime.Runtime()
+        prefix = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+        rt.add_prefix(prefix, uri)
+
+        value = core.Value(1234)
+        name = core.Name('Prefix', 'var')
+        rt.bind(value, name)
+        rt.prefix = prefix
+
+        expected = value
+        actually = rt.binding(core.Name('var'))
+        self.assertEqual(expected, actually)
+
+    def test_resolve_with_explicit_prefix(self):
+        rt = runtime.Runtime()
+        prefix = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+        rt.add_prefix(prefix, uri)
+
+        value = core.Value(1234)
+        name = core.Name('Prefix', 'var')
+        rt.bind(value, name)
+        rt.prefix = prefix
+
+        expected = value
+        actually = rt.binding(core.Name('Prefix', 'var'))
+        self.assertEqual(expected, actually)
+
+    def test_resolve_with_implicit_prefix_other_namespace(self):
+        rt = runtime.Runtime()
+        prefix = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+        rt.add_prefix(prefix, uri)
+
+        value = core.Value(1234)
+        name = core.Name('Prefix', 'var')
+        rt.bind(value, name)
+        value = core.Value(5678)
+        name = core.Name('Other', 'var')
+        rt.bind(value, name)
+        rt.prefix = prefix
+
+        expected = value
+        actually = rt.binding(core.Name('Other', 'var'))
+        self.assertEqual(expected, actually)
+
+    def test_resolve_with_implicit_prefix_shadowed(self):
+        rt = runtime.Runtime()
+        prefix = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+        rt.add_prefix(prefix, uri)
+
+        value = core.Value(1234)
+        name = core.Name('Prefix', 'var')
+        rt.bind(value, name)
+        value = core.Value(5678)
+        name = core.Name('Other', 'var')
+        rt.bind(value, name)
+        rt.prefix = prefix
+
+        expected = core.Value(1234)
+        actually = rt.binding(core.Name('var'))
+        self.assertEqual(expected, actually)

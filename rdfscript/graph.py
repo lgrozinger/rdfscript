@@ -9,8 +9,8 @@ import rdfscript.core as core
 class EnvironmentGraph:
 
     def __init__(self):
-
-        self._graph = rdflib.ConjunctiveGraph()
+        blank = rdflib.URIRef('')
+        self._graph = rdflib.ConjunctiveGraph(identifier=blank)
 
     @property
     def graph(self):
