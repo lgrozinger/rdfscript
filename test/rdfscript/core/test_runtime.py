@@ -25,7 +25,7 @@ class TestRuntime(unittest.TestCase):
         actually = rt._g.root_context.get_all()
 
         self.assertEqual(expected, actually)
-        actually = rt._g.root_context.get_all_triples()
+        actually = rt._g.root_context.triples
         self.assertEqual(expected, actually)
 
     def test_bind(self):

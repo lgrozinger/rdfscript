@@ -1,8 +1,8 @@
 import rdfscript.graph as graph
 import rdfscript.error as error
+import rdfscript.utils as utils
 import rdfscript.core as core
 import rdfscript.resource_handler as handlers
-import rdfscript.utils as utils
 
 
 class Runtime:
@@ -60,3 +60,8 @@ class Runtime:
             pass
 
         return result
+
+    def context(self, where):
+        uri = self.binding(where)
+        utils.type_assert(uri, core.Uri)
+        return self._g.get_context(uri)

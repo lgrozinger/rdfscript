@@ -1,16 +1,16 @@
 import unittest
+import pdb
 
 import rdfscript.core as core
-
-from rdfscript.env import Env
-
+import rdfscript.runtime as runtime
 import rdfscript.error as error
+import rdfscript.utils as utils
 
 
 class CoreNameTest(unittest.TestCase):
 
     def setUp(self):
-        self.env = Env()
+        self.rt = runtime.Runtime()
 
     def tearDown(self):
         None
@@ -38,45 +38,36 @@ class CoreNameTest(unittest.TestCase):
         with self.assertRaises(error.UnexpectedType):
             core.Name('a', 'b', self)
 
-    def test_not_concrete_p(self):
-        self.env.current_self = core.Self()
-        not_concrete = core.Name(core.Self(), 'a')
-        self.assertFalse(not_concrete.concrete_p(self.env))
-
-    def test_concrete_p(self):
-        self.env.current_self = core.Uri('')
-        concrete = core.Name(core.Self(), 'a')
-        self.assertTrue(concrete.concrete_p(self.env))
-
     def test_bound_p_bound_one_level_name(self):
-        env = Env()
         variable = core.Uri('variable')
-        env.add_triples([(env.glowball, variable, core.Value(12345))])
+        name = core.Name('variable')
+        self.rt._g.root_context.put(core.Value(12345), variable)
 
-        self.assertTrue(core.Name('variable').bound_p(env))
-        self.assertEqual(core.Value(12345), core.Name('variable').bound_p(env))
+        self.assertTrue(self.rt.bound_p(name))
+        self.assertEqual(core.Value(12345), self.rt.binding(name))
 
     def test_bound_p_bound_two_level_name(self):
-        env = Env()
-        ns = env.glowball
+        root = self.rt._g.root_context
         v = 'variable'
         u = 'symbol'
-        v_uri = core.Uri(ns.uri + v)
+        v_uri = core.Uri(root.root.uri + v)
         u_uri = core.Uri(u)
-        env.add_triples([(ns, core.Uri(v), v_uri),
-                         (v_uri, u_uri, core.Value(12345))])
+        root.put(v_uri, core.Uri(v))
+        root = self.rt._g.get_context(v_uri)
+        root.put(core.Value(12345), u_uri)
 
-        self.assertTrue(core.Name(v, u).bound_p(env))
-        self.assertEqual(core.Value(12345), core.Name(v, u).bound_p(env))
+        self.assertTrue(self.rt.bound_p(core.Name(v, u)))
+        self.assertEqual(core.Value(12345), self.rt.binding(core.Name(v, u)))
 
+    @unittest.skip("Probably will not allow uri as part of name")
     def test_bound_p_bound_one_level_uri(self):
-        env = Env()
         env.add_triples(
             [(env.glowball, core.Uri('variable'), core.Value(12345))])
 
         self.assertTrue(core.Name(core.Uri('variable')).bound_p(env))
         self.assertEqual(core.Value(12345), core.Name('variable').bound_p(env))
 
+    @unittest.skip("Probably will not allow uri as part of name")
     def test_bound_p_bound_two_level_uri(self):
         env = Env()
         ns = env.glowball
@@ -91,108 +82,102 @@ class CoreNameTest(unittest.TestCase):
         self.assertEqual(core.Value(12345), core.Name(v, u).bound_p(env))
 
     def test_bound_p_unbound_one_level_name(self):
-        env = Env()
-
-        self.assertFalse(core.Name('variable').bound_p(env))
+        self.assertFalse(self.rt.bound_p(core.Name('variable')))
 
     def test_bound_p_unbound_two_level_name(self):
-        env = Env()
         v = 'variable'
         u = 'symbol'
+        self.assertFalse(self.rt.bound_p(core.Name(v, u)))
 
-        self.assertFalse(core.Name(v, u).bound_p(env))
-
+    @unittest.skip("Probably will not allow uri as part of name")
     def test_bound_p_unbound_one_level_uri(self):
-        env = Env()
-
         self.assertFalse(core.Name(core.Uri('variable')).bound_p(env))
 
+    @unittest.skip("Probably will not allow uri as part of name")
     def test_bound_p_unbound_two_level_uri(self):
-        env = Env()
         v = 'variable'
         u = 'symbol'
-
         self.assertFalse(core.Name(core.Uri(v), core.Uri(u)).bound_p(env))
 
-    def test_name_evaluate_unbound_local(self):
-        self.env.bind_prefix('prefix', core.Uri('prefix'))
-        self.env.prefix = 'prefix'
-        name = core.Name('first')
-        uri = core.Uri('prefixfirst')
+    # def test_name_evaluate_unbound_local(self):
+    #     self.env.bind_prefix('prefix', core.Uri('prefix'))
+    #     self.env.prefix = 'prefix'
+    #     name = core.Name('first')
+    #     uri = core.Uri('prefixfirst')
 
-        self.assertEqual(uri, name.evaluate(self.env))
+    #     self.assertEqual(uri, name.evaluate(self.env))
 
-    def test_name_evaluate_unbound_local_with_None_prefix(self):
-        name = core.Name('first')
-        uri = core.Uri('first')
+    # def test_name_evaluate_unbound_local_with_None_prefix(self):
+    #     name = core.Name('first')
+    #     uri = core.Uri('first')
 
-        self.assertEqual(uri, name.evaluate(self.env))
+    #     self.assertEqual(uri, name.evaluate(self.env))
 
-    def test_name_evaluate_unbound_prefixed(self):
-        self.env.bind_prefix('prefix', core.Uri('prefix'))
-        self.env.prefix = 'prefix'
-        name = core.Name('first', 'second')
-        uri = core.Uri('prefixfirstsecond')
+    # def test_name_evaluate_unbound_prefixed(self):
+    #     self.env.bind_prefix('prefix', core.Uri('prefix'))
+    #     self.env.prefix = 'prefix'
+    #     name = core.Name('first', 'second')
+    #     uri = core.Uri('prefixfirstsecond')
 
-        self.assertEqual(uri, name.evaluate(self.env))
+    #     self.assertEqual(uri, name.evaluate(self.env))
 
-    def test_name_evaluate_unbound_prefixed_with_None_prefix(self):
-        name = core.Name('first', 'second')
-        uri = core.Uri('firstsecond')
+    # def test_name_evaluate_unbound_prefixed_with_None_prefix(self):
+    #     name = core.Name('first', 'second')
+    #     uri = core.Uri('firstsecond')
 
-        self.assertEqual(uri, name.evaluate(self.env))
+    #     self.assertEqual(uri, name.evaluate(self.env))
 
-    def test_name_evaluate_unbound_chained(self):
-        self.env.bind_prefix('prefix', core.Uri('prefix'))
-        self.env.prefix = 'prefix'
-        name = core.Name('first', 'second', 'third', 'fourth')
-        uri = core.Uri('prefixfirstsecondthirdfourth')
+    # def test_name_evaluate_unbound_chained(self):
+    #     self.env.bind_prefix('prefix', core.Uri('prefix'))
+    #     self.env.prefix = 'prefix'
+    #     name = core.Name('first', 'second', 'third', 'fourth')
+    #     uri = core.Uri('prefixfirstsecondthirdfourth')
 
-        self.assertEqual(uri, name.evaluate(self.env))
+    #     self.assertEqual(uri, name.evaluate(self.env))
 
-    def test_name_evaluate_unbound_chained_with_None_prefix(self):
-        name = core.Name('first', 'second', 'third', 'fourth')
-        uri = core.Uri('firstsecondthirdfourth')
+    # def test_name_evaluate_unbound_chained_with_None_prefix(self):
+    #     name = core.Name('first', 'second', 'third', 'fourth')
+    #     uri = core.Uri('firstsecondthirdfourth')
 
-        self.assertEqual(uri, name.evaluate(self.env))
+    #     self.assertEqual(uri, name.evaluate(self.env))
 
-    def test_name_evaluate_bound_local(self):
+    # def test_name_evaluate_bound_local(self):
 
-        name = core.Name('first')
-        value = core.Value(1)
+    #     name = core.Name('first')
+    #     value = core.Value(1)
 
-        do_assign(name, value, self.env)
-        self.assertEqual(value, name.evaluate(self.env))
+    #     do_assign(name, value, self.env)
+    #     self.assertEqual(value, name.evaluate(self.env))
 
-    def test_name_evaluate_bound_local_before_prefix_change(self):
-        name = core.Name('first')
-        value = core.Value(1)
-        do_assign(name, value, self.env)
+    # def test_name_evaluate_bound_local_before_prefix_change(self):
+    #     name = core.Name('first')
+    #     value = core.Value(1)
+    #     do_assign(name, value, self.env)
 
-        self.env.bind_prefix('prefix', core.Uri('prefix'))
-        self.env.prefix = 'prefix'
-        self.assertEqual(value, name.evaluate(self.env))
+    #     self.env.bind_prefix('prefix', core.Uri('prefix'))
+    #     self.env.prefix = 'prefix'
+    #     self.assertEqual(value, name.evaluate(self.env))
 
-    def test_name_evaluate_bound_local_after_prefix_change(self):
-        name = core.Name('first')
-        value1 = core.Value(1)
-        do_assign(name, value1, self.env)
-        self.env.bind_prefix('prefix', core.Uri('prefix'))
-        self.env.prefix = 'prefix'
+    # def test_name_evaluate_bound_local_after_prefix_change(self):
+    #     name = core.Name('first')
+    #     value1 = core.Value(1)
+    #     do_assign(name, value1, self.env)
+    #     self.env.bind_prefix('prefix', core.Uri('prefix'))
+    #     self.env.prefix = 'prefix'
 
-        value2 = core.Value(2)
-        do_assign(name, value2, self.env)
-        self.assertEqual(value1, name.evaluate(self.env))
-        self.assertEqual(value2, core.Name(
-            'prefix', 'first').evaluate(self.env))
+    #     value2 = core.Value(2)
+    #     do_assign(name, value2, self.env)
+    #     self.assertEqual(value1, name.evaluate(self.env))
+    #     self.assertEqual(value2, core.Name(
+    #         'prefix', 'first').evaluate(self.env))
 
-    def test_name_evaluate_bound_prefixed(self):
+    # def test_name_evaluate_bound_prefixed(self):
 
-        name = core.Name('first', 'second')
-        value = core.Value(1)
+    #     name = core.Name('first', 'second')
+    #     value = core.Value(1)
 
-        do_assign(name, value, self.env)
-        self.assertEqual(value, name.evaluate(self.env))
+    #     do_assign(name, value, self.env)
+    #     self.assertEqual(value, name.evaluate(self.env))
 
     # def test_name_evaluate_bound_chained(self):
 

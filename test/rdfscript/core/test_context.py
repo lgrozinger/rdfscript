@@ -38,7 +38,7 @@ class TestContext(unittest.TestCase):
     def test_get_graph_triples_empty(self):
         c = context.Context(self.g)
         expected = []
-        actually = c.get_all_triples()
+        actually = c.triples
         self.assertEqual(expected, actually)
 
     def test_get_graph_triples_non_empty(self):
@@ -46,7 +46,7 @@ class TestContext(unittest.TestCase):
         expected = [(root, core.Uri('v'), core.Value(83))]
         c = context.Context(self.g)
         c.put(core.Value(83), core.Uri('v'))
-        actually = c.get_all_triples()
+        actually = c.triples
         self.assertEqual(expected, actually)
 
     def test_put_into_context(self):
@@ -54,7 +54,7 @@ class TestContext(unittest.TestCase):
         c.put(core.Value(83), core.Uri('v'))
 
         expected = [(c.root, core.Uri('v'), core.Value(83))]
-        actually = c.get_all_triples()
+        actually = c.triples
         self.assertEqual(expected, actually)
 
     def test_put_into_context_duplicate(self):
@@ -63,7 +63,7 @@ class TestContext(unittest.TestCase):
         c.put(core.Value(84), core.Uri('v'))
 
         expected = [(c.root, core.Uri('v'), core.Value(84))]
-        actually = c.get_all_triples()
+        actually = c.triples
         self.assertEqual(expected, actually)
 
     def test_get_from_context(self):
@@ -80,6 +80,8 @@ class TestContext(unittest.TestCase):
         c.put(core.Value(84), core.Uri('u'))
         c.put(core.Value(85), core.Uri('t'))
 
-        expected = [core.Value(83), core.Value(84), core.Value(85)]
+        expected = [(core.Uri('v'), core.Value(83)),
+                    (core.Uri('u'), core.Value(84)),
+                    (core.Uri('t'), core.Value(85))]
         actually = c.get_all()
         self.assertEqual(set(expected), set(actually))

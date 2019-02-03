@@ -9,7 +9,7 @@ class Context:
 
     def __eq__(self, other):
         return isinstance(other, Context) \
-            and self.get_all_triples() == other.get_all_triples()
+            and self.triples == other.triples
 
     @property
     def root(self):
@@ -17,7 +17,8 @@ class Context:
 
     @property
     def triples(self):
-        return self.get_all_triples()
+        raw_triples = self._graph.triples((None, None, None))
+        return utils.from_rdf_triples(raw_triples)
 
     def put(self, what, where):
         rdf_where = utils.to_rdf(where)
@@ -38,9 +39,11 @@ class Context:
 
         return result
 
-    def get_all(self):
-        return [t[2] for t in self.get_all_triples()]
+    def out_edges(self):
+        search = (self._root, None, None)
+        result = self._graph.triples(search)
+        result = utils.from_rdf_triples(result)
+        return [(t[1], t[2]) for t in result]
 
-    def get_all_triples(self):
-        raw_triples = self._graph.triples((None, None, None))
-        return utils.from_rdf_triples(raw_triples)
+    def get_all(self):
+        return [(t[1], t[2]) for t in self.triples]

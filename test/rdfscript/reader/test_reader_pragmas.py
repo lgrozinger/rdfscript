@@ -3,6 +3,7 @@ import ply.lex as leex
 
 import rdfscript.reader as reader
 
+
 class ReaderPragmaTest(unittest.TestCase):
 
     def setUp(self):
@@ -21,6 +22,16 @@ class ReaderPragmaTest(unittest.TestCase):
             tokens.append(token)
 
         self.assertEqual([x.type for x in tokens], ['PREFIX', 'SYMBOL', 'URI'])
+
+    def test_default_using(self):
+        self.reader.input('using prefix')
+
+        tokens = []
+
+        for token in self.reader:
+            tokens.append(token)
+
+        self.assertEqual([x.type for x in tokens], ['USING', 'SYMBOL'])
 
 
 if __name__ == '__main__':

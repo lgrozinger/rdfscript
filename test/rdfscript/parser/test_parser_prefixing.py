@@ -17,7 +17,8 @@ class ParserPragmaTest(unittest.TestCase):
         script = "@prefix Prefix = <http://eg/>"
         forms = self.parser.parse(script)
 
-        expected = [pragmas.PrefixPragma('Prefix', core.Uri('http://eg/'))]
+        expected = [pragmas.PrefixPragma(core.Name('Prefix'),
+                                         core.Uri('http://eg/'))]
         actually = forms
         self.assertEqual(expected, actually)
 
@@ -25,7 +26,8 @@ class ParserPragmaTest(unittest.TestCase):
         script = "@prefix Prefix = name"
         forms = self.parser.parse(script)
 
-        expected = [pragmas.PrefixPragma('Prefix', core.Name('name'))]
+        expected = [pragmas.PrefixPragma(core.Name('Prefix'),
+                                         core.Name('name'))]
         actually = forms
         self.assertEqual(expected, actually)
 
@@ -33,6 +35,18 @@ class ParserPragmaTest(unittest.TestCase):
         script = "@prefix Prefix"
         forms = self.parser.parse(script)
 
-        expected = [pragmas.DefaultPrefixPragma('Prefix')]
+        expected = [pragmas.DefaultPrefixPragma(core.Name('Prefix'))]
+        actually = forms
+        self.assertEqual(expected, actually)
+
+    def test_prefix_then_default_prefix_pragma(self):
+        script = "@prefix Prefix = <http://prefix/> @prefix Prefix"
+        forms = self.parser.parse(script)
+
+        name = core.Name('Prefix')
+        uri = core.Uri('http://prefix/')
+
+        expected = [pragmas.PrefixPragma(name, uri),
+                    pragmas.DefaultPrefixPragma(name)]
         actually = forms
         self.assertEqual(expected, actually)

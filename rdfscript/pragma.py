@@ -1,15 +1,31 @@
-from .core import (Node,
-                   Name,
-                   Assignment)
+import rdfscript.error as error
+import rdfscript.core as core
 
-from .error import FailToImport
+class UsingPragma(core.Node):
+
+    def __init__(self, prefix, location=None):
+        core.Node.__init__(self, location)
+        self._prefix = prefix
+
+    def __eq__(self, other):
+        return (isinstance(other, UsingPragma) and
+                self.prefix == other.prefix)
+
+    def __str__(self):
+        return format("using %s" % self.prefix)
+
+    def __repr__(self):
+        return format("USING DIRECTIVE: %s" % self.prefix)
+
+    @property
+    def prefix(self):
+        return self._prefix
 
 
-class PrefixPragma(Node):
+class PrefixPragma(core.Node):
 
     def __init__(self, prefix, uri, location=None):
-        Node.__init__(self, location)
-
+        core.Node.__init__(self, location)
         self._prefix = prefix
         self._uri = uri
 
@@ -32,18 +48,11 @@ class PrefixPragma(Node):
     def uri(self):
         return self._uri
 
-    def evaluate(self, context):
 
-        uri_to_bind = self.uri.evaluate(context)
-        context.bind_prefix(self.prefix, uri_to_bind)
-        return uri_to_bind
-
-
-class DefaultPrefixPragma(Node):
+class DefaultPrefixPragma(core.Node):
 
     def __init__(self, prefix, location=None):
-        Node.__init__(self, location)
-
+        core.Node.__init__(self, location)
         self._prefix = prefix
 
     def __eq__(self, other):
@@ -60,16 +69,11 @@ class DefaultPrefixPragma(Node):
     def prefix(self):
         return self._prefix
 
-    def evaluate(self, context):
-        context.prefix = self.prefix
-        return context.uri_for_prefix(self.prefix)
 
-
-class ImportPragma(Node):
+class ImportPragma(core.Node):
 
     def __init__(self, target, location=None):
-        Node.__init__(self, location)
-
+        core.Node.__init__(self, location)
         self._target = target
 
     def __eq__(self, other):
@@ -77,7 +81,7 @@ class ImportPragma(Node):
                 self.target == other.target)
 
     def __str__(self):
-        return format("@use %s" % self.target)
+        return format("@import %s" % self.target)
 
     def __repr__(self):
         return format("[IMPORT DIRECTIVE: %s]" % self.target)
@@ -86,21 +90,11 @@ class ImportPragma(Node):
     def target(self):
         return self._target
 
-    def evaluate(self, context):
 
-        uri = self.target.evaluate(context)
-
-        if not context.eval_import(uri):
-            raise FailToImport(
-                self.target, context.get_current_path(), self.location)
-
-        return self.target
-
-
-class ExtensionPragma(Node):
+class ExtensionPragma(core.Node):
 
     def __init__(self, name, args, location=None):
-        Node.__init__(self, location)
+        core.Node.__init__(self, location)
         self._name = name
         self._args = args
 
@@ -129,10 +123,6 @@ class ExtensionPragma(Node):
                           if parameter.is_substitute(arg)
                           else arg
                           for arg in self.args]
-
-    def evaluate(self, context):
-        self._args = [arg.evaluate(context) for arg in self.args]
-        return self
 
     def run(self, context, triples):
         self.evaluate(context)

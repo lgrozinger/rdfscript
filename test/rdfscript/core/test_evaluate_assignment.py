@@ -1,8 +1,6 @@
 import unittest
-import pdb
 
 import rdfscript.core as core
-import rdfscript.utils as utils
 import rdfscript.evaluate as evaluate
 import rdfscript.runtime as runtime
 import rdfscript.error as error

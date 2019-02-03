@@ -65,8 +65,13 @@ def p_defaultprefix_pragma(p):
 
 
 def p_pragma_import(p):
-    '''pragma : USE name'''
+    '''pragma : IMPORT name'''
     p[0] = pragma.ImportPragma(p[2], location(p))
+
+
+def p_pragma_using(p):
+    '''pragma : USING name'''
+    p[0] = pragma.UsingPragma(p[2], location(p))
 
 
 def p_extension_no_args(p):

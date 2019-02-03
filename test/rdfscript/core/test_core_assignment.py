@@ -1,9 +1,6 @@
 import unittest
 
-from rdfscript.core import Name, Uri, Self, Value, Assignment
-
-from rdfscript.env import Env
-
+import rdfscript.core as core
 
 class CoreAssignmentTest(unittest.TestCase):
 
@@ -116,6 +113,7 @@ class CoreAssignmentTest(unittest.TestCase):
         self.assertEqual(Assignment(name, value).evaluate(self.env), value)
         self.assertEqual(name.evaluate(self.env), value.evaluate(self.env))
 
+    @unittest.skip("Self put on hold for now")
     def test_assignment_self_name(self):
 
         name = Name(Self(), 'v')

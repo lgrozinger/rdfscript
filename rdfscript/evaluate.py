@@ -50,10 +50,23 @@ def evaluate_three(three, rt):
 
 
 def evaluate_two(two, rt):
-    pass
+    e_one = evaluate(two.one, rt)
+    e_two = evaluate(two.two, rt)
+
+    utils.type_assert(e_one, core.Uri)
+    utils.type_assert(e_two, core.Uri)
+
+    s = utils.to_rdf(e_one)
+    p = utils.to_rdf(e_two)
+    o = rt._g.graph.value(subject=s, predicate=p)
+
+    if o is not None:
+        o = utils.from_rdf(o)
+
+    return o
 
 
-def evaluate_prefixpragma(pragma, rt):
+def evaluate_prefix(pragma, rt):
     uri = pragma.uri
     if isinstance(uri, core.Name):
         uri = rt.binding(uri)
@@ -65,7 +78,7 @@ def evaluate_prefixpragma(pragma, rt):
     return pragma.prefix
 
 
-def evaluate_defaultprefixpragma(pragma, rt):
+def evaluate_defaultprefix(pragma, rt):
     prefix = pragma.prefix
     utils.type_assert(prefix, core.Name)
 
@@ -73,13 +86,24 @@ def evaluate_defaultprefixpragma(pragma, rt):
     return prefix
 
 
-def evaluate_importpragma(pragma, env):
+def evaluate_import(pragma, env):
     if not env.eval_import(evaluate(pragma.target, env)):
         raise FailToImport(
             pragma.target, env.get_current_path(), pragma.location)
 
     return pragma.target
 
+
+def evaluate_using(pragma, rt):
+    utils.type_assert(pragma.prefix, core.Name)
+
+    context = rt.context(pragma.prefix)
+    edges = context.out_edges()
+    for edge in edges:
+        (where, what) = edge
+        rt.bind(what, core.Name(where.uri))
+
+    return pragma.prefix
 
 def evaluate_extensionpragma(pragma, env):
     ext = env.get_extension(pragma.name)
@@ -166,7 +190,8 @@ _handler_index = {
     core.Value: evaluate_value,
     core.Three: evaluate_three,
     core.Two: evaluate_two,
-    pragma.PrefixPragma: evaluate_prefixpragma,
-    pragma.DefaultPrefixPragma: evaluate_defaultprefixpragma,
+    pragma.PrefixPragma: evaluate_prefix,
+    pragma.DefaultPrefixPragma: evaluate_defaultprefix,
+    pragma.UsingPragma: evaluate_using,
     type(None): unknown_node,
 }
