@@ -26,7 +26,13 @@ class TestContext(unittest.TestCase):
         c = context.Context(self.g)
         c.put(core.Value(1), core.Uri('v'))
         d = context.Context(h)
-        c.put(core.Value(2), core.Uri('v'))
+        d.put(core.Value(2), core.Uri('v'))
+        self.assertNotEqual(c, d)
+
+    def test_empty_but_not_equal(self):
+        h = rdflib.ConjunctiveGraph()
+        c = context.Context(self.g)
+        d = context.Context(h)
         self.assertNotEqual(c, d)
 
     def test_get_root_node(self):

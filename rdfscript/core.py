@@ -7,9 +7,8 @@ __lang__ = "https://github.com/lgrozinger/rdfscript/lang/"
 
 
 def lang_uri(obj):
-
-    type_assert(obj, Name, Uri, Value, Self)
     return Uri(__lang__ + obj.__class__.__name__)
+
 
 class Node(object):
 

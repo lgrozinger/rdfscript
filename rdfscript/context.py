@@ -9,7 +9,8 @@ class Context:
 
     def __eq__(self, other):
         return isinstance(other, Context) \
-            and self.triples == other.triples
+            and self.triples == other.triples \
+            and self.root == other.root
 
     @property
     def root(self):

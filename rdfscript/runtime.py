@@ -37,7 +37,7 @@ class Runtime:
             steps = self.prefix.names + where.names
             where = core.Name(*steps, location=where.location)
 
-        self._creator.create(where, what)
+        return self._creator.create(where, what)
 
     def binding(self, where):
         binding = None
@@ -62,6 +62,11 @@ class Runtime:
         return result
 
     def context(self, where):
+        context = None
+
         uri = self.binding(where)
-        utils.type_assert(uri, core.Uri)
-        return self._g.get_context(uri)
+        if uri is not None:
+            utils.type_assert(uri, core.Uri)
+            context = self._g.get_context(uri)
+
+        return context

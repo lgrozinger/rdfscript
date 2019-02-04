@@ -49,3 +49,5 @@ class Creator:
             next_context = self._graph.get_context(new_context_uri)
             next_name = core.Name(*steps[1:])
             self.create(next_name, value, context=next_context)
+
+        return utils.contextualise_uri(step, context)
