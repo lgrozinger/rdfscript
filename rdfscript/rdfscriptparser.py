@@ -7,6 +7,8 @@ from .reader import tokens
 
 import rdfscript.core as core
 import rdfscript.pragma as pragma
+import rdfscript.templates as templates
+
 import rdfscript.template as template
 
 from .error import RDFScriptSyntax
@@ -86,8 +88,8 @@ def p_extension_args(p):
 
 # expansions and templates
 def p_template(p):
-    '''template : name '(' exprlist ')' indentedinstancebody'''
-    p[0] = template.Template(p[1], p[3], p[5], location=location(p))
+    '''template : name '(' namelist ')' indentedinstancebody'''
+    p[0] = templates.Template(p[1], p[3], p[5], location=location(p))
 
 
 def p_expansion(p):
@@ -141,7 +143,8 @@ def p_empty_bodystatements(p):
 
 
 def p_bodystatement(p):
-    '''bodystatement : property
+    '''bodystatement : three
+                     | property
                      | expansion
                      | anon_expansion
                      | extension'''
@@ -169,6 +172,22 @@ def p_not_empty_exprlist_1(p):
 
 def p_not_empty_exprlist_n(p):
     '''notemptyexprlist : expr ',' notemptyexprlist'''
+    p[0] = [p[1]] + p[3]
+
+
+def p_namelist(p):
+    '''namelist : emptylist
+                | notemptynamelist'''
+    p[0] = p[1]
+
+
+def p_not_empty_namelist_1(p):
+    '''notemptynamelist : name'''
+    p[0] = [p[1]]
+
+
+def p_not_empty_namelist_n(p):
+    '''notemptynamelist : name ',' notemptynamelist'''
     p[0] = [p[1]] + p[3]
 
 

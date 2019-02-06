@@ -10,6 +10,14 @@ def lang_uri(obj):
     return Uri(__lang__ + obj.__class__.__name__)
 
 
+def params_uri(index):
+    return Uri(__lang__ + 'param_' + str(index))
+
+
+def triple_uri(onetwoorthree):
+    return Uri(__lang__ + '_' + str(onetwoorthree))
+
+
 class Node(object):
 
     def __init__(self, location):
@@ -49,7 +57,7 @@ class Two(Node):
                 self.two == other.two)
 
     def __repr__(self):
-        return format("[TWO: %s > %s]" % (self.one, self.two))
+        return format("Two(%s, %s)" % (self.one, self.two))
 
     def __str__(self):
         return format("%s > %s" % (self.one, self.two))
@@ -83,9 +91,9 @@ class Three(Node):
                 self.three == other.three)
 
     def __repr__(self):
-        return format("[THREE: %s > %s > %s]" % (self.one,
-                                                 self.two,
-                                                 self.three))
+        return format("Three(%s,%s,%s)" % (self.one,
+                                           self.two,
+                                           self.three))
 
     def __str__(self):
         return format("%s > %s > %s" % (self.one, self.two, self.three))
@@ -132,7 +140,7 @@ class Name(Node):
         return '.'.join([str(name) for name in self.names])
 
     def __repr__(self):
-        return format("[NAME: %s]" % (self.names))
+        return format("Name(%s)" % (self.names))
 
     @property
     def names(self):
@@ -261,7 +269,7 @@ class Uri(Node):
         return '<' + self.uri + '>'
 
     def __repr__(self):
-        return format("[URI: %s]" % self._uri)
+        return format("Uri(%s)" % self._uri)
 
     def __hash__(self):
         return self.uri.__hash__()
@@ -295,7 +303,7 @@ class Value(Node):
         return format("%r" % self.value)
 
     def __repr__(self):
-        return format("[VALUE: %s]" % self.value)
+        return format("Value(%s)" % self.value)
 
     def __hash__(self):
         return self._python_val.__hash__()
@@ -345,7 +353,7 @@ class Assignment(Node):
         return format("%s = %s" % (self.name, self.value))
 
     def __repr__(self):
-        return format("[ASSIGN: %s = %s]" %
+        return format("Assignment(%s, %s)" %
                       (self.name, self.value))
 
     @property
@@ -355,27 +363,6 @@ class Assignment(Node):
     @property
     def value(self):
         return self._value
-
-    def evaluate(self, context):
-
-        binding = new_name.bound_p(context)
-        if binding:
-            raise error.BindingError(self.name, binding, self.location)
-        else:
-            ns = context.glowball
-            source_names = self.name.names[:-1]
-            for i in range(0, len(source_names)):
-                type_assert(source_names[i], Uri, str)
-                link = Uri(source_names[i])
-                Three(ns, link, link).evaluate(context)
-                ns = link
-
-        final_link = Uri(self.name.names[-1])
-        binding = self.value.evaluate(context)
-        assign = Three(ns, final_link, binding, location=self.location)
-        assign.evaluate(context)
-
-        return binding
 
 
 def type_assert(this_is, *of_type):

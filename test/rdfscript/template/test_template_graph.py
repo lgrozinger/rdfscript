@@ -2,7 +2,6 @@ import unittest
 import rdflib
 
 import rdfscript.rdfscriptparser as parser
-import rdfscript.error as error
 import rdfscript.utils as utils
 import rdfscript.templates as templates
 import rdfscript.runtime as runtime
@@ -78,4 +77,46 @@ class TemplateGraphTest(unittest.TestCase):
 
         expected = core.lang_uri(template)
         actually = context.get(utils.from_rdf(rdflib.RDF.type))
+        self.assertEqual(expected, actually)
+
+    def test_hang_params_one_param(self):
+        name = core.Name('T')
+        param = core.Name('p')
+        template = templates.Template(name, [param], [])
+
+        templates.set_template_type(template, self.rt)
+        templates.hang_params(template, self.rt)
+        context = templates.template_context(template, self.rt)
+
+        expected = utils.contextualise_uri(core.Uri('p'), context)
+        actually = context.get(core.params_uri(1))
+        self.assertEqual(expected, actually)
+
+    def test_hang_params_no_params(self):
+        name = core.Name('T')
+        template = templates.Template(name, [], [])
+
+        templates.set_template_type(template, self.rt)
+        templates.hang_params(template, self.rt)
+        context = templates.template_context(template, self.rt)
+
+        expected = None
+        actually = context.get(core.params_uri(1))
+        self.assertEqual(expected, actually)
+
+    def test_hang_params_two_params(self):
+        name = core.Name('T')
+        params = [core.Name('p'), core.Name('q')]
+        template = templates.Template(name, params, [])
+
+        templates.set_template_type(template, self.rt)
+        templates.hang_params(template, self.rt)
+        context = templates.template_context(template, self.rt)
+
+        expected = utils.contextualise_uri(core.Uri('p'), context)
+        actually = context.get(core.params_uri(1))
+        self.assertEqual(expected, actually)
+
+        expected = utils.contextualise_uri(core.Uri('q'), context)
+        actually = context.get(core.params_uri(2))
         self.assertEqual(expected, actually)
