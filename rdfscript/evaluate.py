@@ -6,6 +6,7 @@ import rdfscript.utils as utils
 import rdfscript.pragma as pragma
 import rdfscript.error as error
 import rdfscript.templates as templates
+import rdfscript.template_graphs as tgraphs
 
 
 def evaluate(node, env):
@@ -107,65 +108,10 @@ def evaluate_using(pragma, rt):
 
 
 def evaluate_template(template, rt):
-    hang_params(template, rt)
-    hang_body(template, rt)
+    tgraphs.hang_params(template, rt)
+    tgraphs.hang_body(template, rt)
 
     return template.name
-
-
-def set_template_type(template, rt):
-    type_uri = core.lang_uri(template)
-    type_predicate = utils.from_rdf(rdflib.RDF.type)
-    names = template.name.names + [type_predicate]
-    rt.bind(type_uri, core.Name(*names))
-
-
-def template_context(template, rt):
-    context = rt.context(template.name)
-
-    if context is None:
-        set_template_type(template, rt)
-        context = rt.context(template.name)
-
-    return context
-
-
-def hang_params(template, rt):
-    for (parameter, index) in template.parameters:
-        predicate = core.params_uri(index)
-        param_uri = utils.name_to_uri(parameter)
-        context = template_context(template, rt)
-
-        context.put(utils.contextualise_uri(param_uri, context), predicate)
-
-
-def get_param(template, index, rt):
-    context = template_context(template, rt)
-    return context.get(core.params_uri(index))
-
-
-def hang_body(template, rt):
-    for statement in template.body:
-        hang_three(template, statement, rt)
-
-
-def hang_three(template, three, rt):
-
-    def sub_params(possible_param):
-        result = possible_param
-        i = template.is_parameter(possible_param)
-        if i:
-            result = get_param(template, i, rt)
-
-        return result
-
-    three.map(sub_params)
-    step_one = core.Three(template.name, core.triple_uri(1), three.one)
-    step_two = core.Three(three.one, core.triple_uri(2), three.two)
-    step_three = core.Three(three.two, core.triple_uri(3), three.three)
-
-    for step in [step_one, step_two, step_three]:
-        evaluate(step, rt)
 
 
 def evaluate_extensionpragma(pragma, env):
@@ -178,38 +124,9 @@ def evaluate_extensionpragma(pragma, env):
         return ext(*args)
 
 
-def evaluate_self(myself, env):
-
-    return env.lookup(myself.uri(env)) or myself.uri(env)
-
-
 def evaluate_value(value, env):
 
     return value
-
-
-def evaluate_expansion(expansion, env):
-
-    expansion.de_name(env)
-    raw_triples = expansion.replace_self(expansion.as_triples(env), env)
-
-    evaluated_triples = [(evaluate(s, env), evaluate(p, env), evaluate(o, env))
-                         for (s, p, o) in raw_triples]
-
-    final_triples = evaluated_triples
-    pack = TriplePack(final_triples, env._symbol_table, env._template_table)
-    for extension in expansion.get_extensions(env):
-        e = evaluate(extension, env)
-        e.run(pack)
-
-    env.add_triples(pack.triples)
-
-    return expansion.name
-
-
-def evaluate_argument(argument, env):
-
-    return evaluate(argument.value, env)
 
 
 def evaluate_triple(triple, env):
