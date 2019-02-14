@@ -2,7 +2,6 @@ import unittest
 import rdflib
 
 import rdfscript.core as core
-import rdfscript.env as env
 import rdfscript.rdfscriptparser as parser
 import rdfscript.error as error
 import rdfscript.evaluate as evaluate
@@ -65,6 +64,7 @@ class TestThrees(unittest.TestCase):
         rt.bind(core.Uri('three'), core.Name('three'))
         evaluate.evaluate(t, rt)
         graph = rt._g.graph.triples((None, None, None))
+
         self.assertTrue(expected in graph)
 
     def test_evaluate_name_uri_value(self):
@@ -84,8 +84,8 @@ class TestThrees(unittest.TestCase):
         self.assertTrue(expected in graph)
 
     def test_evaluate_value_value_value(self):
-        context = env.Env()
+        rt = runtime.Runtime()
 
         with self.assertRaises(error.UnexpectedType):
             t = self.parser.parse('1 > 2 > 3')[0]
-            t.evaluate(context)
+            evaluate.evaluate(t, rt)

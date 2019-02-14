@@ -11,6 +11,7 @@ class EnvironmentGraph:
     def __init__(self):
         blank = rdflib.URIRef('')
         self._graph = rdflib.ConjunctiveGraph(identifier=blank)
+        self._graph.bind('RDFScript', rdflib.URIRef(core.__lang__))
 
     @property
     def graph(self):

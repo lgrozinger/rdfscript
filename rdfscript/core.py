@@ -110,6 +110,11 @@ class Three(Node):
     def three(self):
         return self._three
 
+    def map(self, f):
+        self._one = f(self.one)
+        self._two = f(self.two)
+        self._three = f(self.three)
+
     def evaluate(self, context):
         e_one = self.one.evaluate(context)
         e_two = self.two.evaluate(context)

@@ -1,5 +1,4 @@
 import unittest
-import logging
 
 import rdfscript.rdfscriptparser as parser
 import rdfscript.templates as templates

@@ -70,3 +70,6 @@ class Runtime:
             context = self._g.get_context(uri)
 
         return context
+
+    def graph_dump(self):
+        print(self._g.graph.serialize(format='turtle').decode("utf-8"))

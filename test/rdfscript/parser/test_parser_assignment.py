@@ -3,7 +3,7 @@ import logging
 
 import rdfscript.rdfscriptparser as parser
 import rdfscript.core as core
-from rdfscript.template import Expansion
+import rdfscript.expansions as expansions
 
 
 class TestParserAssignment(unittest.TestCase):
@@ -72,7 +72,6 @@ class TestParserAssignment(unittest.TestCase):
         name = core.Name('Name')
         self.assertEqual(forms, [core.Assignment(name, name)])
 
-
     @unittest.skip("Self on hold for now.")
     def test_assignment_self_name(self):
         script = 'self.v = Name'
@@ -87,9 +86,9 @@ class TestParserAssignment(unittest.TestCase):
         forms = self.parser.parse(script)
 
         name = core.Name('expansion')
-        self.assertEqual(forms, [core.Assignment(name,
-                                                 Expansion(core.Name('e'),
-                                                           core.Name('t'),
-                                                           [],
-                                                           []))])
-
+        expected = core.Assignment(name, expansions.Expansion(core.Name('e'),
+                                                              core.Name('t'),
+                                                              [],
+                                                              []))
+        actually = forms[0]
+        self.assertEqual(expected, actually)

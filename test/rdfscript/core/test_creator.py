@@ -40,3 +40,20 @@ class TestCreator(unittest.TestCase):
         expected = value
         actually = self.resolver.resolve(name)
         self.assertEqual(expected, actually)
+
+    def test_creator_doesnt_mangle_inbetween_nodes(self):
+        creator = handler.Creator(self.env_graph)
+        name = core.Name('prefix')
+        uri = core.Uri('http://prefix/')
+        creator.create(name, uri)
+
+        expected = uri
+        actually = self.resolver.resolve(name)
+        self.assertEqual(expected, actually)
+
+        name = core.Name('prefix', 'var')
+        value = core.Value("Whatever")
+        creator.create(name, value)
+        expected = uri
+        actually = self.resolver.resolve(core.Name('prefix'))
+        self.assertEqual(expected, actually)

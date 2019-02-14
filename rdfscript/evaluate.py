@@ -1,11 +1,11 @@
 import rdflib
-import logging
 import pdb
 
 import rdfscript.core as core
 import rdfscript.utils as utils
 import rdfscript.pragma as pragma
 import rdfscript.error as error
+import rdfscript.templates as templates
 
 
 def evaluate(node, env):
@@ -87,7 +87,7 @@ def evaluate_defaultprefix(pragma, rt):
 
 
 def evaluate_import(pragma, env):
-    if not env.eval_import(evaluate(pragma.target, env)):
+    if not env.evalppppP_import(evaluate(pragma.target, env)):
         raise FailToImport(
             pragma.target, env.get_current_path(), pragma.location)
 
@@ -104,6 +104,69 @@ def evaluate_using(pragma, rt):
         rt.bind(what, core.Name(where.uri))
 
     return pragma.prefix
+
+
+def evaluate_template(template, rt):
+    hang_params(template, rt)
+    hang_body(template, rt)
+
+    return template.name
+
+
+def set_template_type(template, rt):
+    type_uri = core.lang_uri(template)
+    type_predicate = utils.from_rdf(rdflib.RDF.type)
+    names = template.name.names + [type_predicate]
+    rt.bind(type_uri, core.Name(*names))
+
+
+def template_context(template, rt):
+    context = rt.context(template.name)
+
+    if context is None:
+        set_template_type(template, rt)
+        context = rt.context(template.name)
+
+    return context
+
+
+def hang_params(template, rt):
+    for (parameter, index) in template.parameters:
+        predicate = core.params_uri(index)
+        param_uri = utils.name_to_uri(parameter)
+        context = template_context(template, rt)
+
+        context.put(utils.contextualise_uri(param_uri, context), predicate)
+
+
+def get_param(template, index, rt):
+    context = template_context(template, rt)
+    return context.get(core.params_uri(index))
+
+
+def hang_body(template, rt):
+    for statement in template.body:
+        hang_three(template, statement, rt)
+
+
+def hang_three(template, three, rt):
+
+    def sub_params(possible_param):
+        result = possible_param
+        i = template.is_parameter(possible_param)
+        if i:
+            result = get_param(template, i, rt)
+
+        return result
+
+    three.map(sub_params)
+    step_one = core.Three(template.name, core.triple_uri(1), three.one)
+    step_two = core.Three(three.one, core.triple_uri(2), three.two)
+    step_three = core.Three(three.two, core.triple_uri(3), three.three)
+
+    for step in [step_one, step_two, step_three]:
+        evaluate(step, rt)
+
 
 def evaluate_extensionpragma(pragma, env):
     ext = env.get_extension(pragma.name)
@@ -123,15 +186,6 @@ def evaluate_self(myself, env):
 def evaluate_value(value, env):
 
     return value
-
-
-def evaluate_template(template, env):
-
-    template.parameterise()
-    template.de_name(env)
-    env.assign_template(template.name, template)
-
-    return template.name
 
 
 def evaluate_expansion(expansion, env):
@@ -190,6 +244,7 @@ _handler_index = {
     core.Value: evaluate_value,
     core.Three: evaluate_three,
     core.Two: evaluate_two,
+    templates.Template: evaluate_template,
     pragma.PrefixPragma: evaluate_prefix,
     pragma.DefaultPrefixPragma: evaluate_defaultprefix,
     pragma.UsingPragma: evaluate_using,

@@ -3,6 +3,7 @@ import unittest
 from rdfscript.template import Parameter
 from rdfscript.core import Name, Uri
 
+
 class TestParameterClass(unittest.TestCase):
 
     def setUp(self):
@@ -34,8 +35,3 @@ class TestParameterClass(unittest.TestCase):
         param = Parameter('x', 0)
 
         self.assertFalse(param.is_substitute(name))
-
-    def test_parameter_evaluate(self):
-
-        param = Parameter('x', 0)
-        self.assertEqual(param.evaluate(None), param)

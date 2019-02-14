@@ -44,8 +44,13 @@ class Creator:
         if len(steps) == 1:
             context.put(value, step)
         elif len(steps) > 1:
-            new_context_uri = utils.contextualise_uri(step, context)
-            context.put(new_context_uri, step)
+            new_context_uri = self.resolver.resolve(
+                core.Name(steps[0]), context=context)
+
+            if new_context_uri is None:
+                new_context_uri = utils.contextualise_uri(step, context)
+                context.put(new_context_uri, step)
+
             next_context = self._graph.get_context(new_context_uri)
             next_name = core.Name(*steps[1:])
             self.create(next_name, value, context=next_context)

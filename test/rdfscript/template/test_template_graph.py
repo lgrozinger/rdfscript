@@ -4,6 +4,7 @@ import rdflib
 import rdfscript.rdfscriptparser as parser
 import rdfscript.utils as utils
 import rdfscript.templates as templates
+import rdfscript.evaluate as evaluate
 import rdfscript.runtime as runtime
 import rdfscript.core as core
 
@@ -21,7 +22,7 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('T')
         template = templates.Template(name, [], [])
 
-        templates.template_context(template, self.rt)
+        evaluate.template_context(template, self.rt)
         expected = core.Uri(self.rt._root.uri + 'T')
         actually = self.rt.binding(name)
 
@@ -31,7 +32,7 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('T')
         template = templates.Template(name, [], [])
 
-        context = templates.template_context(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
         expected = rdflib.URIRef(self.rt._root.uri + 'T')
         actually = utils.to_rdf(context.root)
 
@@ -41,8 +42,8 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('T')
         template = templates.Template(name, [], [])
 
-        templates.set_template_type(template, self.rt)
-        context = templates.template_context(template, self.rt)
+        evaluate.set_template_type(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
 
         expected = core.lang_uri(template)
         actually = context.get(utils.from_rdf(rdflib.RDF.type))
@@ -52,7 +53,7 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('ns', 'T')
         template = templates.Template(name, [], [])
 
-        templates.template_context(template, self.rt)
+        evaluate.template_context(template, self.rt)
         expected = core.Uri(self.rt._root.uri + 'nsT')
         actually = self.rt.binding(name)
 
@@ -62,7 +63,7 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('ns', 'T')
         template = templates.Template(name, [], [])
 
-        context = templates.template_context(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
         expected = rdflib.URIRef(self.rt._root.uri + 'nsT')
         actually = utils.to_rdf(context.root)
 
@@ -72,8 +73,8 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('ns', 'T')
         template = templates.Template(name, [], [])
 
-        templates.set_template_type(template, self.rt)
-        context = templates.template_context(template, self.rt)
+        evaluate.set_template_type(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
 
         expected = core.lang_uri(template)
         actually = context.get(utils.from_rdf(rdflib.RDF.type))
@@ -84,9 +85,9 @@ class TemplateGraphTest(unittest.TestCase):
         param = core.Name('p')
         template = templates.Template(name, [param], [])
 
-        templates.set_template_type(template, self.rt)
-        templates.hang_params(template, self.rt)
-        context = templates.template_context(template, self.rt)
+        evaluate.set_template_type(template, self.rt)
+        evaluate.hang_params(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
 
         expected = utils.contextualise_uri(core.Uri('p'), context)
         actually = context.get(core.params_uri(1))
@@ -96,9 +97,9 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('T')
         template = templates.Template(name, [], [])
 
-        templates.set_template_type(template, self.rt)
-        templates.hang_params(template, self.rt)
-        context = templates.template_context(template, self.rt)
+        evaluate.set_template_type(template, self.rt)
+        evaluate.hang_params(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
 
         expected = None
         actually = context.get(core.params_uri(1))
@@ -109,9 +110,9 @@ class TemplateGraphTest(unittest.TestCase):
         params = [core.Name('p'), core.Name('q')]
         template = templates.Template(name, params, [])
 
-        templates.set_template_type(template, self.rt)
-        templates.hang_params(template, self.rt)
-        context = templates.template_context(template, self.rt)
+        evaluate.set_template_type(template, self.rt)
+        evaluate.hang_params(template, self.rt)
+        context = evaluate.template_context(template, self.rt)
 
         expected = utils.contextualise_uri(core.Uri('p'), context)
         actually = context.get(core.params_uri(1))

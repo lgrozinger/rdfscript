@@ -7,7 +7,8 @@ from .reader import tokens
 
 import rdfscript.core as core
 import rdfscript.pragma as pragma
-import rdfscript.templates as templates
+import rdfscript.expansions as expansions
+from rdfscript.templates import Template
 
 import rdfscript.template as template
 
@@ -27,6 +28,7 @@ def p_empty_forms(p):
 
 def p_form_types(p):
     '''form : assignment
+            | expansion
             | extension
             | pragma
             | template
@@ -89,21 +91,17 @@ def p_extension_args(p):
 # expansions and templates
 def p_template(p):
     '''template : name '(' namelist ')' indentedinstancebody'''
-    p[0] = templates.Template(p[1], p[3], p[5], location=location(p))
+    p[0] = Template(p[1], p[3], p[5], location=location(p))
 
 
 def p_expansion(p):
     '''expansion : name '=' name '(' exprlist ')' indentedinstancebody'''
-    p[0] = template.Expansion(p[1], p[3], p[5], p[7], location(p))
+    p[0] = expansions.Expansion(p[1], p[3], p[5], p[7], location(p))
 
 
 def p_anon_expansion(p):
     '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
-    p[0] = template.Expansion(None, p[1], p[3], p[5], location(p))
-
-# def p_triple(p):
-#     '''triple : name name expr'''
-#     p[0] = TripleObject(p[1], p[2], p[3], location(p))
+    p[0] = expansions.Expansion(None, p[1], p[3], p[5], location(p))
 
 
 def p_expr(p):
