@@ -36,7 +36,8 @@ tests = ["test.rdfscript.core.test_context",
          "test.rdfscript.parser.test_parser_expansions",
          "test.rdfscript.template.test_template",
          "test.rdfscript.template.test_template_graph",
-         "test.rdfscript.template.test_triple_template"]
+         "test.rdfscript.template.test_triple_template",
+         "test.rdfscript.expansion.test_expansion_graph"]
 
 
 loader = unittest.TestLoader()

@@ -6,7 +6,7 @@ import rdfscript.utils as utils
 import rdfscript.pragma as pragma
 import rdfscript.error as error
 import rdfscript.templates as templates
-import rdfscript.template_graphs as tgraphs
+import rdfscript.graph as graph
 
 
 def evaluate(node, env):
@@ -108,8 +108,8 @@ def evaluate_using(pragma, rt):
 
 
 def evaluate_template(template, rt):
-    tgraphs.hang_params(template, rt)
-    tgraphs.hang_body(template, rt)
+    graph.hang_params(template, rt)
+    graph.hang_body(template, rt)
 
     return template.name
 
