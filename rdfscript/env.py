@@ -25,7 +25,7 @@ class Env(object):
                  paths=[],
                  extensions=[]):
 
-        self._g = graph.EnvironmentGraph()
+        self._g = graph.Graph()
         self._template_table = {}
         self._extension_table = {}
         self._extension_manager = ExtensionManager(extras=extensions)

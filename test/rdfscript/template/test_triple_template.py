@@ -3,7 +3,7 @@ import unittest
 import rdfscript.rdfscriptparser as parser
 import rdfscript.evaluate as evaluate
 import rdfscript.runtime as runtime
-import rdfscript.templates as templates
+import rdfscript.core as core
 
 
 class TestTripleTemplate(unittest.TestCase):
@@ -16,7 +16,18 @@ class TestTripleTemplate(unittest.TestCase):
         pass
 
     def test_triple_template_graphed(self):
-        form = self.parser.parse('Triple(a, b, c)(a > b > c)')[0]
-        self.assertTrue(isinstance(form, templates.Template))
-
+        form = self.parser.parse('Triple(a, b, c) = (a > b > c)')[0]
         evaluate.evaluate(form, self.rt)
+
+    def test_triple_template_expand(self):
+        forms = self.parser.parse('Triple(a, b, c) = (a > b > c)' +
+                                  'Triple(<http://subject>, <http://predicate>, "object")')
+        for form in forms:
+            evaluate.evaluate(form, self.rt)
+
+        triples = self.rt._g.root_context.triples
+        expected = (core.Uri('http://subject'),
+                    core.Uri('http://predicate'),
+                    core.Value("object"))
+
+        self.assertTrue(expected in triples)

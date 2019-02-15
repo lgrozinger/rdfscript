@@ -1,11 +1,9 @@
-import rdflib
-import pdb
-
 import rdfscript.core as core
 import rdfscript.utils as utils
 import rdfscript.pragma as pragma
 import rdfscript.error as error
 import rdfscript.templates as templates
+import rdfscript.expansions as expansions
 import rdfscript.graph as graph
 
 
@@ -28,7 +26,7 @@ def evaluate_assignment(assignment, rt):
     utils.type_assert(name, core.Name)
     existing_binding = rt.bound_p(name)
     if existing_binding:
-        raise error.BindingError(name, existing_binding, name.location)
+        raise error.Binding(name, existing_binding, name.location)
 
     value = evaluate(assignment.value, rt)
     utils.type_assert(value, core.Uri, core.Value)
@@ -46,7 +44,8 @@ def evaluate_three(three, rt):
     utils.type_assert(e_two, core.Uri)
     utils.type_assert(e_three, core.Uri, core.Value)
 
-    rt._g.graph.add(utils.to_rdf_triple((e_one, e_two, e_three)))
+    context = rt._g.get_context(e_one)
+    context.put(e_three, e_two)
     return three.one
 
 
@@ -108,10 +107,19 @@ def evaluate_using(pragma, rt):
 
 
 def evaluate_template(template, rt):
+    graph.set_template_type(template, rt)
     graph.hang_params(template, rt)
     graph.hang_body(template, rt)
 
     return template.name
+
+
+def evaluate_expansion(expansion, rt):
+
+    tgraph = rt.context(expansion.template)._graph
+    triples = graph.triples(tgraph)
+    for s, p, o in triples:
+        evaluate(core.Three(s, p, o), rt)
 
 
 def evaluate_extensionpragma(pragma, env):
@@ -125,7 +133,6 @@ def evaluate_extensionpragma(pragma, env):
 
 
 def evaluate_value(value, env):
-
     return value
 
 
@@ -162,6 +169,7 @@ _handler_index = {
     core.Three: evaluate_three,
     core.Two: evaluate_two,
     templates.Template: evaluate_template,
+    expansions.Expansion: evaluate_expansion,
     pragma.PrefixPragma: evaluate_prefix,
     pragma.DefaultPrefixPragma: evaluate_defaultprefix,
     pragma.UsingPragma: evaluate_using,

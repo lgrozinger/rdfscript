@@ -80,9 +80,10 @@ class TestParserAssignment(unittest.TestCase):
         self.assertEqual(forms, [Assignment(core.Name(Self(), 'v'),
                                             core.Name('Name'))])
 
+    @unittest.skip("Doesn't make sense with simplified expansions")
     def test_assignment_name_expansion(self):
 
-        script = 'expansion = e = t()'
+        script = 'expansion = t()'
         forms = self.parser.parse(script)
 
         name = core.Name('expansion')

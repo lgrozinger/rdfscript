@@ -1,5 +1,4 @@
 import unittest
-import pdb
 
 import rdfscript.resource_handler as handler
 import rdfscript.error as error
@@ -11,7 +10,7 @@ import rdfscript.core as core
 class TestResolver(unittest.TestCase):
 
     def setUp(self):
-        self.env_graph = graph.EnvironmentGraph()
+        self.env_graph = graph.Graph()
         self.creator = handler.Creator(self.env_graph)
 
     def tearDown(self):

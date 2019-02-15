@@ -16,9 +16,8 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_no_args_no_body(self):
 
-        forms = self.parser.parse('e = a()')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a()')
+        expect = expansions.Expansion(core.Name('a'),
                                       [],
                                       [])
 
@@ -26,9 +25,8 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_one_arg_no_body(self):
 
-        forms = self.parser.parse('e = a(12345)')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a(12345)')
+        expect = expansions.Expansion(core.Name('a'),
                                       [core.Value(12345)],
                                       [])
 
@@ -36,19 +34,19 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_multi_args_no_body(self):
 
-        forms = self.parser.parse('e = a(12345, 54321)')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a(12345, 54321)')
+        expect = expansions.Expansion(core.Name('a'),
                                       [core.Value(12345),
                                        core.Value(54321)],
                                       [])
 
         self.assertEqual(expect, forms[0])
 
+    @unittest.skip("No longer possible with simplified expansions.")
     def test_expansion_expansion_as_arg(self):
 
-        forms = self.parser.parse('e = a(f = b(12345))')
-        f = self.parser.parse('f = b(12345)')[0]
+        forms = self.parser.parse('e = a(b(12345))')
+        f = self.parser.parse('b(12345)')[0]
         expect = expansions.Expansion(core.Name('e'),
                                       core.Name('a'),
                                       [f],
@@ -58,9 +56,8 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_no_args_with_body(self):
 
-        forms = self.parser.parse('e = a()(x > y > z)')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a()(x > y > z)')
+        expect = expansions.Expansion(core.Name('a'),
                                       [],
                                       [core.Three(core.Name('x'),
                                                   core.Name('y'),
@@ -70,9 +67,8 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_one_arg_with_body(self):
 
-        forms = self.parser.parse('e = a(12345)(x > y > z)')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a(12345)(x > y > z)')
+        expect = expansions.Expansion(core.Name('a'),
                                       [core.Value(12345)],
                                       [core.Three(core.Name('x'),
                                                   core.Name('y'),
@@ -82,9 +78,8 @@ class ParserExpansionTest(unittest.TestCase):
 
     def test_expansion_multi_args_with_body(self):
 
-        forms = self.parser.parse('e = a(12345, 54321)(x > y > z)')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a(12345, 54321)(x > y > z)')
+        expect = expansions.Expansion(core.Name('a'),
                                       [core.Value(12345),
                                        core.Value(54321)],
                                       [core.Three(core.Name('x'),
@@ -96,9 +91,8 @@ class ParserExpansionTest(unittest.TestCase):
     @unittest.skip("Properties not implemented yet.")
     def test_expansion_multiple_properties(self):
 
-        forms = self.parser.parse('e = a()(x=true y=false)')
-        expect = expansions.Expansion(core.Name('e'),
-                                      core.Name('a'),
+        forms = self.parser.parse('a()(x=true y=false)')
+        expect = expansions.Expansion(core.Name('a'),
                                       [],
                                       [templates.Property(core.Name('x'), core.Value(True)),
                                        templates.Property(core.Name('y'), core.Value(False))])

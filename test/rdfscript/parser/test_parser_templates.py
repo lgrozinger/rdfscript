@@ -14,7 +14,7 @@ class ParserTemplateTest(unittest.TestCase):
         None
 
     def test_parser_triple_template(self):
-        forms = self.parser.parse('Triple(a, b, c)(a > b > c)')
+        forms = self.parser.parse('Triple(a, b, c) = (a > b > c)')
 
         triple = core.Name('Triple')
         a = core.Name('a')

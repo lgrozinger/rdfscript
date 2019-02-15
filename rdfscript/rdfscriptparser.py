@@ -90,37 +90,35 @@ def p_extension_args(p):
 
 # expansions and templates
 def p_template(p):
-    '''template : name '(' namelist ')' indentedinstancebody'''
-    p[0] = Template(p[1], p[3], p[5], location=location(p))
+    '''template : name '(' exprlist ')' '=' '(' instancebody ')' '''
+    p[0] = Template(p[1], p[3], p[7], location=location(p))
 
 
 def p_expansion(p):
-    '''expansion : name '=' name '(' exprlist ')' indentedinstancebody'''
-    p[0] = expansions.Expansion(p[1], p[3], p[5], p[7], location(p))
+    '''expansion : name '(' exprlist ')' '(' instancebody ')' '''
+    p[0] = expansions.Expansion(p[1], p[3], p[6], location=location(p))
 
 
-def p_anon_expansion(p):
-    '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
-    p[0] = expansions.Expansion(None, p[1], p[3], p[5], location(p))
+def p_expansion_no_body(p):
+    '''expansion : name '(' exprlist ')' '''
+    p[0] = expansions.Expansion(p[1], p[3], [], location=location(p))
+
+# def p_expansion(p):
+#     '''expansion : name '=' name '(' exprlist ')' indentedinstancebody'''
+#     p[0] = expansions.Expansion(p[1], p[3], p[5], p[7], location(p))
+
+
+# def p_anon_expansion(p):
+#     '''anon_expansion : name '(' exprlist ')' indentedinstancebody'''
+#     p[0] = expansions.Expansion(None, p[1], p[3], p[5], location(p))
 
 
 def p_expr(p):
     '''expr : name
             | uri
             | pragma
-            | literal
-            | expansion'''
+            | literal'''
     p[0] = p[1]
-
-
-def p_indentedinstancebody(p):
-    '''indentedinstancebody : '(' instancebody ')' '''
-    p[0] = p[2]
-
-
-def p_empty_indentedinstancebody(p):
-    '''indentedinstancebody : empty'''
-    p[0] = []
 
 
 def p_instancebody(p):
@@ -144,14 +142,12 @@ def p_bodystatement(p):
     '''bodystatement : three
                      | property
                      | expansion
-                     | anon_expansion
                      | extension'''
     p[0] = p[1]
 
 
 def p_property(p):
     '''property : name '=' expr'''
-#                | name '=' expansion'''
     p[0] = template.Property(p[1], p[3], location=location(p))
 
 # lists
@@ -173,20 +169,20 @@ def p_not_empty_exprlist_n(p):
     p[0] = [p[1]] + p[3]
 
 
-def p_namelist(p):
-    '''namelist : emptylist
-                | notemptynamelist'''
-    p[0] = p[1]
+# def p_namelist(p):
+#     '''namelist : emptylist
+#                 | notemptynamelist'''
+#     p[0] = p[1]
 
 
-def p_not_empty_namelist_1(p):
-    '''notemptynamelist : name'''
-    p[0] = [p[1]]
+# def p_not_empty_namelist_1(p):
+#     '''notemptynamelist : name'''
+#     p[0] = [p[1]]
 
 
-def p_not_empty_namelist_n(p):
-    '''notemptynamelist : name ',' notemptynamelist'''
-    p[0] = [p[1]] + p[3]
+# def p_not_empty_namelist_n(p):
+#     '''notemptynamelist : name ',' notemptynamelist'''
+#     p[0] = [p[1]] + p[3]
 
 
 def p_empty(p):

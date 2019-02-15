@@ -21,22 +21,31 @@ class Context:
         raw_triples = self._graph.triples((None, None, None))
         return utils.from_rdf_triples(raw_triples)
 
+    def search(self, s, p, o):
+        search = [s, p, o]
+        for i in range(0, 3):
+            if search[i] is not None:
+                search[i] = utils.to_rdf(search[i])
+
+        raw_triples = self._graph.triples(tuple(search))
+        return utils.from_rdf_triples(raw_triples)
+
     def put(self, what, where):
         rdf_where = utils.to_rdf(where)
         rdf_what = utils.to_rdf(what)
         triple = (self._root, rdf_where, rdf_what)
-        self._graph.set(triple)
+        self._graph.add(triple)
         return triple
 
     def get(self, what):
         search = (self._root, utils.to_rdf(what), None)
         result = self._graph.triples(search)
         result = [utils.from_rdf(o) for (s, p, o) in result]
-        assert len(result) <= 1
-        try:
-            result = result[0]
-        except IndexError:
-            result = None
+        if len(result) <= 1:
+            try:
+                result = result[0]
+            except IndexError:
+                result = None
 
         return result
 

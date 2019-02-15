@@ -9,7 +9,7 @@ class Runtime:
 
     def __init__(self):
 
-        self._g = graph.EnvironmentGraph()
+        self._g = graph.Graph()
         self._root = self._g.root
         self._resolver = handlers.Resolver(self._g)
         self._creator = handlers.Creator(self._g)
@@ -36,6 +36,10 @@ class Runtime:
         if self.prefix is not None:
             steps = self.prefix.names + where.names
             where = core.Name(*steps, location=where.location)
+
+        binding = self.binding(where)
+        if binding is not None:
+            raise error.Binding(where, binding, where.location)
 
         return self._creator.create(where, what)
 
@@ -64,10 +68,13 @@ class Runtime:
     def context(self, where):
         context = None
 
-        uri = self.binding(where)
-        if uri is not None:
-            utils.type_assert(uri, core.Uri)
-            context = self._g.get_context(uri)
+        if isinstance(where, core.Uri):
+            context = self._g.get_context(where)
+        else:
+            uri = self.binding(where)
+            if uri is not None:
+                utils.type_assert(uri, core.Uri)
+                context = self._g.get_context(uri)
 
         return context
 

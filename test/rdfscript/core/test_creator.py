@@ -8,7 +8,7 @@ import rdfscript.core as core
 class TestCreator(unittest.TestCase):
 
     def setUp(self):
-        self.env_graph = graph.EnvironmentGraph()
+        self.env_graph = graph.Graph()
         self.resolver = handler.Resolver(self.env_graph)
 
     def tearDown(self):

@@ -63,6 +63,7 @@ class TestContext(unittest.TestCase):
         actually = c.triples
         self.assertEqual(expected, actually)
 
+    @unittest.skip("Duplicates allowed into contexts, as long as not assignment.")
     def test_put_into_context_duplicate(self):
         c = context.Context(self.g)
         c.put(core.Value(83), core.Uri('v'))

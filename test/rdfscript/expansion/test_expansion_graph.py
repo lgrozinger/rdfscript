@@ -7,6 +7,7 @@ import rdfscript.expansions as expansions
 import rdfscript.graph as graphs
 import rdfscript.runtime as runtime
 import rdfscript.core as core
+import rdfscript.evaluate as evaluate
 
 
 class ExpansionGraphTest(unittest.TestCase):
@@ -18,8 +19,14 @@ class ExpansionGraphTest(unittest.TestCase):
     def tearDown(self):
         None
 
+    # don't do this...
+    # expansions in the first case should just be add triples to
+    # graph, templates are where to add complexity
+
+    # expand template === get template's triples, sub args for
+    # params, add triples to the graph.
+    @unittest.skip("See above comment.")
     def test_get_context_creates_resource(self):
-        name = core.Name('e')
         template = core.Name('T')
         expansion = expansions.Expansion(name, template, [], [])
 
@@ -28,6 +35,32 @@ class ExpansionGraphTest(unittest.TestCase):
         actually = self.rt.binding(name)
 
         self.assertEqual(expected, actually)
+
+    def test_template_triples_on_simple_template(self):
+        template = self.parser.parse('T() = ' +
+                                     '(<http://s> > <http://p> > true)')[0]
+
+        evaluate.evaluate(template, self.rt)
+        s = core.Uri('http://s')
+        p = core.Uri('http://p')
+        o = core.Value(True)
+
+        expected = [(s, p, o)]
+        actually = graphs.template_triples(template.name, self.rt)
+        self.assertEqual(expected, actually)
+
+    def test_template_triples_crossed_wires_template(self):
+        template = self.parser.parse('T() = ' +
+                                     '(<http://s> > <http://p> > true' +
+                                     ' <http://p> > <http://s> > false)')[0]
+
+        evaluate.evaluate(template, self.rt)
+        s = core.Uri('http://s')
+        p = core.Uri('http://p')
+
+        expected = [(s, p, core.Value(True)), (p, s, core.Value(False))]
+        actually = graphs.triples(self.rt.context(template.name)._graph)
+        self.assertEqual(set(expected), set(actually))
 
     # def test_get_context_returns_correct_context(self):
     #     name = core.Name('T')

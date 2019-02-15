@@ -16,20 +16,20 @@ class TestEnvironmentGraph(unittest.TestCase):
         pass
 
     def test_get_graph(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         expected = eg._graph
         actually = eg.graph
         self.assertEqual(expected, actually)
 
     def test_get_context_empty(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         context_uri = eg.root
         expected = context.Context(eg.graph)
         actually = eg.get_context(context_uri)
         self.assertEqual(expected, actually)
 
     def test_get_context(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         c = eg.get_context(eg.root)
         c.put(core.Value(83), core.Uri('v'))
         expected = context.Context(eg.graph)
@@ -37,7 +37,7 @@ class TestEnvironmentGraph(unittest.TestCase):
         self.assertEqual(expected, actually)
 
     def test_bind_prefix(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         before = set(eg.graph.namespaces())
         uri = core.Uri('http://prefix/')
         p = core.Name('prefix')
@@ -48,7 +48,7 @@ class TestEnvironmentGraph(unittest.TestCase):
         self.assertEqual(expected, actually)
 
     def test_get_uri_for_prefix(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         uri = core.Uri('http://prefix/')
         p = core.Name('prefix')
         eg.bind_prefix(p, uri)
@@ -58,13 +58,13 @@ class TestEnvironmentGraph(unittest.TestCase):
         self.assertEqual(expected, actually)
 
     def test_get_uri_for_unbound_prefix(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         p = core.Name('prefix')
         with self.assertRaises(error.PrefixError):
             eg.prefix_to_uri(p)
 
     def test_get_prefix_for_uri(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         uri = core.Uri('http://prefix/')
         p = core.Name('prefix')
         eg.bind_prefix(p, uri)
@@ -74,6 +74,6 @@ class TestEnvironmentGraph(unittest.TestCase):
         self.assertEqual(expected, actually)
 
     def test_get_prefix_for_unbound_uri(self):
-        eg = graph.EnvironmentGraph()
+        eg = graph.Graph()
         with self.assertRaises(error.PrefixError):
             eg.uri_to_prefix(core.Uri('http://prefix/'))

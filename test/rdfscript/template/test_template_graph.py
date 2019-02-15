@@ -18,32 +18,12 @@ class TemplateGraphTest(unittest.TestCase):
     def tearDown(self):
         None
 
-    def test_get_context_creates_resource(self):
-        name = core.Name('T')
-        template = templates.Template(name, [], [])
-
-        graph.object_context(template, self.rt)
-        expected = core.Uri(self.rt._root.uri + 'T')
-        actually = self.rt.binding(name)
-
-        self.assertEqual(expected, actually)
-
-    def test_get_context_returns_correct_context(self):
-        name = core.Name('T')
-        template = templates.Template(name, [], [])
-
-        context = graph.object_context(template, self.rt)
-        expected = rdflib.URIRef(self.rt._root.uri + 'T')
-        actually = utils.to_rdf(context.root)
-
-        self.assertEqual(expected, actually)
-
     def test_set_rdf_type_to_template(self):
         name = core.Name('T')
         template = templates.Template(name, [], [])
 
         graph.set_template_type(template, self.rt)
-        context = graph.object_context(template, self.rt)
+        context = self.rt.context(template.name)
 
         expected = core.lang_uri(template)
         actually = context.get(utils.from_rdf(rdflib.RDF.type))
@@ -53,7 +33,7 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('ns', 'T')
         template = templates.Template(name, [], [])
 
-        graph.object_context(template, self.rt)
+        graph.set_template_type(template, self.rt)
         expected = core.Uri(self.rt._root.uri + 'nsT')
         actually = self.rt.binding(name)
 
@@ -63,7 +43,8 @@ class TemplateGraphTest(unittest.TestCase):
         name = core.Name('ns', 'T')
         template = templates.Template(name, [], [])
 
-        context = graph.object_context(template, self.rt)
+        graph.set_template_type(template, self.rt)
+        context = self.rt.context(template.name)
         expected = rdflib.URIRef(self.rt._root.uri + 'nsT')
         actually = utils.to_rdf(context.root)
 
@@ -74,7 +55,7 @@ class TemplateGraphTest(unittest.TestCase):
         template = templates.Template(name, [], [])
 
         graph.set_template_type(template, self.rt)
-        context = graph.object_context(template, self.rt)
+        context = self.rt.context(template.name)
 
         expected = core.lang_uri(template)
         actually = context.get(utils.from_rdf(rdflib.RDF.type))
@@ -87,7 +68,7 @@ class TemplateGraphTest(unittest.TestCase):
 
         graph.set_template_type(template, self.rt)
         graph.hang_params(template, self.rt)
-        context = graph.object_context(template, self.rt)
+        context = self.rt.context(template.name)
 
         expected = utils.contextualise_uri(core.Uri('p'), context)
         actually = context.get(core.params_uri(1))
@@ -99,7 +80,7 @@ class TemplateGraphTest(unittest.TestCase):
 
         graph.set_template_type(template, self.rt)
         graph.hang_params(template, self.rt)
-        context = graph.object_context(template, self.rt)
+        context = self.rt.context(template.name)
 
         expected = None
         actually = context.get(core.params_uri(1))
@@ -112,7 +93,7 @@ class TemplateGraphTest(unittest.TestCase):
 
         graph.set_template_type(template, self.rt)
         graph.hang_params(template, self.rt)
-        context = graph.object_context(template, self.rt)
+        context = self.rt.context(template.name)
 
         expected = utils.contextualise_uri(core.Uri('p'), context)
         actually = context.get(core.params_uri(1))

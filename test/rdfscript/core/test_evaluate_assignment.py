@@ -47,7 +47,7 @@ class TestEvaluateAssignment(unittest.TestCase):
         evaluate.evaluate(assign, self.rt)
         assign = self.parser.parse('Variable = Variable')[0]
 
-        with self.assertRaises(error.BindingError):
+        with self.assertRaises(error.Binding):
             evaluate.evaluate(assign, self.rt)
 
     def test_assign_unbound_name(self):

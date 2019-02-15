@@ -17,5 +17,8 @@ def code_eval(code_as_string, rt):
 
 if __name__ == "__main__":
     rt = runtime.Runtime()
+    script = ''
     for line in sys.stdin:
-        code_eval(line, rt)
+        script += line
+
+    code_eval(script, rt)

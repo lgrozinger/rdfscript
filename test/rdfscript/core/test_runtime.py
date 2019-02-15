@@ -2,6 +2,7 @@ import unittest
 
 import rdfscript.runtime as runtime
 import rdfscript.core as core
+import rdfscript.error as error
 
 
 class TestRuntime(unittest.TestCase):
@@ -37,6 +38,19 @@ class TestRuntime(unittest.TestCase):
         expected = value
         actually = rt._resolver.resolve(name)
         self.assertEqual(expected, actually)
+
+    def test_rebind(self):
+        rt = runtime.Runtime()
+        name = core.Name('v')
+        value = core.Value(12345)
+        rt.bind(value, name)
+
+        expected = value
+        actually = rt._resolver.resolve(name)
+        self.assertEqual(expected, actually)
+
+        with self.assertRaises(error.Binding):
+            rt.bind(core.Value(67890), name)
 
     def test_bind_levels(self):
         rt = runtime.Runtime()

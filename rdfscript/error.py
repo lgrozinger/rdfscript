@@ -48,7 +48,7 @@ class RDFScriptSyntax(RDFScriptError):
                                                      % self.token)
 
 
-class BindingError(RDFScriptError):
+class Binding(RDFScriptError):
     def __init__(self, name, existing_binding, location):
         RDFScriptError.__init__(self, location)
         self._name = name
