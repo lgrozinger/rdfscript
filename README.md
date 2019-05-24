@@ -42,6 +42,12 @@ Display command line options, including available serialisations.
 
 The example files in `examples/` are commented with some explaination of the language.
 
+### SBOL example
+
+1. Get the ShortBOL2 template libraries. In a suitable directory `git clone https://github.com/lgrozinger/ShortBOL2`
+2. In the rdfscript directory `python run.py -s sbolxml <YOUR_SHORTBOL2_DIR>/example.rdfsh -o <output-file>`
+3. `output-file` is an SBOL file.
+
 ## Contributing
 
 `dev` is for the latest code that *should* work.
