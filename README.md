@@ -17,6 +17,7 @@ Python package dependencies are listed in `setup.py`.
 
 ### Install
 
+(This method requires setuptools, which can be installed from your package manager on most \*nix systems, and is probably called python3-setuptools or similar)
 1. Download or clone repository. `git clone https://github.com/lgrozinger/rdfscript.git`
 2. Navigate to RDFScript directory. `cd rdfscript`
 3. As a non-root user. `python setup.py install --user`
