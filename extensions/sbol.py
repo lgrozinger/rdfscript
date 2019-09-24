@@ -32,7 +32,6 @@ class SbolIdentity:
         pass
 
     def run(self, triplepack):
-
         return And(*[SBOLCompliant(s) for s in triplepack.subjects]).run(triplepack)
 
 
@@ -151,4 +150,7 @@ def SBOLParent(triplepack, child):
 
 def SBOLcheckTopLevel(triplepack):
     _type = triplepack.value(_rdf_type)
-    return _type in _toplevels
+    if isinstance(_type, list):
+        return any([t in _toplevels for t in _type])
+    else:
+        return _type in _toplevels
