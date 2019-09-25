@@ -5,7 +5,7 @@ import logging
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from repl import REPL
-#test_commit_data
+#test_commit_data##
 def parse_from_file(filepath,
                     serializer='nt',
                     optpaths=[],
