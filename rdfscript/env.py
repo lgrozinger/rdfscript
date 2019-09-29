@@ -149,6 +149,10 @@ class Env(object):
 
         for form in forms:
             try:
+                print("\n\n------------------------------")
+                print("Form: " + str(form))
+                print("Type of Form: " + str(type(form)))
+                
                 if isinstance(form, ExtensionPragma):
                     form.evaluate(self)
                     self.run_extension_on_graph(form)
@@ -159,6 +163,9 @@ class Env(object):
                 logging.error(str(e))
             except ExtensionError as e:
                 logging.error(str(e))
+        print("Symbol Table: " + str(self._symbol_table))
+        print("Template Table: " + str(self._template_table))
+        print("Extension Table: " + str(self._extension_table))
 
         return result
 

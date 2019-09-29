@@ -61,7 +61,7 @@ class Template(Node):
 
         context.current_self = old_self
 
-        triples = sub_params_in_triples(self.parameters, triples)
+        triples =   sub_params_in_triples(self.parameters, triples)
 
         return triples
 
@@ -92,7 +92,6 @@ class Template(Node):
                 collected.append(statement)
             elif isinstance(statement, Expansion) and statement.name is None:
                 collected += statement.get_extensions(context)
-
         return collected
 
     def store_extensions(self, context):
@@ -117,7 +116,6 @@ class Template(Node):
         self.store_extensions(context)
 
         context.current_self = old_self
-
         return self.name.evaluate(context)
 
 
@@ -233,6 +231,7 @@ class Expansion(Node):
             else:
                 self._body.append(statement)
 
+
     def __eq__(self, other):
         return (isinstance(other, Expansion) and
                 self.template == other.template and
@@ -241,7 +240,7 @@ class Expansion(Node):
                 self.body == other.body)
 
     def __repr__(self):
-        return format("%s is a %s(%s)\n  (%s)\n" %
+        return format("%s : %s(%s)\n  (%s)\n" %
                       (self.name, self.template, self.args, self.body))
 
     @property
@@ -314,7 +313,6 @@ class Expansion(Node):
         context.current_self = old_self
 
         context.add_triples(triples)
-
         return name
 
 
@@ -325,6 +323,9 @@ class Argument(Node):
         super().__init__(location)
         self._value = value_expr
         self._position = position
+        print("asdfasdf")
+        print(type(self._value))
+        print(type(self._position))
 
     @property
     def value(self):

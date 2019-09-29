@@ -5,7 +5,7 @@ import logging
 from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from repl import REPL
-#test_commit_data##
+
 def parse_from_file(filepath,
                     serializer='nt',
                     optpaths=[],
@@ -13,15 +13,20 @@ def parse_from_file(filepath,
                     extensions=[],
                     debug_lvl=1):
 
+    #Instantiate Language parser
     parser = RDFScriptParser(filename=filepath, debug_lvl=debug_lvl)
 
+    #Simply reads rdf data into memory. (Memory problem for large files??)
     with open(filepath, 'r') as in_file:
         data = in_file.read()
 
+    #Instantiate Enviroment, why pass filepath?
     env = Env(filename=filepath,
               serializer=serializer,
               paths=optpaths,
               extensions=extensions)
+    #Work done here.
+    #Basically tokenises and checks statements that they are valid to a certain set of parameters.
     forms = parser.parse(data)
     env.interpret(forms)
 

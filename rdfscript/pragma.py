@@ -9,7 +9,6 @@ class PrefixPragma(Node):
 
     def __init__(self, prefix, uri, location=None):
         Node.__init__(self, location)
-
         self._prefix = prefix
         self._uri = uri
 
@@ -142,5 +141,4 @@ class ExtensionPragma(Node):
 
         self.evaluate(context)
         ext_class = context.get_extension(self.name)
-
         return ext_class(*self.args)

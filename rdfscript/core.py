@@ -71,8 +71,9 @@ class Name(Node):
     def evaluate(self, context):
 
         uri = Uri(context.uri, location=self.location)
-
+        #Not very pythonic, better to change to "for index, name in enumerate(self.names) :"
         for n in range(0, len(self.names)):
+
             if isinstance(self.names[n], Self):
                 current_self = context.current_self
                 if isinstance(current_self, Uri):
@@ -86,11 +87,13 @@ class Name(Node):
                         return Name(uri, *rest, location=self.location)
                     else:
                         return Name(*rest, location=self.location)
+
             elif isinstance(self.names[n], Uri):
                 if n > 0:
                     uri.extend(self.names[n], delimiter='')
                 else:
                     uri = Uri(self.names[n])
+
             elif isinstance(self.names[n], str):
                 if n == 0 and self.is_prefixed(context):
                     uri = self.is_prefixed(context)
@@ -151,7 +154,7 @@ class Uri(Node):
         return re.split('#|/|:', self.uri)
 
     def evaluate(self, context):
-        return self
+        return self 
 
 
 class Value(Node):

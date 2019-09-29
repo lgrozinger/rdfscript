@@ -82,7 +82,7 @@ def p_template(p):
     p[0] = Template(p[1], p[3], p[5], location=location(p))
 
 def p_expansion(p):
-    '''expansion : name ISA name '(' exprlist ')' indentedinstancebody'''
+    '''expansion : name COLON name '(' exprlist ')' indentedinstancebody'''
     p[0] = Expansion(p[1], p[3], p[5], p[7], location(p))
 
 def p_anon_expansion(p):

@@ -7,6 +7,7 @@ tokens = (
      "STRING",
      "INTEGER",
      "DOUBLE",
+     "COLON",
      "URI",
      "ISA",
      "SELF",
@@ -20,6 +21,7 @@ literals = ['=',
             '{', '}',
             '(', ')',
             '.',
+            ':',
             '[', ']',
             '*',
             ',']
@@ -60,10 +62,18 @@ def t_rbracket(t):
      t.type = ')'
      return t
 
+'''
 def t_ISA(t):
      r'is\s+a'
      t.type = 'ISA'
      t.value = 'is a'
+     return t
+'''
+
+def t_COLON(t):
+     r':'
+     t.type = 'COLON'
+     t.value = ':'
      return t
 
 def t_STRING(t):
