@@ -2,8 +2,15 @@ import sys
 import argparse
 import logging
 
-from rdfscript.rdfscriptparser import RDFScriptParser
-from rdfscript.env import Env
+
+try:
+    from rdfscript.rdfscriptparser import RDFScriptParser
+    from rdfscript.env import Env
+except ModuleNotFoundError:
+    from .rdfscript.rdfscriptparser import RDFScriptParser
+    from .rdfscript.env import Env
+    
+
 from repl import REPL
 
 def parse_from_file(filepath,

@@ -14,8 +14,10 @@ from .rdfscriptparser import RDFScriptParser
 from .importer import Importer
 
 from .extensions import ExtensionManager
+
 from extensions.error import ExtensionError
 from extensions.triples import TriplePack
+
 from .rdf_data import RDFData
 
 
