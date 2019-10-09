@@ -146,8 +146,11 @@ class Env(object):
 
     def interpret(self, forms):
         result = None
-
+        
         for form in forms:
+            print("---------------------------------")
+            print("Calling Evalulate on:\n " + str(form))
+            print("Type of Language Object: " + str(type(form)))
             try:
                 if isinstance(form, ExtensionPragma):
                     form.evaluate(self)
