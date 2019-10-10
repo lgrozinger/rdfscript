@@ -77,7 +77,7 @@ def t_URI(t):
     return t;
 
 def t_COMMENT(t):
-    r'[ ]*\;;[^\n]*'
+    r'[ ]*\#[^\n]*'
     pass;
 
 def t_SYMBOL(t):
