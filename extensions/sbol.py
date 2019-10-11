@@ -79,7 +79,7 @@ class SBOLCompliantChild:
         self._subject = for_subject
 
     def run(self, triplepack):
-
+        print("Calling")
         subpack = triplepack.sub_pack(self._subject)
         parent = SBOLParent(triplepack, self._subject)
         if parent:
@@ -139,6 +139,7 @@ def SBOLParent(triplepack, child):
     if len(possible_parents) > 1:
         message = format("The SBOL object %s should only have one parent object."
                          % child)
+        return possible_parents.pop()
         raise SBOLComplianceError(message)
     elif len(possible_parents) == 1:
         return possible_parents.pop()

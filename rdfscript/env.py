@@ -125,8 +125,9 @@ class Env(object):
 
         extension_class = self.get_extension(extension.name)
         extension_obj = extension_class(*extension.args)
-
+        
         pack = TriplePack(triples, self._symbol_table, self._template_table)
+        print(pack)
         return extension_obj.run(pack).triples
 
     def run_extension_on_graph(self, extension):
