@@ -32,6 +32,8 @@ class SbolIdentity:
         pass
 
     def run(self, triplepack):
+        #Creates logic.And() instance which takes Language Objects and then calls And.run() which in turn calls run on all SBOLCompliant Objects
+        #Simply makes a SBOLCompliant Object for each form in graph and calls run.
         return And(*[SBOLCompliant(s) for s in triplepack.subjects]).run(triplepack)
 
 
@@ -41,11 +43,14 @@ class SBOLCompliant:
         self._subject = for_subject
 
     def run(self, triplepack):
-
+        # Creates a new TriplePack Object 
         subpack = triplepack.sub_pack(self._subject)
+
         if SBOLcheckTopLevel(subpack):
+            print("Making Top Level")
             SBOLCompliantTopLevel(self._subject).run(triplepack)
         else:
+            print("Mekin Child Level")
             SBOLCompliantChild(self._subject).run(triplepack)
 
         return triplepack
@@ -79,7 +84,6 @@ class SBOLCompliantChild:
         self._subject = for_subject
 
     def run(self, triplepack):
-        print("Calling")
         subpack = triplepack.sub_pack(self._subject)
         parent = SBOLParent(triplepack, self._subject)
         if parent:
@@ -136,10 +140,10 @@ def SBOLcheckIdentity(triplepack):
 def SBOLParent(triplepack, child):
     with_child_as_object = triplepack.search((None, None, child))
     possible_parents = set([s for (s, p, o) in with_child_as_object])
+    print("Possible Parents: " + str(possible_parents))
     if len(possible_parents) > 1:
         message = format("The SBOL object %s should only have one parent object."
                          % child)
-        return possible_parents.pop()
         raise SBOLComplianceError(message)
     elif len(possible_parents) == 1:
         return possible_parents.pop()
@@ -150,6 +154,10 @@ def SBOLParent(triplepack, child):
 
 
 def SBOLcheckTopLevel(triplepack):
+    '''
+    Checks if triple is a toplevel object.
+    Done by checking if type is in top_levels list.
+    '''
     _type = triplepack.value(_rdf_type)
     if isinstance(_type, list):
         return any([t in _toplevels for t in _type])

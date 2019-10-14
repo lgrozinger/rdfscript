@@ -123,26 +123,32 @@ class Env(object):
 
     def run_extension_on_triples(self, extension, triples):
 
+        #Get type of extension
         extension_class = self.get_extension(extension.name)
+        #Creates instance.
         extension_obj = extension_class(*extension.args)
         
+        #Creates instance of TriplePack which just holds the triples with extra utility.
         pack = TriplePack(triples, self._symbol_table, self._template_table)
-        print(pack)
         return extension_obj.run(pack).triples
 
+
     def run_extension_on_graph(self, extension):
-
+        print("Running Extension on graph: " + str(extension))
         graph_triples = self._rdf.triples
-
+        print("\nPre-Triples\n")
+        for triple in graph_triples:
+            print(triple)
         graph_triples = self.run_extension_on_triples(extension, graph_triples)
-
+        print("\nPost-Triples\n")
+        for triple in graph_triples:
+            print(triple)
         self._rdf.remove_all()
         assert len(self._rdf.triples) == 0
 
         for triple in graph_triples:
             (s, p, o) = triple
-            self._rdf.add(s, p, o)
-
+            self._rdf.add(s, p, o) 
         return graph_triples
 
     def interpret(self, forms):
