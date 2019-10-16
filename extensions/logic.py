@@ -8,6 +8,7 @@ class And:
 
     def run(self, triplepack):
         for ext in self._sub_exts:
+            print("Calling Run on: " + str(ext))
             ext.run(triplepack)
 
         return triplepack

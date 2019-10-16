@@ -20,6 +20,10 @@ _toplevels = set([Uri(_sbolns.uri + tl, None) for tl
                       'Implementation',
                       'CombinatorialDerivation']])
 
+_allowed_multiple_parents = set([Uri(_sbolns.uri + tl, None) for tl
+                  in ['Participant',
+                      'MapsTo']])
+
 _sbol_pId = Uri(_sbolns.uri + 'persistentIdentity', None)
 _sbol_dId = Uri(_sbolns.uri + 'displayId', None)
 _sbol_version = Uri(_sbolns.uri + 'version', None)
@@ -32,6 +36,8 @@ class SbolIdentity:
         pass
 
     def run(self, triplepack):
+        #Creates logic.And() instance which takes Language Objects and then calls And.run() which in turn calls run on all SBOLCompliant Objects
+        #Simply makes a SBOLCompliant Object for each form in graph and calls run.
         return And(*[SBOLCompliant(s) for s in triplepack.subjects]).run(triplepack)
 
 
@@ -41,8 +47,9 @@ class SBOLCompliant:
         self._subject = for_subject
 
     def run(self, triplepack):
-
+        # Creates a new TriplePack Object 
         subpack = triplepack.sub_pack(self._subject)
+
         if SBOLcheckTopLevel(subpack):
             SBOLCompliantTopLevel(self._subject).run(triplepack)
         else:
@@ -70,7 +77,11 @@ class SBOLCompliantTopLevel:
             triplepack.set(self._subject, _sbol_pId, pId)
         else:
             pId = Uri(self._subject.uri, None)
+            version = Value("1")
             triplepack.set(self._subject, _sbol_pId, pId)
+            #If no version is set, default = 1
+            triplepack.set(self._subject, _sbol_version, version)
+
 
 
 class SBOLCompliantChild:
@@ -79,26 +90,24 @@ class SBOLCompliantChild:
         self._subject = for_subject
 
     def run(self, triplepack):
-
         subpack = triplepack.sub_pack(self._subject)
-        parent = SBOLParent(triplepack, self._subject)
-        if parent:
-            if not triplepack.has(parent, _sbol_pId):
-                SBOLCompliant(parent).run(triplepack)
+        parents = SBOLParent(triplepack, self._subject)
+        if parents:
+            for parent in parents:
+                if not triplepack.has(parent, _sbol_pId):
+                    SBOLCompliant(parent).run(triplepack)
 
-            if triplepack.has(parent, _sbol_version):
-                triplepack.set(self._subject,
-                               _sbol_version,
-                               triplepack.value(parent, _sbol_version))
+                if triplepack.has(parent, _sbol_version) and SBOLversion(subpack) is None:
+                    triplepack.set(self._subject, _sbol_version, triplepack.value(parent, _sbol_version))
 
-            if not SBOLdId(subpack):
-                dId = self._subject.split()[-1]
-                triplepack.set(self._subject, _sbol_dId, Value(dId))
-                subpack.set(self._subject, _sbol_dId, Value(dId))
+                if not SBOLdId(subpack):
+                    dId = self._subject.split()[-1]
+                    triplepack.set(self._subject, _sbol_dId, Value(dId))
+                    subpack.set(self._subject, _sbol_dId, Value(dId))
 
-            parentpid = triplepack.value(parent, _sbol_pId)
-            pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value)
-            triplepack.set(self._subject, _sbol_pId, pId)
+                parentpid = triplepack.value(parent, _sbol_pId)
+                pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value)
+                triplepack.set(self._subject, _sbol_pId, pId)
         else:
             pass
 
@@ -136,12 +145,16 @@ def SBOLcheckIdentity(triplepack):
 def SBOLParent(triplepack, child):
     with_child_as_object = triplepack.search((None, None, child))
     possible_parents = set([s for (s, p, o) in with_child_as_object])
+    print("Possible Parents: " + str(possible_parents))
     if len(possible_parents) > 1:
+        _type = triplepack.value(_rdf_type)
+        if SBOL_allowed_multiple_parents_check(triplepack):
+            return possible_parents
         message = format("The SBOL object %s should only have one parent object."
                          % child)
         raise SBOLComplianceError(message)
     elif len(possible_parents) == 1:
-        return possible_parents.pop()
+        return possible_parents
     else:
         message = format("The SBOL object %s does not have a parent object."
                          % child)
@@ -149,8 +162,19 @@ def SBOLParent(triplepack, child):
 
 
 def SBOLcheckTopLevel(triplepack):
+    '''
+    Checks if triple is a toplevel object.
+    Done by checking if type is in top_levels list.
+    '''
     _type = triplepack.value(_rdf_type)
     if isinstance(_type, list):
         return any([t in _toplevels for t in _type])
     else:
         return _type in _toplevels
+
+def SBOL_allowed_multiple_parents_check(triplepack):
+    _type = triplepack.value(_rdf_type)
+    if isinstance(_type, list):
+        return any([t in _allowed_multiple_parents for t in _type])
+    else:
+        return _type in _allowed_multiple_parents

@@ -40,7 +40,7 @@ moreProperties is a SpecialisedTemplate(1)
 
 # and even their own expansions
 
-nestedExpand is a SpecialisedTemplate("expand")
+nestedExpand is a SpecialisedTemplate("ACT")
 (
   inner = nested is a SpecialisedTemplate("expand")
 )

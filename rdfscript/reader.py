@@ -66,6 +66,7 @@ def t_ISA(t):
      t.value = 'is a'
      return t
 
+#Multiline strings can be defined by either triple quotes or () around all quotes with string ending on each line |\(((?:")[\S\s]*?(?:"))*\)
 def t_STRING(t):
     r'(?:").*?(?:")' #\"(\\.|[^"\\])*\"
     t.value = t.value[1:-1]
