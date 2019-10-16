@@ -67,33 +67,33 @@ def t_ISA(t):
      return t
 
 def t_STRING(t):
-    r'(?:").*?(?:")'
+    r'(?:").*?(?:")' #\"(\\.|[^"\\])*\"
     t.value = t.value[1:-1]
-    return t;
+    return t
 
 def t_URI(t):
     r'<[^<>]*>'
     t.value = t.value[1:-1]
-    return t;
+    return t
 
 def t_COMMENT(t):
     r'[ ]*\#[^\n]*'
-    pass;
+    pass
 
 def t_SYMBOL(t):
      r'[^\(\)}{=."\'\s\[\],0-9\-]+[^()}{=."\'\s\[\],]*'
      t.type = reserved_words.get(t.value, 'SYMBOL')
-     return t;
+     return t
 
 def t_DOUBLE(t):
     r'\d+\.\d+'
     t.value = float(t.value)
-    return t;
+    return t
 
 def t_INTEGER(t):
     r'[-]?\d+'
     t.value = int(t.value)
-    return t;
+    return t
 
 def t_newline(t):
      r'[ ]*\n+'
