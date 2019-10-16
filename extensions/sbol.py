@@ -99,6 +99,11 @@ class SBOLCompliantChild:
 
                 if triplepack.has(parent, _sbol_version) and SBOLversion(subpack) is None:
                     triplepack.set(self._subject, _sbol_version, triplepack.value(parent, _sbol_version))
+                else:
+                    pId = Uri(self._subject.uri, None)
+                    version = Value("1")
+                    #If no version is set, default = 1
+                    triplepack.set(self._subject, _sbol_version, version)
 
                 if not SBOLdId(subpack):
                     dId = self._subject.split()[-1]
@@ -108,6 +113,7 @@ class SBOLCompliantChild:
                 parentpid = triplepack.value(parent, _sbol_pId)
                 pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value)
                 triplepack.set(self._subject, _sbol_pId, pId)
+                #Try find a way to motify the actual URI for object.
         else:
             pass
 
