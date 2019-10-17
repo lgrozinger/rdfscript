@@ -71,69 +71,71 @@ class SBOLCompliantTopLevel:
         self._subject = for_subject
 
     def run(self, triplepack):
-
-        subpack = triplepack.sub_pack(self._subject)
-
-        if SBOLdId(subpack) is None:
-            dId = self._subject.split()[-1]
-            triplepack.set(self._subject, _sbol_dId, Value(dId))
-
-        if SBOLversion(subpack) is not None:
-            #Set Persistent ID
-            version_string = str(SBOLversion(subpack).value)
-            pId = Uri(self._subject.uri + '/' + version_string)
-            triplepack.set(self._subject, _sbol_pId, pId)
-        else:
-            #Set Default Version (1) && Set PersistentID
+        # Top level Object URI's : BaseName/ObjectType/ObjectName/Version
+        # Need to add Object Type to Base URI then Version @@@@
+          
+        #Validate TopLevel Object, Does it have persistentID, DisplayID and Version?
+        if not triplepack.has(self._subject, _sbol_pId): 
+            #Persistent ID = Object URI without version Number
             pId = Uri(self._subject.uri, None)
-            version = Value("1")
             triplepack.set(self._subject, _sbol_pId, pId)
-            triplepack.set(self._subject, _sbol_version, version)
+
+        if not triplepack.has(self._subject, _sbol_dId):
+            #Set display ID as object name (Dirty splicing URI)
+            dId = Value(self._subject.split()[-1])
+            triplepack.set(self._subject, _sbol_dId, dId)
+
+        if not triplepack.has(self._subject, _sbol_version):
+            #Set Default Version Number (1)
+            default_version = Value("1")
+            triplepack.set(self._subject, _sbol_version, default_version)
 
 
 
 class SBOLCompliantChild:
-
+    '''
+    Check if any Child/Non TopLevel objects are Valid SBOL.
+    '''
     def __init__(self, for_subject):
         self._subject = for_subject
 
     def run(self, triplepack):
+        '''
+        A SBOLCompliantChild is compliant when:
+            Has atleast one Parent. (This technicially should always be true for Non-TopLevel Objects)
+            If there is more than one parent parents must be a valid combination??
+            Must have a persistentID (If not set make one)
+            
+        '''
+        print("-----------------------------------------")
         subpack = triplepack.sub_pack(self._subject)
         parents = SBOLParent(triplepack, self._subject)
-        if parents:
-            for parent in parents:
-                if not triplepack.has(parent, _sbol_pId):
-                    SBOLCompliant(parent).run(triplepack)
 
-                if triplepack.has(parent, _sbol_version) and SBOLversion(subpack) is None:
-                    triplepack.set(self._subject, _sbol_version, triplepack.value(parent, _sbol_version))
+
+        for parent in parents:
+            # Child Object URI's : BaseName/ObjectType/ObjectName/Version
+            # Need to add Object Type to Base URI then Version @@@@
+            if not triplepack.has(parent, _sbol_pId):
+                SBOLCompliant(parent).run(triplepack)
+            #Validate Child Object, Does it have persistentID, DisplayID and Version?
+            if not triplepack.has(self._subject, _sbol_dId):
+                #Set display ID as object name (Dirty, splicing URI)
+                dId = Value(self._subject.split()[-1])
+                triplepack.set(self._subject, _sbol_dId, dId)
+
+            if not triplepack.has(self._subject, _sbol_version):
+                #Check if parent has a version and use that.
+                if triplepack.has(parent, _sbol_version):
+                    triplepack.set(self._subject,_sbol_version,triplepack.value(parent, _sbol_version))
                 else:
-                    pId = Uri(self._subject.uri, None)
-                    version = Value("1")
-                    #If no version is set, default = 1
-                    triplepack.set(self._subject, _sbol_version, version)
+                    #Set Default Version Number (1)
+                    default_version = Value("1")
+                    triplepack.set(self._subject, _sbol_version, default_version)
 
-                if not SBOLdId(subpack):
-                    dId = self._subject.split()[-1]
-                    triplepack.set(self._subject, _sbol_dId, Value(dId))
-                    subpack.set(self._subject, _sbol_dId, Value(dId))
-
+                #Persistent ID = Base URI + TopLevelURI + Child URI. without version Number and any intermediate Parent Objects (That arent TOP level)
                 parentpid = triplepack.value(parent, _sbol_pId)
-                pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value)
+                pId = Uri(parentpid.uri + '/' + self._subject.split()[-1])
                 triplepack.set(self._subject, _sbol_pId, pId)
-
-
-
-
-                #about_  = Uri(_sbolns.uri + 'version', None)
-                print("Henlooooo")
-                _type = triplepack.value(_rdf_type)
-                print(_type)
-                print(triplepack.has(self._subject, _type))
-                #Try find a way to motify the actual URI for object.
-        else:
-            pass
-
 
 class SBOLComplianceError(ExtensionError):
 
@@ -166,16 +168,24 @@ def SBOLcheckIdentity(triplepack):
 
 
 def SBOLParent(triplepack, child):
+    '''
+    Find any parents by searching triples with child object and checking for matches.
+    '''
     with_child_as_object = triplepack.search((None, None, child))
     possible_parents = set([s for (s, p, o) in with_child_as_object])
+    print(child)
     print("Possible Parents: " + str(possible_parents))
+
+
+
     if len(possible_parents) > 1:
-        _type = triplepack.value(_rdf_type)
-        if SBOL_allowed_multiple_parents_check(triplepack):
+        if is_valid_parent_combonation(possible_parents):
             return possible_parents
         message = format("The SBOL object %s should only have one parent object."
                          % child)
         raise SBOLComplianceError(message)
+
+
     elif len(possible_parents) == 1:
         return possible_parents
     else:
@@ -201,3 +211,12 @@ def SBOL_allowed_multiple_parents_check(triplepack):
         return any([t in _allowed_multiple_parents for t in _type])
     else:
         return _type in _allowed_multiple_parents
+
+
+
+def is_valid_parent_combonation(triplepack):
+    if len(([t in _toplevels for t in _type])) > 2:
+        print("ERROR BRO")
+        return False
+    return True
+    

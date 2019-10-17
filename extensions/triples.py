@@ -120,6 +120,11 @@ class TriplePack(object):
         self.add((owner, what, value))
         return (owner, what, value)
 
+
+    def set_what(self,what):
+        if what == 1:
+            print("df")
+
     def sub_pack(self, owner):
         return TriplePack(self.search((owner, None, None)),
                           self.bindings,
