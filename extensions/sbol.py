@@ -31,6 +31,9 @@ _rdf_type = Uri(rdflib.RDF.type, None)
 
 
 class SbolIdentity:
+    '''
+    Class to check all objects are SBOL compliant.
+    '''
 
     def __init__(self):
         pass
@@ -42,7 +45,9 @@ class SbolIdentity:
 
 
 class SBOLCompliant:
-
+    '''
+    Class to check a single object is SBOL compliant.
+    '''
     def __init__(self, for_subject):
         self._subject = for_subject
 
@@ -59,7 +64,9 @@ class SBOLCompliant:
 
 
 class SBOLCompliantTopLevel:
-
+    '''
+    Class to check if a toplevel component is SBOL compliant
+    '''
     def __init__(self, for_subject):
         self._subject = for_subject
 
@@ -72,14 +79,15 @@ class SBOLCompliantTopLevel:
             triplepack.set(self._subject, _sbol_dId, Value(dId))
 
         if SBOLversion(subpack) is not None:
+            #Set Persistent ID
             version_string = str(SBOLversion(subpack).value)
             pId = Uri(self._subject.uri + '/' + version_string)
             triplepack.set(self._subject, _sbol_pId, pId)
         else:
+            #Set Default Version (1) && Set PersistentID
             pId = Uri(self._subject.uri, None)
             version = Value("1")
             triplepack.set(self._subject, _sbol_pId, pId)
-            #If no version is set, default = 1
             triplepack.set(self._subject, _sbol_version, version)
 
 
@@ -113,6 +121,15 @@ class SBOLCompliantChild:
                 parentpid = triplepack.value(parent, _sbol_pId)
                 pId = Uri(parentpid.uri + '/' + SBOLdId(subpack).value)
                 triplepack.set(self._subject, _sbol_pId, pId)
+
+
+
+
+                #about_  = Uri(_sbolns.uri + 'version', None)
+                print("Henlooooo")
+                _type = triplepack.value(_rdf_type)
+                print(_type)
+                print(triplepack.has(self._subject, _type))
                 #Try find a way to motify the actual URI for object.
         else:
             pass

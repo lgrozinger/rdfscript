@@ -52,7 +52,7 @@ class TriplePack(object):
             return ((x == s or not s) and
                     (y == p or not p) and
                     (z == o or not o))
-
+        
         return [t for t in self.triples if matcher(t)]
 
     def has(self, *args):
