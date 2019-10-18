@@ -121,7 +121,7 @@ class TriplePack(object):
         return (owner, what, value)
 
 
-    def set_what(self,what):
+    def set_owner(self,what):
         if what == 1:
             print("df")
 

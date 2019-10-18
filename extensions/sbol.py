@@ -54,7 +54,6 @@ class SBOLCompliant:
     def run(self, triplepack):
         # Creates a new TriplePack Object 
         subpack = triplepack.sub_pack(self._subject)
-
         if SBOLcheckTopLevel(subpack):
             SBOLCompliantTopLevel(self._subject).run(triplepack)
         else:
@@ -172,13 +171,13 @@ def SBOLParent(triplepack, child):
     Find any parents by searching triples with child object and checking for matches.
     '''
     with_child_as_object = triplepack.search((None, None, child))
+    for p in with_child_as_object:
+        print(p)
     possible_parents = set([s for (s, p, o) in with_child_as_object])
-    print(child)
-    print("Possible Parents: " + str(possible_parents))
-
-
+    print("Possible Parents: " + str(possible_parents)) 
 
     if len(possible_parents) > 1:
+            #Note @@ Bug here@@ This will never fail need a way of correctly checking types
         if is_valid_parent_combonation(possible_parents):
             return possible_parents
         message = format("The SBOL object %s should only have one parent object."
@@ -214,9 +213,10 @@ def SBOL_allowed_multiple_parents_check(triplepack):
 
 
 
-def is_valid_parent_combonation(triplepack):
-    if len(([t in _toplevels for t in _type])) > 2:
-        print("ERROR BRO")
+def is_valid_parent_combonation(types):
+    n = [t in types for t in _toplevels]
+    if n.count(True) > 2 :
         return False
-    return True
+    if True:
+        return True
     
