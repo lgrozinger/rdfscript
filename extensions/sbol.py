@@ -20,9 +20,15 @@ _toplevels = set([Uri(_sbolns.uri + tl, None) for tl
                       'Implementation',
                       'CombinatorialDerivation']])
 
-_allowed_multiple_parents = set([Uri(_sbolns.uri + tl, None) for tl
-                  in ['Participant',
-                      'MapsTo']])
+ownership_predicates = {
+    _sbolns.uri + 'component',
+    _sbolns.uri + 'module',
+    _sbolns.uri + 'mapsTo',
+    _sbolns.uri + 'interaction',
+    _sbolns.uri + 'participation',
+    _sbolns.uri + 'functionalComponent',
+    _sbolns.uri + 'sequenceConstraint'
+}
 
 _sbol_pId = Uri(_sbolns.uri + 'persistentIdentity', None)
 _sbol_dId = Uri(_sbolns.uri + 'displayId', None)
@@ -173,13 +179,12 @@ def SBOLParent(triplepack, child):
     with_child_as_object = triplepack.search((None, None, child))
     for p in with_child_as_object:
         print(p)
-    possible_parents = set([s for (s, p, o) in with_child_as_object])
-    print("Possible Parents: " + str(possible_parents)) 
+    possible_parents = set([s for (s, p, o) in with_child_as_object if p in ownership_predicates])
 
     if len(possible_parents) > 1:
-            #Note @@ Bug here@@ This will never fail need a way of correctly checking types
-        if is_valid_parent_combonation(possible_parents):
-            return possible_parents
+        #Note @@ Bug here@@ This will never fail need a way of correctly checking types
+        #if is_valid_parent_combonation(possible_parents):
+            #return possible_parents
         message = format("The SBOL object %s should only have one parent object."
                          % child)
         raise SBOLComplianceError(message)
