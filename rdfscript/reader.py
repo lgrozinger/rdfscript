@@ -8,8 +8,8 @@ tokens = (
      "INTEGER",
      "DOUBLE",
      "URI",
-     "ISA",
      "SELF",
+     "ISA",
      "FROM",
      "PREFIX",
      "EXTENSION",
@@ -21,6 +21,7 @@ literals = ['=',
             '(', ')',
             '.',
             '[', ']',
+            ':',
             '*',
             ',']
 

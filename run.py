@@ -6,6 +6,7 @@ from rdfscript.rdfscriptparser import RDFScriptParser
 from rdfscript.env import Env
 from repl import REPL
 
+
 def parse_from_file(filepath,
                     serializer='nt',
                     optpaths=[],

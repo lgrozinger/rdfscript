@@ -20,6 +20,16 @@ _toplevels = set([Uri(_sbolns.uri + tl, None) for tl
                       'Implementation',
                       'CombinatorialDerivation']])
 
+ownership_predicates = {
+    _sbolns.uri + 'component',
+    _sbolns.uri + 'module',
+    _sbolns.uri + 'mapsTo',
+    _sbolns.uri + 'interaction',
+    _sbolns.uri + 'participation',
+    _sbolns.uri + 'functionalComponent',
+    _sbolns.uri + 'sequenceConstraint'
+}
+
 _sbol_pId = Uri(_sbolns.uri + 'persistentIdentity', None)
 _sbol_dId = Uri(_sbolns.uri + 'displayId', None)
 _sbol_version = Uri(_sbolns.uri + 'version', None)
@@ -135,7 +145,8 @@ def SBOLcheckIdentity(triplepack):
 
 def SBOLParent(triplepack, child):
     with_child_as_object = triplepack.search((None, None, child))
-    possible_parents = set([s for (s, p, o) in with_child_as_object])
+    possible_parents = set([s for (s, p, o) in with_child_as_object if p in ownership_predicates])
+
     if len(possible_parents) > 1:
         message = format("The SBOL object %s should only have one parent object."
                          % child)
