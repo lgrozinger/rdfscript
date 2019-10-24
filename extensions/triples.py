@@ -121,9 +121,19 @@ class TriplePack(object):
         return (owner, what, value)
 
 
-    def set_owner(self,what):
-        if what == 1:
-            print("df")
+    def set_owner(self,owner,new_owner):
+        print("--------------------------------------------------")
+        print("Owner:" + str(owner))
+        print("Replace with: " + str(new_owner))
+
+        if len(self.search((owner, None,None))) > 0:
+            triples = self.search((owner, None, None))
+            for triple in triples:
+                self.triples.remove(triple)
+                self.add((new_owner,triple[1],triple[2]))
+
+        print("----------------------------------------------------")
+        return
 
     def sub_pack(self, owner):
         return TriplePack(self.search((owner, None, None)),

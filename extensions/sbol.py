@@ -75,9 +75,6 @@ class SBOLCompliantTopLevel:
         self._subject = for_subject
 
     def run(self, triplepack):
-        # Top level Object URI's : BaseName/ObjectType/ObjectName/Version
-        # Need to add Object Type to Base URI then Version @@@@
-          
         #Validate TopLevel Object, Does it have persistentID, DisplayID and Version?
         if not triplepack.has(self._subject, _sbol_pId): 
             #Persistent ID = Object URI without version Number
@@ -91,8 +88,16 @@ class SBOLCompliantTopLevel:
 
         if not triplepack.has(self._subject, _sbol_version):
             #Set Default Version Number (1)
-            default_version = Value("1")
+            default_version = Value(1)
             triplepack.set(self._subject, _sbol_version, default_version)
+
+        
+        # Top level Object URI's : BaseName/ObjectType/ObjectName/Version
+        # http://sbols.org/CRISPR_Example/ComponentDefinition/gRNA_gene/1
+        # http://sbols.org/CRISPR_Example/                   /gRNA_gene
+        print(triplepack.value(self._subject,_sbol_version))
+        sbol_compliant_identity = Uri(self._subject.uri + "/" + str(triplepack.value(self._subject,_sbol_version)))
+        triplepack.set_owner(self._subject,sbol_compliant_identity)
 
 
 
