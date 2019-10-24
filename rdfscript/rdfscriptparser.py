@@ -311,3 +311,16 @@ class Location:
     @property
     def filename(self):
         return self._filename
+
+    @property
+    def col_on_line(self):
+        with open(self.filename) as infile:
+            characters = 0
+            for lineno, line in enumerate(infile, 1):
+                if lineno == self.position.line:
+                    return self.position.col - characters
+                characters += sum(len(word) for word in line)
+            return self.position.col
+
+
+

@@ -52,7 +52,7 @@ class TriplePack(object):
             return ((x == s or not s) and
                     (y == p or not p) and
                     (z == o or not o))
-
+        
         return [t for t in self.triples if matcher(t)]
 
     def has(self, *args):
@@ -119,6 +119,11 @@ class TriplePack(object):
 
         self.add((owner, what, value))
         return (owner, what, value)
+
+
+    def set_owner(self,what):
+        if what == 1:
+            print("df")
 
     def sub_pack(self, owner):
         return TriplePack(self.search((owner, None, None)),

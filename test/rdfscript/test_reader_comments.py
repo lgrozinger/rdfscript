@@ -13,13 +13,13 @@ class ReaderCommentTest(unittest.TestCase):
         None
 
     def test_comments_whole_line(self):
-        self.reader.input(';;Symbol 123 4.56 true')
+        self.reader.input('#Symbol 123 4.56 true')
         token = self.reader.token()
 
         self.assertEqual(token, None)
 
     def test_comments_mid_line(self):
-        self.reader.input('Symbol ;;comment at end')
+        self.reader.input('Symbol #comment at end')
         token = self.reader.token()
 
         self.assertEqual(token.type, 'SYMBOL')

@@ -23,9 +23,15 @@ def parse_from_file(filepath,
               serializer=serializer,
               paths=optpaths,
               extensions=extensions)
+    print("---------------------------------- Started Parsing Data -------------------------------------")
     forms = parser.parse(data)
+    print("Created List of language Objects: \n")
+    for form in forms:
+        print(form)
+    print("---------------------------------- Finished Parsing Data -------------------------------------")
+    print("---------------------------------- Started Interpret Data -------------------------------------")
     env.interpret(forms)
-
+    print("---------------------------------- Finished Interpret Data -------------------------------------")
     if not out:
         print(env)
     else:
