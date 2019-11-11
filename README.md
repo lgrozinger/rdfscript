@@ -70,3 +70,7 @@ Please branch off of `dev` for feature development, or work directly on `dev` fo
 A test suite using the Python3 `unittest` package is under the `test/` directory.
 
 Run the tests from the project root using `python -m unittest`
+
+## Acknowledgements
+
+The concept, design and implementation draws heavily on work from Matt Pocock on [ShortBOL](https://github.com/drdozer/shortbol). Many thanks to Matt
